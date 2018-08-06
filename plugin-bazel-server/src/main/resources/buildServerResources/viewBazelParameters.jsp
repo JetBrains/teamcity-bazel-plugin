@@ -1,0 +1,15 @@
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="props" tagdir="/WEB-INF/tags/props" %>
+<jsp:useBean id="propertiesBean" scope="request" type="jetbrains.buildServer.controllers.BasePropertiesBean"/>
+<jsp:useBean id="params" class="jetbrains.buildServer.bazel.BazelParametersProvider"/>
+<jsp:useBean id="teamcityPluginResourcesPath" scope="request" type="java.lang.String"/>
+
+<c:forEach items="${params.types}" var="type">
+    <c:if test="${propertiesBean.properties[params.commandKey] eq type.name}">
+        <div class="parameter">
+            Command: <strong><c:out value="${type.name}"/></strong>
+        </div>
+
+        <jsp:include page="${teamcityPluginResourcesPath}/bazel/${type.viewPage}"/>
+    </c:if>
+</c:forEach>

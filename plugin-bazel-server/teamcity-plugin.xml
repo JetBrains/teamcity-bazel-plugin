@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<teamcity-plugin xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                 xsi:noNamespaceSchemaLocation="urn:shemas-jetbrains-com:teamcity-plugin-v1-xml">
+    <info>
+        <name>bazel</name>
+        <display-name>Bazel build system support</display-name>
+        <version>@Plugin_Version@</version>
+        <description>Provides build facilities for bazel projects</description>
+        <download-url>https://github.com/JetBrains/teamcity-bazel-plugin</download-url>
+        <vendor>
+            <name>JetBrains, s.r.o.</name>
+            <url>http://www.jetbrains.com/</url>
+        </vendor>
+    </info>
+    <requirements min-build="40000" />
+    <deployment use-separate-classloader="true"/>
+</teamcity-plugin>
