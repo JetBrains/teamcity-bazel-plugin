@@ -9,24 +9,23 @@ package jetbrains.buildServer.bazel
 
 import jetbrains.buildServer.RunBuildException
 import jetbrains.buildServer.agent.ToolCannotBeFoundException
-import jetbrains.buildServer.agent.runner.BuildServiceAdapter
-import jetbrains.buildServer.agent.runner.ProgramCommandLine
-import jetbrains.buildServer.bazel.commands.BuildArgumentsProvider
-import jetbrains.buildServer.bazel.commands.CleanArgumentsProvider
-import jetbrains.buildServer.bazel.commands.RunArgumentsProvider
-import jetbrains.buildServer.bazel.commands.TestArgumentsProvider
+import jetbrains.buildServer.agent.runner.*
 import jetbrains.buildServer.util.StringUtil
+import kotlin.coroutines.experimental.buildSequence
 
 /**
  * Bazel runner service.
  */
-class BazelRunnerBuildService : BuildServiceAdapter() {
+class BazelRunnerBuildService(
+        buildStepContext: BuildStepContext,
+        bazelCommands: List<BazelCommand>,
+        private val _parametersService: ParametersService) : BuildServiceAdapter() {
 
-    private val myArgumentsProviders = mapOf(
-            Pair(BazelConstants.COMMAND_BUILD, BuildArgumentsProvider()),
-            Pair(BazelConstants.COMMAND_CLEAN, CleanArgumentsProvider()),
-            Pair(BazelConstants.COMMAND_RUN, RunArgumentsProvider()),
-            Pair(BazelConstants.COMMAND_TEST, TestArgumentsProvider()))
+    private val _bazelCommands = bazelCommands.associate { it.command to it }
+
+    init {
+        initialize(buildStepContext.runnerContext.build, buildStepContext.runnerContext)
+    }
 
     override fun makeProgramCommandLine(): ProgramCommandLine {
         val parameters = runnerParameters
@@ -38,17 +37,25 @@ class BazelRunnerBuildService : BuildServiceAdapter() {
             throw buildException
         }
 
-        val argumentsProvider = myArgumentsProviders[commandName]
-        if (argumentsProvider == null) {
+        val command = _bazelCommands[commandName]
+        if (command == null) {
             val buildException = RunBuildException("Unable to construct arguments for bazel command $commandName")
             buildException.isLogStacktrace = false
             throw buildException
         }
 
         val toolPath = getPath(BazelConstants.BAZEL_CONFIG_NAME)
-        val arguments = argumentsProvider.getArguments(runnerContext)
+        return createProgramCommandline(toolPath, getArgs(command).toList())
+    }
 
-        return createProgramCommandline(toolPath, arguments)
+    private fun getArgs(command: BazelCommand): Sequence<String> = buildSequence {
+        yield(command.command)
+        yieldAll(command.arguments)
+        _parametersService.tryGetParameter(ParameterType.System, "teamcity.buildType.id")?.let {
+            if (!it.isBlank()) {
+                yield("--project_id=$it")
+            }
+        }
     }
 
     private fun getPath(toolName: String): String {

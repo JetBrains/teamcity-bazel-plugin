@@ -7,59 +7,131 @@
 
 package jetbrains.buildServer.bazel
 
+import devteam.rx.Disposable
+import devteam.rx.subscribe
+import jetbrains.buildServer.SimpleCommandLineProcessRunner
 import jetbrains.buildServer.agent.BuildFinishedStatus
 import jetbrains.buildServer.agent.runner.*
+import java.io.ByteArrayOutputStream
 import java.io.File
 
-class CommandExecutionAdapter(private val buildService: CommandLineBuildService) : CommandExecution {
-
-    private val processListeners by lazy { buildService.listeners }
+class CommandExecutionAdapter(
+        private val _processRunner: ProcessRunner,
+        private val _bazelRunnerBuildService: BazelRunnerBuildService,
+        private val _besRunnerBuildService: BesRunnerBuildService)
+    : ByteArrayOutputStream(4096), CommandExecution, SimpleCommandLineProcessRunner.RunCommandEvents {
+    private var _besToken: Disposable? = null
+    private var _port: Int = 0
+    private val _processListeners by lazy { _bazelRunnerBuildService.listeners }
 
     var result: BuildFinishedStatus? = null
         private set
 
-    override fun processFinished(exitCode: Int) {
-        buildService.afterProcessFinished()
+    override fun isCommandLineLoggingEnabled() = _bazelRunnerBuildService.isCommandLineLoggingEnabled
 
-        processListeners.forEach {
-            it.processFinished(exitCode)
+    override fun makeProgramCommandLine(): ProgramCommandLine {
+        val commandLine = _bazelRunnerBuildService.makeProgramCommandLine()
+        commandLine.arguments.add("--bes_backend=localhost:$_port")
+        return commandLine
+    }
+
+    override fun beforeProcessStarted() {
+        _port = 0
+        val besCommandLine = _besRunnerBuildService.makeProgramCommandLine()
+        val eventSource = _processRunner.run("Build Event Service", defaultOutputIdleSecondsTimeout, besCommandLine)
+        val lockObject = java.lang.Object()
+        _besToken = eventSource.subscribe(
+                {
+                    when (it) {
+                        is StdOutProcessEvent -> {
+                            val text = it.stdOutText
+                            if (_port == 0) {
+                                _port = portRegex.find(text)?.groups?.get(1)?.value?.toInt() ?: 0
+                                if (_port != 0) {
+                                    synchronized(lockObject) {
+                                        lockObject.notifyAll()
+                                    }
+                                }
+                            } else {
+                                onStandardOutputInternal(text)
+                            }
+                        }
+
+                        is StdErrProcessEvent -> onErrorOutputInternal(it.stdErrText)
+                    }
+                },
+                {
+                },
+                {
+                })
+
+        synchronized(lockObject) {
+            lockObject.wait()
         }
 
-        result = buildService.getRunResult(exitCode)
-        if (result == BuildFinishedStatus.FINISHED_SUCCESS) {
-            buildService.afterProcessSuccessfullyFinished()
-        }
+        _bazelRunnerBuildService.beforeProcessStarted()
     }
 
     override fun processStarted(programCommandLine: String, workingDirectory: File) {
-        processListeners.forEach {
+        _processListeners.forEach {
             it.processStarted(programCommandLine, workingDirectory)
         }
     }
 
     override fun onStandardOutput(text: String) {
-        processListeners.forEach {
+        onStandardOutputInternal("> $text$")
+    }
+
+    override fun onErrorOutput(text: String) {
+        onErrorOutputInternal("> $text$")
+    }
+
+    override fun interruptRequested(): TerminationAction {
+        return _bazelRunnerBuildService.interrupt()
+    }
+
+    override fun processFinished(exitCode: Int) {
+        _besToken?.let {
+            it.dispose()
+            _besToken = null
+        }
+
+        _bazelRunnerBuildService.afterProcessFinished()
+
+        _processListeners.forEach {
+            it.processFinished(exitCode)
+        }
+
+        result = _besRunnerBuildService.getRunResult(exitCode)
+        if (result == BuildFinishedStatus.FINISHED_SUCCESS) {
+            _bazelRunnerBuildService.afterProcessSuccessfullyFinished()
+        }
+    }
+
+    override fun onProcessStarted(ps: Process) {
+    }
+
+    override fun onProcessFinished(ps: Process) {
+    }
+
+    override fun getOutputIdleSecondsTimeout(): Int? {
+        return defaultOutputIdleSecondsTimeout
+    }
+
+    private fun onStandardOutputInternal(text: String) {
+        _processListeners.forEach {
             it.onStandardOutput(text)
         }
     }
 
-    override fun onErrorOutput(text: String) {
-        processListeners.forEach {
+    private fun onErrorOutputInternal(text: String) {
+        _processListeners.forEach {
             it.onErrorOutput(text)
         }
     }
 
-    override fun interruptRequested(): TerminationAction {
-        return buildService.interrupt()
-    }
-
-    override fun makeProgramCommandLine(): ProgramCommandLine {
-        return buildService.makeProgramCommandLine()
-    }
-
-    override fun isCommandLineLoggingEnabled() = buildService.isCommandLineLoggingEnabled
-
-    override fun beforeProcessStarted() {
-        buildService.beforeProcessStarted()
+    companion object {
+        private const val defaultOutputIdleSecondsTimeout = 60000
+        private val portRegex = ".*BES:\\s(\\d+).*?".toRegex()
     }
 }

@@ -4,5 +4,20 @@
        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd"
        default-autowire="constructor">
     <bean class="jetbrains.buildServer.bazel.BazelBuildSessionFactory"/>
+    <bean class="jetbrains.buildServer.bazel.BazelCommandBuildSession" scope="prototype"/>
     <bean class="jetbrains.buildServer.bazel.BazelToolProvider"/>
+    <bean class="jetbrains.buildServer.bazel.BazelRunnerBuildService" scope="prototype"/>
+    <bean class="jetbrains.buildServer.bazel.BesRunnerBuildService" scope="prototype"/>
+    <bean class="jetbrains.buildServer.bazel.CommandExecutionAdapter" scope="prototype"/>
+
+    <!--runner service-->
+    <bean class="jetbrains.buildServer.agent.runner.ParametersServiceImpl"/>
+    <bean class="jetbrains.buildServer.agent.runner.PathsServiceImpl"/>
+    <bean class="jetbrains.buildServer.agent.runner.ProcessRunnerImpl"/>
+
+    <!--bazel commands-->
+    <bean class="jetbrains.buildServer.bazel.commands.BuildArgumentsProvider"/>
+    <bean class="jetbrains.buildServer.bazel.commands.CleanArgumentsProvider"/>
+    <bean class="jetbrains.buildServer.bazel.commands.RunArgumentsProvider"/>
+    <bean class="jetbrains.buildServer.bazel.commands.TestArgumentsProvider"/>
 </beans>

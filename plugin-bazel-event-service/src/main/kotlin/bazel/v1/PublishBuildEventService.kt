@@ -18,7 +18,9 @@ internal class PublishBuildEventService
     private val _eventSubject = subjectOf<Event<OrderedBuildEvent>>()
     private val _projectId = AtomicReference<String>("")
 
-    override fun subscribe(observer: Observer<Event<OrderedBuildEvent>>): Disposable = _eventSubject.subscribe(observer)
+    override fun subscribe(observer: Observer<Event<OrderedBuildEvent>>): Disposable {
+        return _eventSubject.subscribe(observer)
+    }
 
     override fun publishLifecycleEvent(request: PublishLifecycleEventRequest?, responseObserver: StreamObserver<Empty>?) {
         logger.log(Level.FINE, "publishLifecycleEvent: $request")

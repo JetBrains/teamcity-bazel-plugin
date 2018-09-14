@@ -3,9 +3,9 @@ package bazel
 import devteam.rx.Disposable
 import devteam.rx.disposableOf
 import io.grpc.Attributes
-import io.grpc.Server
 import io.grpc.ServerBuilder
 import io.grpc.ServerTransportFilter
+import jetbrains.buildServer.agentServer.Server
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.logging.Level
 import java.util.logging.Logger
@@ -13,9 +13,10 @@ import java.util.logging.Logger
 class GRpcServer(private val _port: Int)
     : ServerTransportFilter() {
 
-    private var _server: Server? = null
+    private var _server: io.grpc.Server? = null
     private val _connectionCounter = AtomicInteger()
 
+    val port: Int get() = _server!!.port
 
     fun start(bindableService: io.grpc.BindableService): Disposable {
         _server = ServerBuilder.forPort(_port)
@@ -24,10 +25,10 @@ class GRpcServer(private val _port: Int)
                 .build()
                 .start()
 
-        logger.log(Level.INFO, "Server started, listening on {0}", _port)
+        logger.log(Level.FINE, "Server started, listening on {0}", _port)
         return disposableOf {
             _server?.awaitTermination()
-            logger.log(Level.INFO, "Server shut down")
+            logger.log(Level.FINE, "Server shut down")
         }
     }
 
@@ -35,7 +36,7 @@ class GRpcServer(private val _port: Int)
         val shutdownTread = object : Thread() {
             override fun run() {
                 _server?.let {
-                    logger.log(Level.INFO, "Server shutting down")
+                    logger.log(Level.FINE, "Server shutting down")
                     it.shutdownNow()
                 }
             }
@@ -56,9 +57,8 @@ class GRpcServer(private val _port: Int)
     }
 
     private fun connectionCounterChanged(connectionCounter: Int) {
-        logger.log(Level.INFO, "Connections: {0}", connectionCounter)
-        if (connectionCounter == 0)
-        {
+        logger.log(Level.FINE, "Connections: {0}", connectionCounter)
+        if (connectionCounter == 0) {
             shutdown()
         }
     }
