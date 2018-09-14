@@ -6,7 +6,7 @@ ext {
     def correctVersion = project.hasProperty('versionNumber') && property('versionNumber') ==~ /\d+\.\d+\.\d+.*/
     versionNumber = correctVersion ? property('versionNumber') : 'SNAPSHOT-' + new Date().format('yyyyMMddHHmmss')
     projectIds = ['group': 'teamcity-bazel-plugin', 'version': versionNumber]
-    teamcityVersion = project.hasProperty('teamcityVersion') ? property('teamcityVersion') : '10.0'
+    teamcityVersion = project.hasProperty('teamcityVersion') ? property('teamcityVersion') : '2018.1'
 }
 
 group = projectIds.group
@@ -21,12 +21,15 @@ subprojects {
     apply plugin: "kotlin"
 
     kotlin { experimental { coroutines 'enable' } }
+    compileKotlin { kotlinOptions.jvmTarget = "1.6" }
+    compileTestKotlin { kotlinOptions.jvmTarget = "1.6" }
 
     test.useTestNG()
     jar.version = null
 
     sourceCompatibility = "1.6"
     targetCompatibility = "1.6"
+    def teamcityVersion = teamcityVersion
 }
 
 task wrapper(type: Wrapper) {
