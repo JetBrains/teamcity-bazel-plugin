@@ -38,36 +38,19 @@ class BazelRunnerDiscoveryExtension : BuildRunnerDiscoveryExtension {
             null
         }
 
-        if (workingDir != null) {
-            discoverRunners(workingDir, currentElement.fullName, children.filter { it.isLeaf }).let { objects ->
-                val foundObjects = objects.any()
-                yieldAll(objects)
-
-                // If we already found build steps in the directory don't go deeper
-                if (foundObjects) {
-                    return@buildSequence
+        when {
+            workingDir != null -> yield(DiscoveredObject(BazelConstants.RUNNER_TYPE, mapOf(
+                    BazelConstants.PARAM_WORKING_DIR to workingDir,
+                    BazelConstants.PARAM_COMMAND to BazelConstants.COMMAND_BUILD,
+                    BazelConstants.PARAM_BUILD_TARGET to "//..."
+            )))
+            else -> {
+                // Scan nested directories
+                children.forEach {
+                    if (!it.isLeaf) {
+                        yieldAll(discoverRunners(it, currentElementDepth + 1, workingDir))
+                    }
                 }
-            }
-        }
-
-        // Scan nested directories
-        children.forEach {
-            if (!it.isLeaf) {
-                yieldAll(discoverRunners(it, currentElementDepth + 1, workingDir))
-            }
-        }
-    }
-
-    private fun discoverRunners(workingDir: String, currentDir: String, files: List<Element>)
-            : Sequence<DiscoveredObject> = buildSequence {
-        files.forEach { item ->
-            if (BazelConstants.BUILD_FILE_NAME.matches(item.name) && item.isContentAvailable) {
-                val target = "//" + currentDir.substring(workingDir.length).trim('/') + "..."
-                yield(DiscoveredObject(BazelConstants.RUNNER_TYPE, mapOf(
-                        BazelConstants.PARAM_WORKING_DIR to workingDir,
-                        BazelConstants.PARAM_COMMAND to BazelConstants.COMMAND_BUILD,
-                        BazelConstants.PARAM_BUILD_TARGET to target
-                )))
             }
         }
     }
