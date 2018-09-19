@@ -13,7 +13,7 @@ class MessageBuilder(
     private val _text = StringBuilder()
 
     init {
-        if (improve && _serviceMessageContext.verbosity.atLeast(Verbosity.Trace)) {
+        if (improve && _serviceMessageContext.verbosity.atLeast(Verbosity.Diagnostic)) {
             val text = StringBuilder()
             text.append(String.format("%8d", _serviceMessageContext.event.payload.sequenceNumber))
             text.append(' ')

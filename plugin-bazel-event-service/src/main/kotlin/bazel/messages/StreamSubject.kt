@@ -23,7 +23,7 @@ class StreamSubject(
         subject.map { updateHeader(value.payload, it) }.subscribe(_messageSubject).use {
             handlerIterator.next().handle(ctx)
 
-            if (_verbosity.atLeast(Verbosity.Trace)) {
+            if (_verbosity.atLeast(Verbosity.Diagnostic)) {
                 subject.onNext(_messageFactory.createTraceMessage(value.payload.toString()))
             }
 

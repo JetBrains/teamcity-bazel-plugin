@@ -36,8 +36,15 @@ class BesRunnerBuildService(
         val pluginDir = _pathsService.getPath(PathType.Plugin)
         val jarFile = File(File(pluginDir, "tools"), "plugin-bazel-event-service.jar")
 
-        val besArgs = sequenceOf("-jar", jarFile.absolutePath)
-        return createProgramCommandline(javaExecutable.absolutePath, besArgs.toList())
+        val besArgs = mutableListOf<String>("-jar", jarFile.absolutePath)
+
+        _parametersService.tryGetParameter(ParameterType.Runner, BazelConstants.PARAM_VERBOSITY)?.trim()?.let {
+            Verbosity.tryParse(it)?.let {
+                besArgs.add("-l=${it.id}")
+            }
+        }
+
+        return createProgramCommandline(javaExecutable.absolutePath, besArgs)
     }
 
     override fun isCommandLineLoggingEnabled() = true

@@ -31,6 +31,7 @@ object BazelConstants {
     const val PARAM_TEST_TARGET = "bazel-test-target"
     const val PARAM_RUN_TARGET = "bazel-run-target"
     const val PARAM_WORKING_DIR = AgentRuntimeProperties.BUILD_WORKING_DIR
+    const val PARAM_VERBOSITY = "verbosity"
 
     val BUILD_FILE_NAME = Regex("BUILD(\\.bazel)?")
     const val WORKSPACE_FILE_NAME = "WORKSPACE"

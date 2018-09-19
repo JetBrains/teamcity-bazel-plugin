@@ -41,4 +41,10 @@ class BazelParametersProvider {
 
     val argumentsKey: String
         get() = BazelConstants.PARAM_ARGUMENTS
+
+    val verbosityKey: String
+        get() = BazelConstants.PARAM_VERBOSITY
+
+    val verbosityValues: List<Verbosity>
+        get() = Verbosity.values().toList()
 }

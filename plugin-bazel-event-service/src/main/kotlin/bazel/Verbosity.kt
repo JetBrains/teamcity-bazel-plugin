@@ -5,7 +5,7 @@ enum class Verbosity(val order: Int) {
     Normal(1),
     Detailed(2),
     Verbose(3),
-    Trace(4);
+    Diagnostic(4);
 }
 
 fun Verbosity.atLeast(verbosity: Verbosity) = verbosity.order <= this.order

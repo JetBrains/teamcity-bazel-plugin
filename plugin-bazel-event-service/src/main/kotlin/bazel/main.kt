@@ -22,7 +22,7 @@ fun main(args: Array<String>) {
         val bazelOptions = BazelOptions(args)
         port = bazelOptions.port
         verbosity = bazelOptions.verbosity
-        if (verbosity == Verbosity.Trace) {
+        if (verbosity == Verbosity.Diagnostic) {
             org.apache.log4j.Logger.getRootLogger().level = Level.DEBUG
         }
     } catch (ex: Exception) {
