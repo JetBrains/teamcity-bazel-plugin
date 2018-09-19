@@ -11,7 +11,6 @@ import jetbrains.buildServer.agent.runner.ParameterType
 import jetbrains.buildServer.agent.runner.ParametersService
 import jetbrains.buildServer.bazel.BazelCommand
 import jetbrains.buildServer.bazel.BazelConstants
-import jetbrains.buildServer.util.StringUtil
 import kotlin.coroutines.experimental.buildSequence
 
 /**
@@ -29,12 +28,6 @@ class RunCommand(
                 if (!it.isBlank()) {
                     yield(it)
                 }
-            }
-
-            _parametersService.tryGetParameter(ParameterType.Runner, BazelConstants.PARAM_BUILD_TARGET)?.trim()?.let {
-                yieldAll(StringUtil.splitCommandArgumentsAndUnquote(it)
-                        .asSequence()
-                        .filter { !it.isNullOrBlank() })
             }
         }
 }

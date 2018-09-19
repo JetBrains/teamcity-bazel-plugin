@@ -19,7 +19,8 @@ import kotlin.coroutines.experimental.buildSequence
 class BazelRunnerBuildService(
         buildStepContext: BuildStepContext,
         bazelCommands: List<BazelCommand>,
-        private val _parametersService: ParametersService) : BuildServiceAdapter() {
+        private val _parametersService: ParametersService,
+        private val _argumentsSplitter: BazelArgumentsSplitter) : BuildServiceAdapter() {
 
     private val _bazelCommands = bazelCommands.associate { it.command to it }
 
@@ -51,6 +52,9 @@ class BazelRunnerBuildService(
     private fun getArgs(command: BazelCommand): Sequence<String> = buildSequence {
         yield(command.command)
         yieldAll(command.arguments)
+        _parametersService.tryGetParameter(ParameterType.Runner, BazelConstants.PARAM_ARGUMENTS)?.trim()?.let {
+            yieldAll(_argumentsSplitter.splitArguments(it))
+        }
         _parametersService.tryGetParameter(ParameterType.System, "teamcity.buildType.id")?.let {
             if (!it.isBlank()) {
                 yield("--project_id=$it")
