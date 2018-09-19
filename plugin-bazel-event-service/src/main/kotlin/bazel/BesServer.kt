@@ -30,7 +30,7 @@ class BesServer<TEvent>(
         // gRpc server token
         val gRpcServerToken = gRpcServer.start(_bindableEventService)
 
-        observer.onNext("BES: ${gRpcServer.port}".apply(Color.Details))
+        observer.onNext("BES: ${gRpcServer.port}")
         return disposableOf(gRpcServerToken, subscription)
     }
 }

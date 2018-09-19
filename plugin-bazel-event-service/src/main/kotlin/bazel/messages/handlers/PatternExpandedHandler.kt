@@ -15,7 +15,7 @@ class PatternExpandedHandler: EventHandler {
     override fun handle(ctx: ServiceMessageContext) =
         if (ctx.event.payload is BazelEvent && ctx.event.payload.content is PatternExpanded) {
             val event = ctx.event.payload.content
-            if (ctx.verbosity.atLeast(Verbosity.Detailed)) {
+            if (ctx.verbosity.atLeast(Verbosity.Verbose)) {
                 val patterns = event.patterns.joinToStringEscaped(", ")
                 ctx.onNext(ctx.messageFactory.createMessage(
                         ctx.buildMessage()

@@ -19,8 +19,8 @@ class TestSummaryHandler: EventHandler {
                     ctx.buildMessage()
                             .append("${event.label} test summary:")
                             .append(" ${event.overallStatus}".apply(event.overallStatus.toColor()))
-                            .append(", total: ${event.totalRunCount}", Verbosity.Normal)
-                            .append(", total cached: ${event.totalNumCached}".apply(Color.Details), Verbosity.Detailed)
+                            .append(", total: ${event.totalRunCount}", Verbosity.Detailed)
+                            .append(", total cached: ${event.totalNumCached}".apply(Color.Details), Verbosity.Verbose)
                             .toString()))
 
             true

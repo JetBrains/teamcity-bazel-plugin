@@ -16,7 +16,7 @@ class TargetConfiguredHandler: EventHandler {
         if (ctx.event.payload is BazelEvent && ctx.event.payload.content is TargetConfigured) {
             val event = ctx.event.payload.content
             val description = "Target ${event.targetKind} \"${event.label}\" configured"
-            if (ctx.verbosity.atLeast(Verbosity.Minimal)) {
+            if (ctx.verbosity.atLeast(Verbosity.Normal)) {
                 val blockName = "Target ${event.label}"
                 if (ctx.blockManager.createBlock(blockName, event.children)) {
                     ctx.onNext(ctx.messageFactory.createBlockOpened(blockName, ""))
@@ -24,12 +24,12 @@ class TargetConfiguredHandler: EventHandler {
 
                 ctx.onNext(ctx.messageFactory.createBuildStatus(description))
 
-                if (ctx.verbosity.atLeast(Verbosity.Normal)) {
+                if (ctx.verbosity.atLeast(Verbosity.Detailed)) {
                     ctx.onNext(ctx.messageFactory.createMessage(
                             ctx.buildMessage()
                                     .append(description.apply(Color.BuildStage))
-                                    .append(", aspect \"${event.aspect}\", test size \"${event.testSize}\"", Verbosity.Detailed)
-                                    .append(", tags: \"${event.tags.joinToStringEscaped(", ")}\"", Verbosity.Detailed)
+                                    .append(", aspect \"${event.aspect}\", test size \"${event.testSize}\"", Verbosity.Verbose)
+                                    .append(", tags: \"${event.tags.joinToStringEscaped(", ")}\"", Verbosity.Verbose)
                                     .toString()))
                 }
             }

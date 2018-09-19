@@ -15,23 +15,23 @@ class ActionExecutedHandler: EventHandler {
     override fun handle(ctx: ServiceMessageContext) =
         if (ctx.event.payload is BazelEvent && ctx.event.payload.content is ActionExecuted) {
             val event = ctx.event.payload.content
-            if (ctx.verbosity.atLeast(Verbosity.Minimal)) {
+            if (ctx.verbosity.atLeast(Verbosity.Normal)) {
                 val details = ctx.buildMessage(false)
-                        .append(": ${event.cmdLines.joinToStringEscaped()}", Verbosity.Detailed)
-                        .append("exit code: ${event.exitCode}", Verbosity.Detailed)
-                        .append(", primary output: ${event.primaryOutput.name}", Verbosity.Detailed)
-                        .append(", stdout: ${event.stdout.name}", Verbosity.Detailed)
-                        .append(", stderr: ${event.stderr.name}", Verbosity.Detailed)
+                        .append(": ${event.cmdLines.joinToStringEscaped()}", Verbosity.Verbose)
+                        .append("exit code: ${event.exitCode}", Verbosity.Verbose)
+                        .append(", primary output: ${event.primaryOutput.name}", Verbosity.Verbose)
+                        .append(", stdout: ${event.stdout.name}", Verbosity.Verbose)
+                        .append(", stderr: ${event.stderr.name}", Verbosity.Verbose)
                         .toString()
 
                 if (event.success) {
                     val description = "Action ${event.type} executed"
                     ctx.onNext(ctx.messageFactory.createBuildStatus(description))
-                    if (ctx.verbosity.atLeast(Verbosity.Normal)) {
+                    if (ctx.verbosity.atLeast(Verbosity.Detailed)) {
                         ctx.onNext(ctx.messageFactory.createMessage(
                                 ctx.buildMessage()
                                         .append(description.apply(Color.BuildStage))
-                                        .append(details, Verbosity.Detailed)
+                                        .append(details, Verbosity.Verbose)
                                         .toString()))
                     }
                 } else {
@@ -39,7 +39,7 @@ class ActionExecutedHandler: EventHandler {
                     ctx.onNext(ctx.messageFactory.createErrorMessage(
                             ctx.buildMessage()
                                     .append(description.apply(Color.Error))
-                                    .append(details, Verbosity.Detailed)
+                                    .append(details, Verbosity.Verbose)
                                     .toString()))
 
                     ctx.onNext(ctx.messageFactory.createBuildProblem(description, ctx.event.projectId, ctx.event.payload.content.id.toString()))

@@ -15,7 +15,7 @@ class OptionsParsedHandler: EventHandler {
     override fun handle(ctx: ServiceMessageContext) =
         if (ctx.event.payload is BazelEvent && ctx.event.payload.content is OptionsParsed) {
             val event = ctx.event.payload.content
-            if (ctx.verbosity.atLeast(Verbosity.Detailed)) {
+            if (ctx.verbosity.atLeast(Verbosity.Verbose)) {
 
                 if (event.startupOptions.isNotEmpty()) {
                     ctx.onNext(ctx.messageFactory.createMessage(

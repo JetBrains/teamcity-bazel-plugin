@@ -2,9 +2,9 @@ package bazel
 
 enum class Verbosity(val order: Int) {
     Quiet(0),
-    Minimal(1),
-    Normal(2),
-    Detailed(3),
+    Normal(1),
+    Detailed(2),
+    Verbose(3),
     Trace(4);
 }
 

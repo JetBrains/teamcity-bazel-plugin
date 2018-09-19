@@ -15,7 +15,7 @@ class BuildToolLogsHandler: EventHandler {
     override fun handle(ctx: ServiceMessageContext) =
         if (ctx.event.payload is BazelEvent && ctx.event.payload.content is BuildToolLogs) {
             val event = ctx.event.payload.content
-            if (ctx.verbosity.atLeast(Verbosity.Detailed)) {
+            if (ctx.verbosity.atLeast(Verbosity.Verbose)) {
                 for (log in event.logs) {
                     ctx.onNext(ctx.messageFactory.createMessage(
                             ctx.buildMessage()

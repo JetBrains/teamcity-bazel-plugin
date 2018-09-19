@@ -7,10 +7,37 @@ import bazel.v1.converters.StreamIdConverter
 import devteam.rx.subscribe
 import devteam.rx.use
 import java.io.IOException
+import java.util.logging.Logger
 
 @Throws(IOException::class, InterruptedException::class)
 fun main(args: Array<String>) {
-    BesServer(0, Verbosity.Detailed, PublishBuildEventService(), BuildEventConverter(StreamIdConverter(BuildComponentConverter())))
-            .subscribe { System.out.println(it) }
-            .use { }
+    val logger = Logger.getLogger("main")
+    val bazelOptions = BazelOptions(args)
+    val port: Int
+    val verbosity: Verbosity
+    try {
+        port = bazelOptions.port
+        verbosity = bazelOptions.verbosity
+    } catch (ex: Exception) {
+        logger.severe(ex.toString())
+        bazelOptions.printHelp()
+        System.exit(1)
+        return
+    }
+
+    try {
+        BesServer(
+                port,
+                verbosity,
+                PublishBuildEventService(),
+                BuildEventConverter(StreamIdConverter(BuildComponentConverter())))
+                .subscribe { System.out.println(it) }
+                .use { }
+    } catch (ex: Exception) {
+        logger.severe(ex.toString())
+        System.exit(1)
+        return
+    }
+
+    System.exit(0)
 }

@@ -18,19 +18,19 @@ class TestResultHandler: EventHandler {
     override fun handle(ctx: ServiceMessageContext) =
         if (ctx.event.payload is BazelEvent && ctx.event.payload.content is TestResult) {
             val event = ctx.event.payload.content
-            if(ctx.verbosity.atLeast(Verbosity.Normal)) {
+            if(ctx.verbosity.atLeast(Verbosity.Detailed)) {
                 ctx.onNext(ctx.messageFactory.createMessage(
                         ctx.buildMessage()
                                 .append("${event.label} test:")
                                 .append(" ${event.status} ".apply(event.status.toColor()))
-                                .append(", details: \"${event.statusDetails}\"".apply(Color.Details), Verbosity.Detailed)
-                                .append(", attempts: ${event.attempt}, runs: ${event.run}, shard: ${event.shard}, duration: ${event.testAttemptDurationMillis}(ms), cached locally: ${event.cachedLocally}".apply(Color.Details), Verbosity.Detailed)
+                                .append(", details: \"${event.statusDetails}\"".apply(Color.Details), Verbosity.Verbose)
+                                .append(", attempts: ${event.attempt}, runs: ${event.run}, shard: ${event.shard}, duration: ${event.testAttemptDurationMillis}(ms), cached locally: ${event.cachedLocally}".apply(Color.Details), Verbosity.Verbose)
                                 .toString()))
             }
 
             for (test in event.testActionOutput) {
                 val file = File(URI(test.uri))
-                if (ctx.verbosity.atLeast(Verbosity.Detailed)) {
+                if (ctx.verbosity.atLeast(Verbosity.Verbose)) {
                     ctx.onNext(ctx.messageFactory.createMessage("$file".apply(Color.Items)))
                 }
 

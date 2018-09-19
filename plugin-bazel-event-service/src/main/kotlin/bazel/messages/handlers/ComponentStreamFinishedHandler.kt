@@ -18,23 +18,23 @@ class ComponentStreamFinishedHandler: EventHandler {
             @Suppress("NON_EXHAUSTIVE_WHEN")
             when(ctx.event.payload.finishType) {
                 FinishType.Finished ->
-                    if (ctx.verbosity.atLeast(Verbosity.Detailed)) {
+                    if (ctx.verbosity.atLeast(Verbosity.Verbose)) {
                         val description = "Component \"${ctx.event.payload.streamId.component}\" stream finished"
                         ctx.onNext(ctx.messageFactory.createBuildStatus(description))
                         ctx.onNext(ctx.messageFactory.createMessage(
                                 ctx.buildMessage()
                                         .append(description.apply(Color.BuildStage))
-                                        .append(", invocation: \"${ctx.event.payload.streamId.invocationId}\", build: \"${ctx.event.payload.streamId.buildId}\"", Verbosity.Detailed)
+                                        .append(", invocation: \"${ctx.event.payload.streamId.invocationId}\", build: \"${ctx.event.payload.streamId.buildId}\"", Verbosity.Verbose)
                                         .toString()))
                     }
 
                 FinishType.Expired ->
-                    if (ctx.verbosity.atLeast(Verbosity.Minimal)) {
+                    if (ctx.verbosity.atLeast(Verbosity.Normal)) {
                         val description = "Component \"${ctx.event.payload.streamId.component}\" stream expired"
                         ctx.onNext(ctx.messageFactory.createMessage(
                                 ctx.buildMessage()
                                         .append(description.apply(Color.Warning))
-                                        .append("(${FinishType.Expired.description}), invocation: \"${ctx.event.payload.streamId.invocationId}\", build: \"${ctx.event.payload.streamId.buildId}\"", Verbosity.Detailed)
+                                        .append("(${FinishType.Expired.description}), invocation: \"${ctx.event.payload.streamId.invocationId}\", build: \"${ctx.event.payload.streamId.buildId}\"", Verbosity.Verbose)
                                         .toString()))
 
                         ctx.onNext(ctx.messageFactory.createBuildProblem(description, ctx.event.projectId, ctx.event.payload.streamId.toString()))

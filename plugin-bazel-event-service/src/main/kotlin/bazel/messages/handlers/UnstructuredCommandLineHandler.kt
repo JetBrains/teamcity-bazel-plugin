@@ -18,7 +18,7 @@ class UnstructuredCommandLineHandler: EventHandler {
             val commandLine = ctx.event.payload.content
             val cmd = commandLine.args.joinToStringEscaped()
             ctx.onNext(ctx.messageFactory.createBuildStatus("Run $cmd"))
-            if (ctx.verbosity.atLeast(Verbosity.Normal)) {
+            if (ctx.verbosity.atLeast(Verbosity.Detailed)) {
                 ctx.onNext(ctx.messageFactory.createMessage(
                         ctx.buildMessage()
                                 .append("Run ")

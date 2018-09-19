@@ -15,7 +15,7 @@ class WorkspaceStatusHandler: EventHandler {
     override fun handle(ctx: ServiceMessageContext) =
         if (ctx.event.payload is BazelEvent && ctx.event.payload.content is WorkspaceStatus) {
             val event = ctx.event.payload.content
-            if (ctx.verbosity.atLeast(Verbosity.Detailed) && event.items.isNotEmpty()) {
+            if (ctx.verbosity.atLeast(Verbosity.Verbose) && event.items.isNotEmpty()) {
                 //ctx.onNext(ctx.messageFactory.createBlockOpened("Workspace Status", ""))
                 for (item in event.items) {
                     ctx.onNext(ctx.messageFactory.createMessage(

@@ -19,11 +19,11 @@ class InvocationAttemptFinishedHandler: EventHandler {
             if (ctx.event.payload.invocationResult.status == BuildStatus.CommandSucceeded) {
                 val description = "Invocation attempt completed"
                 ctx.onNext(ctx.messageFactory.createBuildStatus(description))
-                if (ctx.verbosity.atLeast(Verbosity.Normal)) {
+                if (ctx.verbosity.atLeast(Verbosity.Detailed)) {
                     ctx.onNext(ctx.messageFactory.createMessage(
                             ctx.buildMessage()
                                     .append(description.apply(Color.BuildStage))
-                                    .append(", exit code: ${ctx.event.payload.exitCode}", Verbosity.Detailed)
+                                    .append(", exit code: ${ctx.event.payload.exitCode}", Verbosity.Verbose)
                                     .toString()))
                 }
             }
@@ -31,8 +31,8 @@ class InvocationAttemptFinishedHandler: EventHandler {
                 ctx.onNext(ctx.messageFactory.createBuildProblem(
                         ctx.buildMessage(false)
                                 .append("Invocation attempt failed")
-                                .append(": \"${ctx.event.payload.invocationResult.status.description}\"", Verbosity.Normal)
-                                .append(", exit code: ${ctx.event.payload.exitCode}", Verbosity.Detailed)
+                                .append(": \"${ctx.event.payload.invocationResult.status.description}\"", Verbosity.Detailed)
+                                .append(", exit code: ${ctx.event.payload.exitCode}", Verbosity.Verbose)
                                 .toString(),
                         ctx.event.projectId,
                         "Invocation:${ctx.event.payload.invocationResult.status}:${ctx.event.payload.exitCode}"))

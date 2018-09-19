@@ -15,12 +15,12 @@ class ConfigurationHandler: EventHandler {
     override fun handle(ctx: ServiceMessageContext) =
         if (ctx.event.payload is BazelEvent && ctx.event.payload.content is Configuration) {
             val event = ctx.event.payload.content
-            if (ctx.verbosity.atLeast(Verbosity.Normal)) {
+            if (ctx.verbosity.atLeast(Verbosity.Detailed)) {
                 ctx.onNext(ctx.messageFactory.createMessage(ctx.buildMessage().append(listOf("platformName", event.platformName).joinToStringEscaped(" = ").apply(Color.Items)).toString()))
                 ctx.onNext(ctx.messageFactory.createMessage(ctx.buildMessage().append(listOf("mnemonic", event.mnemonic).joinToStringEscaped(" = ").apply(Color.Items)).toString()))
                 ctx.onNext(ctx.messageFactory.createMessage(ctx.buildMessage().append(listOf("cpu", event.cpu).joinToStringEscaped(" = ").apply(Color.Items)).toString()))
 
-                if (ctx.verbosity.atLeast(Verbosity.Detailed)) {
+                if (ctx.verbosity.atLeast(Verbosity.Verbose)) {
                     for (item in event.makeVariableMap) {
                         ctx.onNext(ctx.messageFactory.createMessage(
                                 ctx.buildMessage()

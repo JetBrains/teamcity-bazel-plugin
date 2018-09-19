@@ -16,7 +16,7 @@ class FetchHandler: EventHandler {
         if (ctx.event.payload is BazelEvent && ctx.event.payload.content is Fetch) {
             val event = ctx.event.payload.content
             if (event.success) {
-                if (ctx.verbosity.atLeast(Verbosity.Normal)) {
+                if (ctx.verbosity.atLeast(Verbosity.Detailed)) {
                     ctx.onNext(ctx.messageFactory.createMessage(
                             ctx.buildMessage()
                                     .append("Fetch \"${event.url}\"".apply(Color.Details))
@@ -24,7 +24,7 @@ class FetchHandler: EventHandler {
                 }
             }
             else {
-                if (ctx.verbosity.atLeast(Verbosity.Minimal)) {
+                if (ctx.verbosity.atLeast(Verbosity.Normal)) {
                     ctx.onNext(ctx.messageFactory.createMessage(
                             ctx.buildMessage()
                                     .append("Fetch \"${event.url}\" - unsuccessful".apply(Color.Error))

@@ -12,7 +12,7 @@ class InvocationAttemptStartedHandler: EventHandler {
 
     override fun handle(ctx: ServiceMessageContext) =
         if (ctx.event.payload is InvocationAttemptStarted) {
-            if (ctx.verbosity.atLeast(Verbosity.Normal)) {
+            if (ctx.verbosity.atLeast(Verbosity.Detailed)) {
                 ctx.onNext(ctx.messageFactory.createMessage(
                         ctx.buildMessage()
                                 .append("Invocation attempt #${ctx.event.payload.attemptNumber} started")

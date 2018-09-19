@@ -15,7 +15,7 @@ class BuildMetricsHandler: EventHandler {
     override fun handle(ctx: ServiceMessageContext) =
         if (ctx.event.payload is BazelEvent && ctx.event.payload.content is BuildMetrics) {
             val event = ctx.event.payload.content
-            if (ctx.verbosity.atLeast(Verbosity.Detailed)) {
+            if (ctx.verbosity.atLeast(Verbosity.Verbose)) {
                 ctx.onNext(ctx.messageFactory.createMessage(
                         ctx.buildMessage()
                                 .append("Actions created: ${event.actionsCreated}".apply(Color.Details))
