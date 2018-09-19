@@ -5,4 +5,5 @@
        default-autowire="constructor">
     <bean class="jetbrains.buildServer.bazel.BazelRunnerRunType"/>
     <bean class="jetbrains.buildServer.bazel.BazelRunnerDiscoveryExtension"/>
+    <bean class="jetbrains.buildServer.bazel.fetchers.BazelTargetFetcher"/>
 </beans>
