@@ -13,12 +13,6 @@ class BazelOptions(args: Array<String>) {
         _line = parser.parse(options, args)
     }
 
-    fun printHelp() {
-        // automatically generate the help statement
-        val formatter = HelpFormatter()
-        formatter.printHelp("java -jar plugin-bazel-event-service.jar [args]", options)
-    }
-
     val verbosity: Verbosity
         get() = _line
                 .getOptionValue("l")
@@ -31,6 +25,9 @@ class BazelOptions(args: Array<String>) {
     val port: Int get() = _line.getOptionValue("p")?.toInt() ?: 0
 
     companion object {
+        private val options = createOptions()
+        private val parser: CommandLineParser = org.apache.commons.cli.DefaultParser()
+
         private fun createOptions(): Options {
             val options = Options()
             options.addOption("l", "logging", true, "The logging level (Quiet, Normal, Detailed, Verbose, Trace). Optional and Normal by default.")
@@ -38,7 +35,10 @@ class BazelOptions(args: Array<String>) {
             return options
         }
 
-        private val options = createOptions()
-        private val parser: CommandLineParser = org.apache.commons.cli.GnuParser()
+        fun printHelp() {
+            // automatically generate the help statement
+            val formatter = HelpFormatter()
+            formatter.printHelp("java -jar plugin-bazel-event-service.jar [args]", options)
+        }
     }
 }

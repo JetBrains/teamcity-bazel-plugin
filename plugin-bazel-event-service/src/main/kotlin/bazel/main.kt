@@ -12,15 +12,15 @@ import java.util.logging.Logger
 @Throws(IOException::class, InterruptedException::class)
 fun main(args: Array<String>) {
     val logger = Logger.getLogger("main")
-    val bazelOptions = BazelOptions(args)
     val port: Int
     val verbosity: Verbosity
     try {
+        val bazelOptions = BazelOptions(args)
         port = bazelOptions.port
         verbosity = bazelOptions.verbosity
     } catch (ex: Exception) {
-        logger.severe(ex.toString())
-        bazelOptions.printHelp()
+        logger.severe(ex.message)
+        BazelOptions.printHelp()
         System.exit(1)
         return
     }

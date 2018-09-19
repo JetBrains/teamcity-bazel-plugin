@@ -26,7 +26,6 @@ class BesRunnerBuildService(
     }
 
     override fun makeProgramCommandLine(): ProgramCommandLine {
-        val systemProperties = _parametersService.getParameterNames(ParameterType.System).associate { it to _parametersService.tryGetParameter(ParameterType.System, it) }
         val environmentVariables = _parametersService.getParameterNames(ParameterType.Environment).associate { it to _parametersService.tryGetParameter(ParameterType.Environment, it) }
         val explicitJavaHome: String = _parametersService.tryGetParameter(ParameterType.Runner, JavaRunnerConstants.TARGET_JDK_HOME) ?: ""
         val propsAndVars = environmentVariables + systemProperties
@@ -37,7 +36,7 @@ class BesRunnerBuildService(
         val pluginDir = _pathsService.getPath(PathType.Plugin)
         val jarFile = File(File(pluginDir, "tools"), "plugin-bazel-event-service.jar")
 
-        val besArgs = sequenceOf("-jar", jarFile.absolutePath) + JavaRunnerUtil.makeParamListFromProps(systemProperties)
+        val besArgs = sequenceOf("-jar", jarFile.absolutePath)
         return createProgramCommandline(javaExecutable.absolutePath, besArgs.toList())
     }
 

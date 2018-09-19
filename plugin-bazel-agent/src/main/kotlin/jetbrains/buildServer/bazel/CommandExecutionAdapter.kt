@@ -7,6 +7,7 @@
 
 package jetbrains.buildServer.bazel
 
+import com.intellij.openapi.diagnostic.Logger
 import devteam.rx.Disposable
 import devteam.rx.subscribe
 import jetbrains.buildServer.SimpleCommandLineProcessRunner
@@ -24,6 +25,8 @@ class CommandExecutionAdapter(
     private var _port: Int = 0
     private val _processListeners by lazy { _bazelRunnerBuildService.listeners }
 
+    private val besIsStarted get() = _port != 0
+
     var result: BuildFinishedStatus? = null
         private set
 
@@ -31,7 +34,13 @@ class CommandExecutionAdapter(
 
     override fun makeProgramCommandLine(): ProgramCommandLine {
         val commandLine = _bazelRunnerBuildService.makeProgramCommandLine()
-        commandLine.arguments.add("--bes_backend=localhost:$_port")
+        if (besIsStarted) {
+            LOG.info("BES was started at port $_port")
+            commandLine.arguments.add("--bes_backend=localhost:$_port")
+        } else {
+            LOG.warn("BES was not started")
+        }
+
         return commandLine
     }
 
@@ -46,7 +55,7 @@ class CommandExecutionAdapter(
                         is StdOutProcessEvent -> {
                             val text = it.stdOutText
                             if (_port == 0) {
-                                _port = portRegex.find(text)?.groups?.get(1)?.value?.toInt() ?: 0
+                                _port = portRegex.find(text)?.groups?.get(1)?.value?.toIntOrNull() ?: 0
                                 if (_port != 0) {
                                     synchronized(lockObject) {
                                         lockObject.notifyAll()
@@ -61,12 +70,18 @@ class CommandExecutionAdapter(
                     }
                 },
                 {
+                    synchronized(lockObject) {
+                        lockObject.notifyAll()
+                    }
                 },
                 {
+                    synchronized(lockObject) {
+                        lockObject.notifyAll()
+                    }
                 })
 
         synchronized(lockObject) {
-            lockObject.wait()
+            lockObject.wait(defaultOutputIdleSecondsTimeout.toLong())
         }
 
         _bazelRunnerBuildService.beforeProcessStarted()
@@ -79,11 +94,15 @@ class CommandExecutionAdapter(
     }
 
     override fun onStandardOutput(text: String) {
-        onStandardOutputInternal("> $text$")
+        if (!besIsStarted) {
+            onStandardOutputInternal("$text$")
+        }
     }
 
     override fun onErrorOutput(text: String) {
-        onErrorOutputInternal("> $text$")
+        if (!besIsStarted) {
+            onStandardOutputInternal("$text$")
+        }
     }
 
     override fun interruptRequested(): TerminationAction {
@@ -131,6 +150,7 @@ class CommandExecutionAdapter(
     }
 
     companion object {
+        private val LOG = Logger.getInstance(CommandExecutionAdapter::class.java.name)
         private const val defaultOutputIdleSecondsTimeout = 60000
         private val portRegex = ".*BES:\\s(\\d+).*?".toRegex()
     }
