@@ -14,18 +14,20 @@ class OutputStreamToObserverAdapter(
     private val _subject = subjectOf<ProcessEvent>()
 
     override fun write(array: ByteArray?, off: Int, len: Int) {
+        super.write(array, off, len)
+
         if (array == null) {
             return
         }
 
         try {
-            val text = StringUtil.convertLineSeparators(String(array, off, len, charset))
+            val text = _lastLine + StringUtil.convertLineSeparators(String(array, off, len, charset))
+            _lastLine = ""
             var pos = 0;
             do {
                 val index = text.indexOf('\n', pos)
                 if (index >= 0) {
-                    val line = _lastLine + text.substring(pos, index - 1)
-                    _lastLine = ""
+                    val line = text.substring(pos, index)
                     pos = index + 1
 
                     @Suppress("NON_EXHAUSTIVE_WHEN")
@@ -34,7 +36,8 @@ class OutputStreamToObserverAdapter(
                         ProcessEventType.StdErr -> _subject.onNext(StdErrProcessEvent(line))
                     }
                 } else {
-                    _lastLine = text.substring(pos, text.length - 1)
+                    _lastLine = text.substring(pos, text.length)
+                    pos = text.length
                 }
             } while (pos < text.length)
         } catch (e: UnsupportedEncodingException) {

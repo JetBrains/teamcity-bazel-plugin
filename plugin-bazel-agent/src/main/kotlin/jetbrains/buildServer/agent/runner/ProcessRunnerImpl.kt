@@ -16,30 +16,25 @@ class ProcessRunnerImpl : ProcessRunner {
         besGeneralCommandLine.envParams = commandLine.environment
         besGeneralCommandLine.setWorkDirectory(commandLine.workingDirectory)
         val process = besGeneralCommandLine.createProcess()
-        val stdErr = OutputStreamToObserverAdapter(4096, ProcessEventType.StdErr)
-        val stdOut = OutputStreamToObserverAdapter(4096, ProcessEventType.StdOut)
+        val stdErr = OutputStreamToObserverAdapter(8192, ProcessEventType.StdErr)
+        val stdOut = OutputStreamToObserverAdapter(8192, ProcessEventType.StdOut)
         val errGobbler = StreamGobbler(process.errorStream, null, title, stdErr)
         val outGobbler = StreamGobbler(process.inputStream, null, title, stdOut)
-        var exitCode = 0
+        errGobbler.start()
+        outGobbler.start()
+        val subscription = disposableOf(stdErr.subscribe(this), stdOut.subscribe(this))
 
         disposableOf(
                 disposableOf {
                     try {
-                        exitCode = CommandLineExecutor.waitForProcess(process, title, errGobbler, outGobbler, idleTimeoutSeconds)
-                    } catch (error: Exception) {
-                        this.onError(error)
-                    }
-                },
-                stdErr.subscribe(this),
-                stdOut.subscribe(this),
-                disposableOf {
-                    try {
+                        val exitCode = CommandLineExecutor.waitForProcess(process, title, errGobbler, outGobbler, idleTimeoutSeconds)
                         this.onNext(ExitCodeProcessEvent(exitCode))
                         this.onCompleted()
                     } catch (error: Exception) {
                         this.onError(error)
                     }
-                })
+                },
+                subscription)
     }
 
     companion object {

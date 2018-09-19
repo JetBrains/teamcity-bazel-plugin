@@ -10,7 +10,6 @@ package jetbrains.buildServer.bazel
 import jetbrains.buildServer.agent.BuildFinishedStatus
 import jetbrains.buildServer.agent.runner.CommandExecution
 import jetbrains.buildServer.agent.runner.MultiCommandBuildSession
-import kotlin.coroutines.experimental.buildIterator
 
 /**
  * Bazel runner service.
@@ -19,28 +18,21 @@ class BazelCommandBuildSession(
         private val _commandExecutionAdapter: CommandExecutionAdapter)
     : MultiCommandBuildSession {
 
-    private var buildSteps: Iterator<CommandExecution>? = null
-    private var lastCommands = arrayListOf<CommandExecutionAdapter>()
+    private var _commandsIterator: Iterator<CommandExecution> = emptySequence<CommandExecution>().iterator()
 
     override fun sessionStarted() {
-        buildSteps = getSteps()
+        _commandsIterator = sequenceOf(_commandExecutionAdapter).iterator()
     }
 
     override fun getNextCommand(): CommandExecution? {
-        buildSteps?.let {
-            if (it.hasNext()) {
-                return it.next()
-            }
+        if (_commandsIterator.hasNext()) {
+            return _commandsIterator.next()
         }
 
         return null
     }
 
     override fun sessionFinished(): BuildFinishedStatus? {
-        return lastCommands.last().result
-    }
-
-    private fun getSteps() = buildIterator<CommandExecution> {
-        yield(_commandExecutionAdapter)
+        return _commandExecutionAdapter.result
     }
 }
