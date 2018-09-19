@@ -20,7 +20,11 @@ class BazelTargetFetcher : ProjectDataFetcher {
             fsBrowser.root
         } else {
             fsBrowser.getElement(workingDir)
-        }) ?: return arrayListOf()
+        })
+
+        if (directory == null || directory.isLeaf) {
+            return arrayListOf()
+        }
 
         return processDirectory(directory, normalizePath(workingDir)).map {
             DataItem(it, null)
@@ -28,34 +32,31 @@ class BazelTargetFetcher : ProjectDataFetcher {
     }
 
     private fun processDirectory(directory: Element, workingDir: String): Sequence<String> = buildSequence {
-        if (directory.isLeaf) {
-            return@buildSequence
-        }
-
         val targetPath = normalizePath(directory.fullName.substring(workingDir.length))
         if (targetPath.split('/').size > analysisDepth) {
             return@buildSequence
         }
 
-        val build = (directory.browser.getElement("${directory.fullName}/BUILD")
-                ?: directory.browser.getElement("${directory.fullName}/BUILD.bazel"))
-
-        if (build != null && build.isContentAvailable) {
-            yieldAll(BazelFileParser.readTargets(build.inputStream).map { target ->
-                if (targetPath.isEmpty()) {
-                    ":$target"
-                } else {
-                    "//$targetPath:$target"
-                }
-            })
-        }
-
-        directory.children?.forEach {
-            yieldAll(processDirectory(it, workingDir))
+        directory.children?.forEach { element ->
+            if (BUILD_FILE_NAME.matches(element.name) && element.isContentAvailable) {
+                yieldAll(BazelFileParser.readTargets(element.inputStream).map { target ->
+                    if (targetPath.isEmpty()) {
+                        ":$target"
+                    } else {
+                        "//$targetPath:$target"
+                    }
+                })
+            } else if (!element.isLeaf) {
+                yieldAll(processDirectory(element, workingDir))
+            }
         }
     }
 
     private fun normalizePath(path: String): String {
         return path.trim().replace('\\', '/').trimStart('/')
+    }
+
+    companion object {
+        private val BUILD_FILE_NAME = Regex("BUILD(\\.bazel)?")
     }
 }
