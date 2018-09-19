@@ -2,6 +2,7 @@ package bazel
 
 import org.apache.commons.cli.CommandLine
 import org.apache.commons.cli.CommandLineParser
+import org.apache.commons.cli.DefaultParser
 import org.apache.commons.cli.HelpFormatter
 import org.apache.commons.cli.Options
 
@@ -10,7 +11,7 @@ class BazelOptions(args: Array<String>) {
     private var _line: CommandLine
 
     init {
-        _line = parser.parse(options, args)
+        _line = parser.parse(options, args, true)
     }
 
     val verbosity: Verbosity
@@ -26,7 +27,7 @@ class BazelOptions(args: Array<String>) {
 
     companion object {
         private val options = createOptions()
-        private val parser: CommandLineParser = org.apache.commons.cli.DefaultParser()
+        private val parser: CommandLineParser = DefaultParser()
 
         private fun createOptions(): Options {
             val options = Options()
