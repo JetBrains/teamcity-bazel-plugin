@@ -65,10 +65,14 @@ class BazelRunnerRunType(private val myPluginDescriptor: PluginDescriptor,
             }
         }
         parameters[BazelConstants.PARAM_ARGUMENTS]?.let {
-            builder.append(" $it")
+            if (it.isNotBlank()) {
+                builder.append(" $it")
+            }
         }
         parameters[BazelConstants.PARAM_WORKING_DIR]?.let {
-            builder.append("\n").append("Working directory: $it")
+            if (it.isNotBlank()) {
+                builder.append("\n").append("Working directory: $it")
+            }
         }
         return builder.toString()
     }
