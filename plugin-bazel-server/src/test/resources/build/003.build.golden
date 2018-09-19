@@ -1,0 +1,21 @@
+cc_test(
+    name = "bar",
+    size = "small",
+    srcs = [
+        "a.cc",
+        "b.cc",
+        "c.cc",
+    ],
+    data = ["datum"],
+    datum = ["data"],
+    deps = [
+        ":foo",
+        "//base",
+        "//util:map-util",
+    ],
+)
+
+java_binary(
+    name = "ProjectRunner",
+    srcs = glob(["src/main/java/com/example/*.java"]),
+)
