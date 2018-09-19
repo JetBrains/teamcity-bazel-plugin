@@ -38,4 +38,7 @@ class BazelParametersProvider {
 
     val runTargetKey: String
         get() = BazelConstants.PARAM_RUN_TARGET
+
+    val argumentsKey: String
+        get() = BazelConstants.PARAM_ARGUMENTS
 }

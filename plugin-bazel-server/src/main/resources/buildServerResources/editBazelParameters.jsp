@@ -17,3 +17,12 @@
         </props:selectSectionPropertyContent>
     </c:forEach>
 </props:selectSectionProperty>
+
+<tr class="advancedSetting">
+    <th><label for="${params.argumentsKey}">Command line parameters:</label></th>
+    <td>
+        <props:textProperty name="${params.argumentsKey}" className="longField" expandable="true"/>
+        <span class="error" id="error_${params.argumentsKey}"></span>
+        <span class="smallNote">Enter additional command line parameters for bazel.</span>
+    </td>
+</tr>

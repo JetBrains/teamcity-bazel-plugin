@@ -24,6 +24,7 @@ object BazelConstants {
     const val COMMAND_RUN = "run"
     const val COMMAND_TEST = "test"
 
+    const val PARAM_ARGUMENTS = "arguments"
     const val PARAM_COMMAND = "bazel-command"
     const val PARAM_BUILD_TARGET = "bazel-build-target"
     const val PARAM_CLEAN_TARGET = "bazel-clean-target"
