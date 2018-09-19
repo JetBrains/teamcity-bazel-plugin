@@ -3,7 +3,7 @@ package bazel.bazel.handlers
 import bazel.HandlerPriority
 import bazel.bazel.events.Progress
 
-class ProgressHandler: BazelHandler {
+class ProgressHandler : BazelHandler {
     override val priority = HandlerPriority.High
 
     override fun handle(ctx: HandlerContext) =

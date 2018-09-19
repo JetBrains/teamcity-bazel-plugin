@@ -3,7 +3,7 @@ package bazel.bazel.handlers
 import bazel.HandlerPriority
 import bazel.bazel.events.BuildFinished
 
-class BuildFinishedHandler: BazelHandler {
+class BuildFinishedHandler : BazelHandler {
     override val priority = HandlerPriority.Low
 
     override fun handle(ctx: HandlerContext) =

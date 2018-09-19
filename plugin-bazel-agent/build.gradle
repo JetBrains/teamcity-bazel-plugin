@@ -1,30 +1,30 @@
 plugins {
-    id 'com.github.rodm.teamcity-agent' version "1.0"
+  id 'com.github.rodm.teamcity-agent' version "1.0"
 }
 
 teamcity {
-    version = teamcityVersion
-    agent {
-        descriptor = project.file('teamcity-plugin.xml')
-        files {
-            into('tools') {
-                from('./../plugin-bazel-event-service/build/libs')
-                from('./../plugin-bazel-event-service/build/tools')
-            }
-        }
+  version = teamcityVersion
+  agent {
+    descriptor = project.file('teamcity-plugin.xml')
+    files {
+      into('tools') {
+        from('./../plugin-bazel-event-service/build/libs')
+        from('./../plugin-bazel-event-service/build/tools')
+      }
     }
+  }
 }
 
 dependencies {
-    compile project(':plugin-bazel-common')
-    compile project(':rx')
-    compile "org.jetbrains.kotlin:kotlin-stdlib"
-    compile "com.github.zafarkhaja:java-semver:0.9.0"
-    provided "org.jetbrains.teamcity.internal:agent:${teamcityVersion}"
-    provided "org.jetbrains.teamcity:common-api:${teamcityVersion}"
-    implementation project(':plugin-bazel-event-service')
-    testCompile 'org.testng:testng:6.8'
-    testCompile 'org.jmock:jmock:2.5.1'
+  compile project(':plugin-bazel-common')
+  compile project(':rx')
+  compile "org.jetbrains.kotlin:kotlin-stdlib"
+  compile "com.github.zafarkhaja:java-semver:0.9.0"
+  provided "org.jetbrains.teamcity.internal:agent:${teamcityVersion}"
+  provided "org.jetbrains.teamcity:common-api:${teamcityVersion}"
+  implementation project(':plugin-bazel-event-service')
+  testCompile 'org.testng:testng:6.8'
+  testCompile 'org.jmock:jmock:2.5.1'
 }
 
 agentPlugin.version = null

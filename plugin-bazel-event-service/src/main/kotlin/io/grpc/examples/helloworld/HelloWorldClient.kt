@@ -29,8 +29,7 @@ import java.util.logging.Logger
 class HelloWorldClient
 /** Construct client for accessing RouteGuide server using the existing channel.  */
 internal constructor(private val channel: ManagedChannel) {
-    private val blockingStub: GreeterGrpc.GreeterBlockingStub
-            = GreeterGrpc.newBlockingStub(channel)
+    private val blockingStub: GreeterGrpc.GreeterBlockingStub = GreeterGrpc.newBlockingStub(channel)
 
     /** Construct client connecting to HelloWorld server at `host:port`.  */
     constructor(host: String, port: Int) : this(ManagedChannelBuilder.forAddress(host, port)
@@ -50,7 +49,7 @@ internal constructor(private val channel: ManagedChannel) {
     fun greet(name: String) {
         logger.log(Level.INFO, "Will try to greet {0}...", name)
         val request = HelloRequest.newBuilder().setName(name).build()
-        val response: HelloReply =  try {
+        val response: HelloReply = try {
             blockingStub.sayHello(request)
         } catch (e: StatusRuntimeException) {
             logger.log(Level.WARNING, "RPC failed: {0}", e.status)

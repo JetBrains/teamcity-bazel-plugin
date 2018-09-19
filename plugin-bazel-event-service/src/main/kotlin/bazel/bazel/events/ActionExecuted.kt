@@ -20,4 +20,4 @@ data class ActionExecuted(
         // Location where to find the standard error of the action (e.g., a file path).
         val stderr: File,
         // The exit code of the action, if it is available.
-        val exitCode: Int): BazelContent
+        val exitCode: Int) : BazelContent

@@ -4,7 +4,7 @@ import bazel.HandlerPriority
 import bazel.events.BuildEnqueued
 import bazel.events.OrderedBuildEvent
 
-class BuildEnqueuedHandler: EventHandler {
+class BuildEnqueuedHandler : EventHandler {
     override val priority: HandlerPriority = HandlerPriority.Medium
 
     override fun handle(ctx: HandlerContext): OrderedBuildEvent =

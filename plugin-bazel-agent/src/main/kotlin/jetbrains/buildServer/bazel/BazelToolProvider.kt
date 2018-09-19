@@ -21,7 +21,7 @@ import java.io.File
  * Determines bazel tool location.
  */
 class BazelToolProvider(toolsRegistry: ToolProvidersRegistry,
-                                 events: EventDispatcher<AgentLifeCycleListener>)
+                        events: EventDispatcher<AgentLifeCycleListener>)
     : AgentLifeCycleAdapter(), ToolProvider {
 
 

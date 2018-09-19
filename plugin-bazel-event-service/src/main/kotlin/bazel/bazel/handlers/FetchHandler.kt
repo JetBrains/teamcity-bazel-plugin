@@ -2,9 +2,8 @@ package bazel.bazel.handlers
 
 import bazel.HandlerPriority
 import bazel.bazel.events.Fetch
-import com.google.devtools.build.lib.buildeventstream.BuildEventStreamProtos
 
-class FetchHandler: BazelHandler {
+class FetchHandler : BazelHandler {
     override val priority = HandlerPriority.Medium
 
     override fun handle(ctx: HandlerContext) =

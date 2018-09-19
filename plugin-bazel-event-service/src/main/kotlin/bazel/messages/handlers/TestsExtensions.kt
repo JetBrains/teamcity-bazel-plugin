@@ -4,7 +4,7 @@ import bazel.bazel.events.TestStatus
 import bazel.messages.Color
 
 fun TestStatus.toColor() =
-        when(this) {
+        when (this) {
             TestStatus.Passed
             -> Color.Success
 

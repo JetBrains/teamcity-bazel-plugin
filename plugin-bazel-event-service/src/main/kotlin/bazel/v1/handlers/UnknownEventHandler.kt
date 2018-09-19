@@ -6,7 +6,7 @@ import bazel.events.UnknownEvent
 import java.util.logging.Level
 import java.util.logging.Logger
 
-class UnknownEventHandler: EventHandler {
+class UnknownEventHandler : EventHandler {
     override val priority: HandlerPriority = HandlerPriority.Last
 
     override fun handle(ctx: HandlerContext): OrderedBuildEvent {

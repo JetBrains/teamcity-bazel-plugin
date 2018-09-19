@@ -3,7 +3,8 @@ package bazel.messages
 import bazel.Event
 import bazel.Verbosity
 import bazel.atLeast
-import bazel.events.*
+import bazel.events.InvocationAttemptFinished
+import bazel.events.OrderedBuildEvent
 import bazel.messages.handlers.*
 import devteam.rx.*
 import jetbrains.buildServer.messages.serviceMessages.ServiceMessage
@@ -78,8 +79,7 @@ class ControllerSubject(
 
     private class Stream(
             val subject: ServiceMessageSubject,
-            private val _subscription: Disposable): Disposable
-    {
+            private val _subscription: Disposable) : Disposable {
         override fun dispose() {
             _subscription.dispose()
             subject.dispose()

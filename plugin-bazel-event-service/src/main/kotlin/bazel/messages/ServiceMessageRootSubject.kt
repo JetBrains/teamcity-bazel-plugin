@@ -7,7 +7,7 @@ import devteam.rx.Disposable
 import devteam.rx.Observer
 import jetbrains.buildServer.messages.serviceMessages.ServiceMessage
 
-class ServiceMessageRootSubject(private val _streamsSubject: ServiceMessageSubject): ServiceMessageSubject {
+class ServiceMessageRootSubject(private val _streamsSubject: ServiceMessageSubject) : ServiceMessageSubject {
     override fun onNext(value: Event<OrderedBuildEvent>) {
         _streamsSubject.onNext(value)
 

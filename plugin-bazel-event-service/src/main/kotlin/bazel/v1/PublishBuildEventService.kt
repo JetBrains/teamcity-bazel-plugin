@@ -6,14 +6,17 @@ import bazel.toObserver
 import bazel.toStreamObserver
 import com.google.devtools.build.v1.*
 import com.google.protobuf.Empty
-import devteam.rx.*
+import devteam.rx.Disposable
+import devteam.rx.Observer
+import devteam.rx.emptyObserver
+import devteam.rx.subjectOf
 import io.grpc.stub.StreamObserver
 import java.util.concurrent.atomic.AtomicReference
 import java.util.logging.Level
 import java.util.logging.Logger
 
 internal class PublishBuildEventService
-    : PublishBuildEventGrpc.PublishBuildEventImplBase(), BindableEventService<OrderedBuildEvent>{
+    : PublishBuildEventGrpc.PublishBuildEventImplBase(), BindableEventService<OrderedBuildEvent> {
 
     private val _eventSubject = subjectOf<Event<OrderedBuildEvent>>()
     private val _projectId = AtomicReference<String>("")

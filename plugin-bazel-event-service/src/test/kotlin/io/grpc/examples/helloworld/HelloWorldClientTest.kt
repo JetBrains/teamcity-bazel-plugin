@@ -16,23 +16,22 @@
 
 package io.grpc.examples.helloworld
 
-import org.junit.Assert.assertEquals
-import org.mockito.AdditionalAnswers.delegatesTo
-import org.mockito.Mockito.mock
-import org.mockito.Mockito.verify
-
 
 import io.grpc.inprocess.InProcessChannelBuilder
 import io.grpc.inprocess.InProcessServerBuilder
 import io.grpc.stub.StreamObserver
 import io.grpc.testing.GrpcCleanupRule
+import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
+import org.mockito.AdditionalAnswers.delegatesTo
 import org.mockito.ArgumentCaptor
 import org.mockito.Matchers
+import org.mockito.Mockito.mock
+import org.mockito.Mockito.verify
 
 /**
  * Unit tests for [HelloWorldClient].

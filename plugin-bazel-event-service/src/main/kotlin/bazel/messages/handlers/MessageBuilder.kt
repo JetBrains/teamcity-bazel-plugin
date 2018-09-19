@@ -27,7 +27,7 @@ class MessageBuilder(
     }
 
     fun append(text: String, verbosity: Verbosity = _serviceMessageContext.verbosity): MessageBuilder {
-        if(_serviceMessageContext.verbosity.atLeast(verbosity)) {
+        if (_serviceMessageContext.verbosity.atLeast(verbosity)) {
             this._text.append(text)
         }
 

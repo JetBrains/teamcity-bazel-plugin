@@ -16,12 +16,11 @@
 
 package io.grpc.examples.helloworld
 
-import org.junit.Assert.assertEquals
-
 import io.grpc.examples.helloworld.HelloWorldServer.GreeterImpl
 import io.grpc.inprocess.InProcessChannelBuilder
 import io.grpc.inprocess.InProcessServerBuilder
 import io.grpc.testing.GrpcCleanupRule
+import org.junit.Assert.assertEquals
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith

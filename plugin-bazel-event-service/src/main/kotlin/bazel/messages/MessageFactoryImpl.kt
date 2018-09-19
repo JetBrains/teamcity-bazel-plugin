@@ -20,7 +20,7 @@ class MessageFactoryImpl : MessageFactory {
             FlowFinished(flowId)
 
     override fun createBuildStatus(text: String, success: Boolean) =
-            BuildStatus(text.clean(), if(success) Normal else Error)
+            BuildStatus(text.clean(), if (success) Normal else Error)
 
     override fun createBuildProblem(description: String, projectId: String, errorId: String) =
             BuildProblem(description.clean(), "$projectId-$errorId".take(60))

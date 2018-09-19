@@ -23,7 +23,7 @@ class OutputStreamToObserverAdapter(
         try {
             val text = _lastLine + StringUtil.convertLineSeparators(String(array, off, len, charset))
             _lastLine = ""
-            var pos = 0;
+            var pos = 0
             do {
                 val index = text.indexOf('\n', pos)
                 if (index >= 0) {

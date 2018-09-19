@@ -4,9 +4,9 @@ import bazel.Converter
 import bazel.bazel.events.AbortReason
 import com.google.devtools.build.lib.buildeventstream.BuildEventStreamProtos
 
-class AbortReasonConverter: Converter<BuildEventStreamProtos.Aborted.AbortReason, AbortReason> {
+class AbortReasonConverter : Converter<BuildEventStreamProtos.Aborted.AbortReason, AbortReason> {
     override fun convert(source: BuildEventStreamProtos.Aborted.AbortReason) =
-            when(source.number) {
+            when (source.number) {
                 1 -> AbortReason.UserInterrupted
                 8 -> AbortReason.NoAnalyze
                 9 -> AbortReason.NoBuild

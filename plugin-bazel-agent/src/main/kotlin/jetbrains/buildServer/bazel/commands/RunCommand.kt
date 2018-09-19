@@ -16,7 +16,7 @@ import kotlin.coroutines.experimental.buildSequence
 /**
  * Provides arguments to bazel run command.
  */
-class RunArgumentsProvider(
+class RunCommand(
         private val _parametersService: ParametersService)
     : BazelCommand {
 

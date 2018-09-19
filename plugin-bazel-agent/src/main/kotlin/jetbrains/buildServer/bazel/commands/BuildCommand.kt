@@ -14,17 +14,17 @@ import jetbrains.buildServer.bazel.BazelConstants
 import kotlin.coroutines.experimental.buildSequence
 
 /**
- * Provides arguments to bazel test command.
+ * Provides arguments to bazel build command.
  */
-class TestArgumentsProvider(
+class BuildCommand(
         private val _parametersService: ParametersService)
     : BazelCommand {
 
-    override val command: String = BazelConstants.COMMAND_TEST
+    override val command: String = BazelConstants.COMMAND_BUILD
 
     override val arguments: Sequence<String>
         get() = buildSequence {
-            _parametersService.tryGetParameter(ParameterType.Runner, BazelConstants.PARAM_TEST_TARGET)?.let {
+            _parametersService.tryGetParameter(ParameterType.Runner, BazelConstants.PARAM_BUILD_TARGET)?.let {
                 if (!it.isBlank()) {
                     yield(it)
                 }

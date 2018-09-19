@@ -13,7 +13,7 @@ class ServiceMessageContext(
         val event: Event<OrderedBuildEvent>,
         val messageFactory: MessageFactory,
         val blockManager: BlockManager,
-        val verbosity: Verbosity): Observer<ServiceMessage> {
+        val verbosity: Verbosity) : Observer<ServiceMessage> {
     override fun onNext(value: ServiceMessage) = _observer.onNext(value)
 
     override fun onError(error: Exception) = _observer.onError(error)

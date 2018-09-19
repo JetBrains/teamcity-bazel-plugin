@@ -4,9 +4,9 @@ import bazel.Converter
 import bazel.bazel.events.TestStatus
 import com.google.devtools.build.lib.buildeventstream.BuildEventStreamProtos
 
-class TestStatusConverter: Converter<BuildEventStreamProtos.TestStatus, TestStatus> {
+class TestStatusConverter : Converter<BuildEventStreamProtos.TestStatus, TestStatus> {
     override fun convert(source: BuildEventStreamProtos.TestStatus) =
-            when(source.number) {
+            when (source.number) {
                 1 -> TestStatus.Passed
                 2 -> TestStatus.Flaky
                 3 -> TestStatus.Timeout

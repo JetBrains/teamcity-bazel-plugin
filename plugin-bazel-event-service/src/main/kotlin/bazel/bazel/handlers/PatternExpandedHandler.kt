@@ -3,7 +3,7 @@ package bazel.bazel.handlers
 import bazel.HandlerPriority
 import bazel.bazel.events.PatternExpanded
 
-class PatternExpandedHandler: BazelHandler {
+class PatternExpandedHandler : BazelHandler {
     override val priority = HandlerPriority.Medium
 
     override fun handle(ctx: HandlerContext) =

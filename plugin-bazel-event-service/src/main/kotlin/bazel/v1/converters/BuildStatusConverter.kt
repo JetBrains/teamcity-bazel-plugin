@@ -4,7 +4,7 @@ import bazel.Converter
 import bazel.events.Result
 import com.google.devtools.build.v1.BuildStatus
 
-class BuildStatusConverter: Converter<BuildStatus, Result> {
+class BuildStatusConverter : Converter<BuildStatus, Result> {
     override fun convert(source: com.google.devtools.build.v1.BuildStatus) =
             Result(
                     when (source.resultValue) {

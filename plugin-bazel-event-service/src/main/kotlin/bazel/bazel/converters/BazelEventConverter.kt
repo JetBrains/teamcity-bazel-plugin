@@ -1,14 +1,16 @@
 package bazel.bazel.converters
 
 import bazel.Converter
-import bazel.bazel.events.*
+import bazel.bazel.events.BazelContent
+import bazel.bazel.events.BazelUnknownContent
+import bazel.bazel.events.Id
 import bazel.bazel.handlers.*
 import com.google.devtools.build.lib.buildeventstream.BuildEventStreamProtos
 import com.google.protobuf.Any
 import java.util.logging.Level
 import java.util.logging.Logger
 
-class BazelEventConverter: Converter<Any, BazelContent> {
+class BazelEventConverter : Converter<Any, BazelContent> {
     override fun convert(source: com.google.protobuf.Any): BazelContent {
         val className = source.typeUrl.replace("type.googleapis.com/build_event_stream.", "")
         return when (className) {

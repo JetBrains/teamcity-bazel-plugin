@@ -5,7 +5,6 @@ import devteam.rx.disposableOf
 import io.grpc.Attributes
 import io.grpc.ServerBuilder
 import io.grpc.ServerTransportFilter
-import jetbrains.buildServer.agentServer.Server
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.logging.Level
 import java.util.logging.Logger

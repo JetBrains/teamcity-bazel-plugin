@@ -8,4 +8,4 @@ package bazel.bazel.events
 class PatternExpanded(
         override val id: Id,
         override val children: List<Id>,
-        val patterns: List<String>): BazelContent
+        val patterns: List<String>) : BazelContent
