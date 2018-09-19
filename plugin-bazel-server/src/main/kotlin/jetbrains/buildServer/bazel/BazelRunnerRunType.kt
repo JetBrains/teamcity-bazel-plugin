@@ -53,7 +53,24 @@ class BazelRunnerRunType(private val myPluginDescriptor: PluginDescriptor,
     }
 
     override fun describeParameters(parameters: Map<String, String>): String {
-        return "bazel ${parameters[BazelConstants.PARAM_COMMAND]}"
+        val builder = StringBuilder("bazel")
+        parameters[BazelConstants.PARAM_COMMAND]?.let {
+            builder.append(" $it")
+            when(it) {
+                BazelConstants.COMMAND_BUILD -> builder.append(" ${parameters[BazelConstants.PARAM_BUILD_TARGET]}")
+                BazelConstants.COMMAND_CLEAN -> builder.append(" ${parameters[BazelConstants.PARAM_CLEAN_TARGET]}")
+                BazelConstants.COMMAND_RUN -> builder.append(" ${parameters[BazelConstants.PARAM_RUN_TARGET]}")
+                BazelConstants.COMMAND_TEST -> builder.append(" ${parameters[BazelConstants.PARAM_TEST_TARGET]}")
+                else -> {}
+            }
+        }
+        parameters[BazelConstants.PARAM_ARGUMENTS]?.let {
+            builder.append(" $it")
+        }
+        parameters[BazelConstants.PARAM_WORKING_DIR]?.let {
+            builder.append("\n").append("Working directory: $it")
+        }
+        return builder.toString()
     }
 
     override fun getRunnerSpecificRequirements(parameters: Map<String, String>): List<Requirement> {

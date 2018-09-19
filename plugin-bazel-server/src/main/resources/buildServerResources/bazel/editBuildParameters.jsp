@@ -10,7 +10,7 @@
     <th><label for="${params.buildTargetKey}">Target:</label></th>
     <td>
         <props:textProperty name="${params.buildTargetKey}" className="longField"/>
-        <bs:projectData type="BazelTargets" sourceFieldId="teamcity.build.workingDir"
+        <bs:projectData type="BazelTargets" sourceFieldId="${params.workingDirKey}"
                         targetFieldId="${params.buildTargetKey}" popupTitle="Select targets"
                         selectionMode="multiple"/>
         <span class="error" id="error_${params.buildTargetKey}"></span>

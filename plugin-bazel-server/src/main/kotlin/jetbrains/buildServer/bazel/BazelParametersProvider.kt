@@ -21,6 +21,9 @@ class BazelParametersProvider {
             RunCommandType(),
             TestCommandType())
 
+    val workingDirKey: String
+        get() = BazelConstants.PARAM_WORKING_DIR
+
     val commandKey: String
         get() = BazelConstants.PARAM_COMMAND
 

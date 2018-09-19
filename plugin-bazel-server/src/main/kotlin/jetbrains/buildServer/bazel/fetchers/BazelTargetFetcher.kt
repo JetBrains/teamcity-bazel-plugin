@@ -1,5 +1,6 @@
 package jetbrains.buildServer.bazel.fetchers
 
+import jetbrains.buildServer.bazel.BazelConstants
 import jetbrains.buildServer.serverSide.DataItem
 import jetbrains.buildServer.serverSide.ProjectDataFetcher
 import jetbrains.buildServer.util.browser.Browser
@@ -38,7 +39,7 @@ class BazelTargetFetcher : ProjectDataFetcher {
         }
 
         directory.children?.forEach { element ->
-            if (BUILD_FILE_NAME.matches(element.name) && element.isContentAvailable) {
+            if (BazelConstants.BUILD_FILE_NAME.matches(element.name) && element.isContentAvailable) {
                 yieldAll(BazelFileParser.readTargets(element.inputStream).map { target ->
                     if (targetPath.isEmpty()) {
                         ":$target"
@@ -54,9 +55,5 @@ class BazelTargetFetcher : ProjectDataFetcher {
 
     private fun normalizePath(path: String): String {
         return path.trim().replace('\\', '/').trimStart('/')
-    }
-
-    companion object {
-        private val BUILD_FILE_NAME = Regex("BUILD(\\.bazel)?")
     }
 }

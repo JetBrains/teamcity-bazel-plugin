@@ -7,6 +7,8 @@
 
 package jetbrains.buildServer.bazel
 
+import jetbrains.buildServer.agent.AgentRuntimeProperties
+
 /**
  * Bazel runner constants.
  */
@@ -23,14 +25,12 @@ object BazelConstants {
     const val COMMAND_TEST = "test"
 
     const val PARAM_COMMAND = "bazel-command"
-
     const val PARAM_BUILD_TARGET = "bazel-build-target"
-
     const val PARAM_CLEAN_TARGET = "bazel-clean-target"
-
     const val PARAM_TEST_TARGET = "bazel-test-target"
-
     const val PARAM_RUN_TARGET = "bazel-run-target"
+    const val PARAM_WORKING_DIR = AgentRuntimeProperties.BUILD_WORKING_DIR
 
-    const val BUILD_FILE = "BUILD"
+    val BUILD_FILE_NAME = Regex("BUILD(\\.bazel)?")
+    const val WORKSPACE_FILE_NAME = "WORKSPACE"
 }
