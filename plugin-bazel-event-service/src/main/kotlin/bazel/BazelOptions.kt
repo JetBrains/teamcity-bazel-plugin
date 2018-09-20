@@ -1,10 +1,7 @@
 package bazel
 
-import org.apache.commons.cli.CommandLine
-import org.apache.commons.cli.CommandLineParser
-import org.apache.commons.cli.DefaultParser
-import org.apache.commons.cli.HelpFormatter
-import org.apache.commons.cli.Options
+import org.apache.commons.cli.*
+import java.io.File
 
 
 class BazelOptions(args: Array<String>) {
@@ -25,14 +22,17 @@ class BazelOptions(args: Array<String>) {
 
     val port: Int get() = _line.getOptionValue("p")?.toInt() ?: 0
 
+    val bazelCommandlineFile: File? get() = _line.getOptionValue("c")?.let { File(it) }
+
     companion object {
         private val options = createOptions()
-        private val parser: CommandLineParser = DefaultParser()
+        private val parser: CommandLineParser = GnuParser()
 
         private fun createOptions(): Options {
             val options = Options()
             options.addOption("l", "logging", true, "The logging level (Quiet, Normal, Detailed, Verbose, Trace). Optional and Normal by default.")
             options.addOption("p", "port", true, "Specifies the build event service (BES) backend endpoint PORT. Optional and Auto by default.")
+            options.addOption("c", "command", true, "Specifies the new line separated file containing bazel executable and its command line arguments.")
             return options
         }
 
