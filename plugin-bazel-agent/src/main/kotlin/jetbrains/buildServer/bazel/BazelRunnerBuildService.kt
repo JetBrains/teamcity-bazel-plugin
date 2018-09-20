@@ -10,7 +10,9 @@ package jetbrains.buildServer.bazel
 import jetbrains.buildServer.RunBuildException
 import jetbrains.buildServer.agent.ToolCannotBeFoundException
 import jetbrains.buildServer.agent.runner.*
+import jetbrains.buildServer.runner.JavaRunnerConstants
 import jetbrains.buildServer.util.StringUtil
+import java.io.File
 import kotlin.coroutines.experimental.buildSequence
 
 /**
@@ -19,6 +21,7 @@ import kotlin.coroutines.experimental.buildSequence
 class BazelRunnerBuildService(
         buildStepContext: BuildStepContext,
         bazelCommands: List<BazelCommand>,
+        private val _pathsService: PathsService,
         private val _parametersService: ParametersService,
         private val _argumentsSplitter: BazelArgumentsSplitter) : BuildServiceAdapter() {
 
@@ -45,8 +48,32 @@ class BazelRunnerBuildService(
             throw buildException
         }
 
-        val toolPath = getPath(BazelConstants.BAZEL_CONFIG_NAME)
-        return createProgramCommandline(toolPath, getArgs(command).toList())
+        val sb = StringBuilder()
+        sb.appendln(getPath(BazelConstants.BAZEL_CONFIG_NAME))
+        for (arg in getArgs(command)) {
+            sb.appendln(arg)
+        }
+
+        val bazelCommandFile = File(_pathsService.getPath(PathType.BuildTemp), _pathsService.uniqueName)
+        bazelCommandFile.writeText(sb.toString())
+
+        val explicitJavaHome: String = _parametersService.tryGetParameter(ParameterType.Runner, JavaRunnerConstants.TARGET_JDK_HOME) ?: ""
+        val propsAndVars = environmentVariables + systemProperties
+        val baseDir = _pathsService.getPath(PathType.Checkout).absolutePath
+        val javaHome = JavaRunnerUtil.findJavaHome(explicitJavaHome, propsAndVars, baseDir) ?: throw RunBuildException("Unable to find Java Home")
+        val javaExecutable = JavaRunnerUtil.findJavaExecutablePath(javaHome, propsAndVars, baseDir) ?: throw RunBuildException("Unable to find Java")
+
+        val pluginDir = _pathsService.getPath(PathType.Plugin)
+        val jarFile = File(File(pluginDir, "tools"), "plugin-bazel-event-service.jar")
+
+        val besArgs = mutableListOf<String>("-jar", jarFile.absolutePath, "-c=${bazelCommandFile.absolutePath}")
+        _parametersService.tryGetParameter(ParameterType.Runner, BazelConstants.PARAM_VERBOSITY)?.trim()?.let {
+            Verbosity.tryParse(it)?.let {
+                besArgs.add("-l=${it.id}")
+            }
+        }
+
+        return createProgramCommandline(javaExecutable.absolutePath, besArgs)
     }
 
     private fun getArgs(command: BazelCommand): Sequence<String> = buildSequence {
