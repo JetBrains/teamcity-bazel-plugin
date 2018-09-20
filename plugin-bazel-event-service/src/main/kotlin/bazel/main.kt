@@ -38,7 +38,7 @@ fun main(args: Array<String>) {
 
     val gRpcServer = GRpcServer(port)
     if (bazelCommandlineFile == null) {
-        System.out.println("BES: ${gRpcServer.port}")
+        System.out.println("BES Port: ${gRpcServer.port}")
     }
 
     try {
@@ -50,7 +50,11 @@ fun main(args: Array<String>) {
                 .subscribe { System.out.println(it) }
                 .use {
                     if (bazelCommandlineFile != null) {
-                        System.exit(BazelRunner(bazelCommandlineFile, gRpcServer.port).run())
+                        val bazelRunner = BazelRunner(bazelCommandlineFile, gRpcServer.port)
+                        val commandLine = bazelRunner.args.joinToString(" ") { if (it.contains(' ')) "\"$it\"" else it }
+                        System.out.println("Starting: $commandLine")
+                        System.out.println("in directory: ${bazelRunner.workingDirectory}")
+                        System.exit(bazelRunner.run())
                     }
                 }
     } catch (ex: Exception) {

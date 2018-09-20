@@ -4,13 +4,15 @@ import java.io.File
 
 class BazelRunner(
         bazelCommandlineFile: File,
-        besPort: Int) {
+        private val _besPort: Int) {
 
-    private var args: List<String> = bazelCommandlineFile.readLines() + listOf("--bes_backend=localhost:$besPort")
+    val args: List<String> = bazelCommandlineFile.readLines()
+
+    val workingDirectory = File(".").absoluteFile
 
     fun run(): Int {
-        val process = ProcessBuilder(args)
-                .directory(File(".").absoluteFile)
+        val process = ProcessBuilder(args + listOf("--bes_backend=localhost:$_besPort"))
+                .directory(workingDirectory)
                 //.redirectOutput(ProcessBuilder.Redirect.INHERIT)
                 //.redirectError(ProcessBuilder.Redirect.INHERIT)
                 .start()

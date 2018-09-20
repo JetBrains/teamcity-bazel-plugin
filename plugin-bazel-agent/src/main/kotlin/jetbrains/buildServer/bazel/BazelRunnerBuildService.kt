@@ -57,12 +57,14 @@ class BazelRunnerBuildService(
         val bazelCommandFile = File(_pathsService.getPath(PathType.BuildTemp), _pathsService.uniqueName)
         bazelCommandFile.writeText(sb.toString())
 
+        // get java executable
         val explicitJavaHome: String = _parametersService.tryGetParameter(ParameterType.Runner, JavaRunnerConstants.TARGET_JDK_HOME) ?: ""
         val propsAndVars = environmentVariables + systemProperties
         val baseDir = _pathsService.getPath(PathType.Checkout).absolutePath
         val javaHome = JavaRunnerUtil.findJavaHome(explicitJavaHome, propsAndVars, baseDir) ?: throw RunBuildException("Unable to find Java Home")
         val javaExecutable = JavaRunnerUtil.findJavaExecutablePath(javaHome, propsAndVars, baseDir) ?: throw RunBuildException("Unable to find Java")
 
+        // get tool jar
         val pluginDir = _pathsService.getPath(PathType.Plugin)
         val jarFile = File(File(pluginDir, "tools"), "plugin-bazel-event-service.jar")
 
@@ -99,5 +101,5 @@ class BazelRunnerBuildService(
         }
     }
 
-    override fun isCommandLineLoggingEnabled() = true
+    override fun isCommandLineLoggingEnabled() = false
 }
