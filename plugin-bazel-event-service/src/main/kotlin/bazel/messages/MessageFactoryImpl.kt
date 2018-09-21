@@ -8,7 +8,7 @@ class MessageFactoryImpl : MessageFactory {
             Message(text.clean(), Normal, null)
 
     override fun createTraceMessage(text: String) =
-            Message("TRACE: ".apply(Color.Trace) + text.clean().replace("\n", "").replace("\r", ""), Normal, null)
+            Message(text.clean().replace("\n", "").replace("\r", ""), Normal, null)
 
     override fun createErrorMessage(error: String, errorDetails: String?) =
             Message(error.clean(), Error, errorDetails)

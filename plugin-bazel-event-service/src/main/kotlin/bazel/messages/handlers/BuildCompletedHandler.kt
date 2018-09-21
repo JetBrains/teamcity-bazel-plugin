@@ -22,7 +22,7 @@ class BuildCompletedHandler : EventHandler {
                     if (ctx.verbosity.atLeast(Verbosity.Detailed)) {
                         ctx.onNext(ctx.messageFactory.createMessage(
                                 ctx.buildMessage()
-                                        .append(description.apply(Color.BuildStage))
+                                        .append(description)
                                         .append(" with exit code ${event.exitCode}")
                                         .append("(${event.exitCodeName})", Verbosity.Verbose)
                                         .toString()))
@@ -32,7 +32,7 @@ class BuildCompletedHandler : EventHandler {
                             ctx.buildMessage(false)
                                     .append("Build failed")
                                     .append(" with exit code ${event.exitCode}", Verbosity.Detailed)
-                                    .append(" - ${event.exitCodeName}", Verbosity.Verbose)
+                                    .append(" (${event.exitCodeName})", Verbosity.Verbose)
                                     .toString(),
                             ctx.event.projectId,
                             event.id.toString()))

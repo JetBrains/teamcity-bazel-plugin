@@ -25,10 +25,6 @@ fun main(args: Array<String>) {
         port = bazelOptions.port
         verbosity = bazelOptions.verbosity
         bazelCommandlineFile = bazelOptions.bazelCommandlineFile
-
-        if (verbosity == Verbosity.Diagnostic) {
-            org.apache.log4j.Logger.getRootLogger().level = Level.DEBUG
-        }
     } catch (ex: Exception) {
         logger.severe(ex.message)
         BazelOptions.printHelp()
@@ -37,8 +33,10 @@ fun main(args: Array<String>) {
     }
 
     val gRpcServer = GRpcServer(port)
-    if (bazelCommandlineFile == null) {
-        System.out.println("BES Port: ${gRpcServer.port}")
+
+    // when has no bazel command and port is Auto
+    if (bazelCommandlineFile == null && port == 0) {
+        println("BES Port: ${gRpcServer.port}")
     }
 
     try {
@@ -47,13 +45,13 @@ fun main(args: Array<String>) {
                 verbosity,
                 PublishBuildEventService(),
                 BuildEventConverter(StreamIdConverter(BuildComponentConverter())))
-                .subscribe { System.out.println(it) }
+                .subscribe { println(it) }
                 .use {
                     if (bazelCommandlineFile != null) {
                         val bazelRunner = BazelRunner(bazelCommandlineFile, gRpcServer.port)
                         val commandLine = bazelRunner.args.joinToString(" ") { if (it.contains(' ')) "\"$it\"" else it }
-                        System.out.println("Starting: $commandLine")
-                        System.out.println("in directory: ${bazelRunner.workingDirectory}")
+                        println("Starting: $commandLine")
+                        println("in directory: ${bazelRunner.workingDirectory}")
                         System.exit(bazelRunner.run())
                     }
                 }
@@ -64,4 +62,8 @@ fun main(args: Array<String>) {
     }
 
     System.exit(0)
+}
+
+private fun println(line: String) {
+    System.out.println(line)
 }

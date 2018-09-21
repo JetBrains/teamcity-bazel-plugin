@@ -13,7 +13,7 @@ import java.util.concurrent.atomic.AtomicBoolean
 class ControllerSubject(
         private val _verbosity: Verbosity,
         private val _messageFactory: MessageFactory,
-        private val _blockManager: BlockManager,
+        private val _hierarchy: Hierarchy,
         private val _streamSubjectFactory: () -> ServiceMessageSubject)
     : ServiceMessageSubject {
     private val _controllerSubject = subjectOf<ServiceMessage>()
@@ -28,7 +28,7 @@ class ControllerSubject(
         val invocationId = value.payload.streamId.invocationId
         val handlerIterator = handlers.iterator()
         val subject = subjectOf<ServiceMessage>()
-        val ctx = ServiceMessageContext(subject, handlerIterator, value, _messageFactory, _blockManager, _verbosity)
+        val ctx = ServiceMessageContext(subject, handlerIterator, value, _messageFactory, _hierarchy, _verbosity)
         subject.map { updateHeader(value.payload, it) }.subscribe(_controllerSubject).use {
             val processed = handlerIterator.next().handle(ctx)
 

@@ -12,14 +12,14 @@ import jetbrains.buildServer.messages.serviceMessages.ServiceMessage
 class StreamSubject(
         private val _verbosity: Verbosity,
         private val _messageFactory: MessageFactory,
-        private val _blockManager: BlockManager)
+        private val _hierarchy: Hierarchy)
     : ServiceMessageSubject {
     private val _messageSubject = subjectOf<ServiceMessage>()
 
     override fun onNext(value: Event<OrderedBuildEvent>) {
         val handlerIterator = handlers.iterator()
         val subject = subjectOf<ServiceMessage>()
-        val ctx = ServiceMessageContext(subject, handlerIterator, value, _messageFactory, _blockManager, _verbosity)
+        val ctx = ServiceMessageContext(subject, handlerIterator, value, _messageFactory, _hierarchy, _verbosity)
         subject.map { updateHeader(value.payload, it) }.subscribe(_messageSubject).use {
             handlerIterator.next().handle(ctx)
 
@@ -29,9 +29,9 @@ class StreamSubject(
 
             // Process end of block
             if (value.payload is BazelEvent) {
-                for (blockName in _blockManager.process(value.payload.content.id, value.payload.content.children)) {
-                    subject.onNext(_messageFactory.createBlockClosed(blockName))
-                }
+                val event = value.payload.content
+                _hierarchy.createNode(event.id, event.children, "")
+                _hierarchy.tryCloseNode(ctx, event.id)
             }
         }
     }

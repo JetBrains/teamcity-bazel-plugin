@@ -17,33 +17,35 @@ class ActionExecutedHandler : EventHandler {
             if (ctx.event.payload is BazelEvent && ctx.event.payload.content is ActionExecuted) {
                 val event = ctx.event.payload.content
                 if (ctx.verbosity.atLeast(Verbosity.Normal)) {
-                    val details = ctx.buildMessage(false)
-                            .append(": ${event.cmdLines.joinToStringEscaped()}", Verbosity.Verbose)
-                            .append("exit code: ${event.exitCode}", Verbosity.Verbose)
-                            .append(", primary output: ${event.primaryOutput.name}", Verbosity.Verbose)
-                            .append(", stdout: ${event.stdout.name}", Verbosity.Verbose)
-                            .append(", stderr: ${event.stderr.name}", Verbosity.Verbose)
-                            .toString()
+                    val actionName = "Action \"${event.type}\""
+                    val details = StringBuilder()
+                    details.appendln(event.cmdLines.joinToStringEscaped().trim())
+                    details.appendln("exit code: ${event.exitCode}")
+                    details.appendln("primary output: ${event.primaryOutput.name}")
+                    details.appendln("stdout: ${event.stdout.name}")
+                    details.appendln("stderr: ${event.stderr.name}")
+
 
                     if (event.success) {
-                        val description = "Action ${event.type} executed"
-                        ctx.onNext(ctx.messageFactory.createBuildStatus(description))
+                        ctx.hierarchy.createNode(event.id, event.children, actionName)
+                        ctx.onNext(ctx.messageFactory.createBuildStatus(actionName))
                         if (ctx.verbosity.atLeast(Verbosity.Detailed)) {
                             ctx.onNext(ctx.messageFactory.createMessage(
                                     ctx.buildMessage()
-                                            .append(description.apply(Color.BuildStage))
-                                            .append(details, Verbosity.Verbose)
+                                            .append(actionName.apply(Color.BuildStage))
+                                            .append(" executed")
+                                            .append(details.toString().apply(Color.Details), Verbosity.Verbose)
                                             .toString()))
                         }
                     } else {
-                        val description = "Action ${event.type} failed to execute"
-                        ctx.onNext(ctx.messageFactory.createErrorMessage(
+                        ctx.onNext(ctx.messageFactory.createBuildProblem(
                                 ctx.buildMessage()
-                                        .append(description.apply(Color.Error))
-                                        .append(details, Verbosity.Verbose)
-                                        .toString()))
-
-                        ctx.onNext(ctx.messageFactory.createBuildProblem(description, ctx.event.projectId, ctx.event.payload.content.id.toString()))
+                                        .append(actionName)
+                                        .append(" failed to execute")
+                                        .append(details.toString())
+                                        .toString(),
+                                ctx.event.projectId,
+                                ctx.event.payload.content.id.toString()))
                     }
                 }
 

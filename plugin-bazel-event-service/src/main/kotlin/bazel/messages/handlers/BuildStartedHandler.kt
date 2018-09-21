@@ -17,6 +17,8 @@ class BuildStartedHandler : EventHandler {
             if (ctx.event.payload is BazelEvent && ctx.event.payload.content is BuildStarted) {
                 val event = ctx.event.payload.content
                 val description = event.command
+                ctx.hierarchy.createNode(event.id, event.children, description)
+
                 val details = ctx.buildMessage(false)
                         .append(description.apply(Color.BuildStage), Verbosity.Normal)
                         .append(" v${event.buildToolVersion}", Verbosity.Verbose)
@@ -25,8 +27,9 @@ class BuildStartedHandler : EventHandler {
                         .toString()
 
                 if (ctx.verbosity.atLeast(Verbosity.Normal)) {
-                    if (ctx.blockManager.createBlock(description, event.children)) {
-                        ctx.onNext(ctx.messageFactory.createBlockOpened(description, ""))
+                    ctx.onNext(ctx.messageFactory.createBlockOpened(description, details))
+                    ctx.hierarchy.createNode(event.id, event.children, description) {
+                        it.onNext(it.messageFactory.createBlockClosed(description))
                     }
                 }
 

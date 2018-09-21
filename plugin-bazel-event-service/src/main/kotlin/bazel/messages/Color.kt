@@ -2,10 +2,10 @@ package bazel.messages
 
 enum class Color(val color: String) {
     Default(""),
-    BuildStage("1;34"),
-    Success("32;1"),
+    BuildStage("34;1"),
+    Success("32"),
     Warning("35"),
-    Error("31;1"),
+    Error("31"),
     Details("36"),
     Items("36"),
     Trace("34")

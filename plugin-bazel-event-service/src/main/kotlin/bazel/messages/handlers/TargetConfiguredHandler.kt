@@ -16,25 +16,18 @@ class TargetConfiguredHandler : EventHandler {
     override fun handle(ctx: ServiceMessageContext) =
             if (ctx.event.payload is BazelEvent && ctx.event.payload.content is TargetConfigured) {
                 val event = ctx.event.payload.content
-                val description = "Target ${event.targetKind} \"${event.label}\" configured"
+                val targetName = ctx.buildMessage(false).append("Target ${event.targetKind} \"${event.label}\"".apply(Color.BuildStage)).toString()
+                ctx.hierarchy.createNode(event.id, event.children, targetName)
                 if (ctx.verbosity.atLeast(Verbosity.Normal)) {
-                    val blockName = "Target ${event.label}"
-                    if (ctx.blockManager.createBlock(blockName, event.children)) {
-                        ctx.onNext(ctx.messageFactory.createBlockOpened(blockName, ""))
-                    }
-
-                    ctx.onNext(ctx.messageFactory.createBuildStatus(description))
-
                     if (ctx.verbosity.atLeast(Verbosity.Detailed)) {
                         ctx.onNext(ctx.messageFactory.createMessage(
                                 ctx.buildMessage()
-                                        .append(description.apply(Color.BuildStage))
+                                        .append(targetName)
+                                        .append(" configured")
                                         .append(", aspect \"${event.aspect}\", test size \"${event.testSize}\"", Verbosity.Verbose)
                                         .append(", tags: \"${event.tags.joinToStringEscaped(", ")}\"", Verbosity.Verbose)
                                         .toString()))
                     }
-                } else {
-                    ctx.onNext(ctx.messageFactory.createBuildStatus(description))
                 }
 
                 true

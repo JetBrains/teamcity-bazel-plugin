@@ -13,7 +13,7 @@ class BesServer<TEvent>(
 
     override fun subscribe(observer: Observer<String>): Disposable {
         val messageFactory = MessageFactoryImpl()
-        val serviceMessageSubject = ServiceMessageRootSubject(ControllerSubject(_verbosity, messageFactory, BlockManagerImpl()) { StreamSubject(_verbosity, messageFactory, BlockManagerImpl()) })
+        val serviceMessageSubject = ServiceMessageRootSubject(ControllerSubject(_verbosity, messageFactory, HierarchyImpl()) { StreamSubject(_verbosity, messageFactory, HierarchyImpl()) })
         val buildEventSource = _bindableEventService.map { _buildEventConverter.convert(it) }.share()
         val subscription = disposableOf(
                 // service messages subscription

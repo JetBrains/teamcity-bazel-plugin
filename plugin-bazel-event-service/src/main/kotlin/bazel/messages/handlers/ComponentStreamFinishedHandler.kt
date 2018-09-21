@@ -36,8 +36,6 @@ class ComponentStreamFinishedHandler : EventHandler {
                                             .append(description.apply(Color.Warning))
                                             .append("(${FinishType.Expired.description}), invocation: \"${ctx.event.payload.streamId.invocationId}\", build: \"${ctx.event.payload.streamId.buildId}\"", Verbosity.Verbose)
                                             .toString()))
-
-                            ctx.onNext(ctx.messageFactory.createBuildProblem(description, ctx.event.projectId, ctx.event.payload.streamId.toString()))
                         }
                 }
 
