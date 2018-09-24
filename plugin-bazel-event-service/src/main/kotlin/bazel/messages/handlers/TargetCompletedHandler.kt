@@ -16,18 +16,23 @@ class TargetCompletedHandler : EventHandler {
             if (ctx.event.payload is BazelEvent && ctx.event.payload.content is TargetComplete) {
                 val event = ctx.event.payload.content
                 ctx.hierarchy.tryCloseNode(ctx, event.id)?.let {
-                    ctx.onNext(ctx.messageFactory.createErrorMessage(
-                            ctx.buildMessage()
-                                    .append(it.description)
-                                    .append(
-                                            if (event.success) {
-                                                " completed"
-                                            } else {
-                                                " failed".apply(Color.Error)
-                                            })
-                                    .append(", test timeout: ${event.testTimeoutSeconds}(seconds)", Verbosity.Verbose)
-                                    .append(", tags: \"${event.tags.joinToStringEscaped(", ")}\"", Verbosity.Verbose)
-                                    .toString()))
+                    val description = ctx.buildMessage()
+                            .append(it.description)
+                            .append(
+                                    if (event.success) {
+                                        " completed"
+                                    } else {
+                                        " failed".apply(Color.Error)
+                                    })
+                            .append(", test timeout: ${event.testTimeoutSeconds}(seconds)", Verbosity.Verbose)
+                            .append(", tags: \"${event.tags.joinToStringEscaped(", ")}\"", Verbosity.Verbose)
+                            .toString()
+
+                    if (event.success) {
+                        ctx.onNext(ctx.messageFactory.createMessage(description))
+                    } else {
+                        ctx.onNext(ctx.messageFactory.createErrorMessage(description))
+                    }
                 }
 
                 true

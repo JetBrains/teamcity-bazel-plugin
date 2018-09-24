@@ -15,7 +15,7 @@ class NamedSetOfFilesHandler(
             if (ctx.event.hasNamedSetOfFiles()) {
                 val content = ctx.event.namedSetOfFiles
                 val files = mutableListOf<File>()
-                for (i in 0 until content.fileSetsCount) {
+                for (i in 0 until content.filesCount) {
                     files.add(_fileConverter.convert(content.getFiles(i)))
                 }
 

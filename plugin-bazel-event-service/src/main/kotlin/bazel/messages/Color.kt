@@ -2,13 +2,13 @@ package bazel.messages
 
 enum class Color(val color: String) {
     Default(""),
-    BuildStage("34;1"),
+    BuildStage("34"),
     Success("32"),
     Warning("35"),
     Error("31"),
     Details("36"),
     Items("36"),
-    Trace("34")
+    Trace("30;1")
 }
 
 fun String.apply(color: Color): String {

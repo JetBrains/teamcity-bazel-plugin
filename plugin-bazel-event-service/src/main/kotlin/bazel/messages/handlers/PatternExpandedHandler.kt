@@ -21,7 +21,7 @@ class PatternExpandedHandler : EventHandler {
                     ctx.onNext(ctx.messageFactory.createMessage(
                             ctx.buildMessage()
                                     .append("Pattern expanded ")
-                                    .append(patterns.apply(Color.BuildStage))
+                                    .append(patterns.apply(Color.Details))
                                     .toString()))
                 }
 

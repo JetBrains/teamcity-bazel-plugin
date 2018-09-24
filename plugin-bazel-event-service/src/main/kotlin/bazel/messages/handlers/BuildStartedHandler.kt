@@ -20,7 +20,7 @@ class BuildStartedHandler : EventHandler {
                 ctx.hierarchy.createNode(event.id, event.children, description)
 
                 val details = ctx.buildMessage(false)
-                        .append(description.apply(Color.BuildStage), Verbosity.Normal)
+                        .append(description, Verbosity.Normal)
                         .append(" v${event.buildToolVersion}", Verbosity.Verbose)
                         .append(", directory: \"${event.workingDirectory}\"", Verbosity.Verbose)
                         .append(", workspace: \"${event.workspaceDirectory}\"", Verbosity.Verbose)
@@ -34,10 +34,6 @@ class BuildStartedHandler : EventHandler {
                 }
 
                 ctx.onNext(ctx.messageFactory.createBuildStatus(description))
-                if (ctx.verbosity.atLeast(Verbosity.Detailed)) {
-                    ctx.onNext(ctx.messageFactory.createMessage(details))
-                }
-
                 true
             } else ctx.handlerIterator.next().handle(ctx)
 }

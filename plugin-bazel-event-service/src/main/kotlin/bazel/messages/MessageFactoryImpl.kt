@@ -8,7 +8,7 @@ class MessageFactoryImpl : MessageFactory {
             Message(text.clean(), Normal, null)
 
     override fun createTraceMessage(text: String) =
-            Message(text.clean().replace("\n", "").replace("\r", ""), Normal, null)
+            Message("> ".apply(Color.Trace) + text.clean().replace("\n", "").replace("\r", ""), Normal, null)
 
     override fun createErrorMessage(error: String, errorDetails: String?) =
             Message(error.clean(), Error, errorDetails)
@@ -32,7 +32,7 @@ class MessageFactoryImpl : MessageFactory {
     override fun createBlockClosed(blockName: String): ServiceMessage {
         return BlockClosed(blockName)
     }
-
+    
     override fun createImportData(type: String, path: String): ServiceMessage {
         return ImportData(type, path)
     }

@@ -12,10 +12,8 @@ import java.util.logging.Logger
 
 class BazelEventConverter : Converter<Any, BazelContent> {
     override fun convert(source: com.google.protobuf.Any): BazelContent {
-        val className = source.typeUrl.replace("type.googleapis.com/build_event_stream.", "")
-        return when (className) {
-
-            "BuildEvent" -> {
+        return when (source.typeUrl) {
+            "type.googleapis.com/build_event_stream.BuildEvent" -> {
                 val event = source.unpack(BuildEventStreamProtos.BuildEvent::class.java)
                 val id = if (event.hasId()) Id(event.id) else Id.default
                 val children = mutableListOf<Id>()

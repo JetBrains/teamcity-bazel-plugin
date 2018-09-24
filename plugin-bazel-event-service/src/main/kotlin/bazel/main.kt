@@ -48,7 +48,7 @@ fun main(args: Array<String>) {
                 .subscribe { println(it) }
                 .use {
                     if (bazelCommandlineFile != null) {
-                        val bazelRunner = BazelRunner(bazelCommandlineFile, gRpcServer.port)
+                        val bazelRunner = BazelRunner(verbosity, bazelCommandlineFile, gRpcServer.port)
                         val commandLine = bazelRunner.args.joinToString(" ") { if (it.contains(' ')) "\"$it\"" else it }
                         println("Starting: $commandLine")
                         println("in directory: ${bazelRunner.workingDirectory}")

@@ -20,7 +20,8 @@ class StructuredCommandLineHandler : EventHandler {
                 if (ctx.verbosity.atLeast(Verbosity.Detailed)) {
                     ctx.onNext(ctx.messageFactory.createMessage(
                             ctx.buildMessage()
-                                    .append("Run: ${commandLine.commandLineLabel}")
+                                    .append("Run ")
+                                    .append(commandLine.commandLineLabel)
                                     .toString()))
                 }
 

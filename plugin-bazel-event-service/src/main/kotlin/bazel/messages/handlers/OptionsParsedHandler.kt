@@ -17,11 +17,10 @@ class OptionsParsedHandler : EventHandler {
             if (ctx.event.payload is BazelEvent && ctx.event.payload.content is OptionsParsed) {
                 val event = ctx.event.payload.content
                 if (ctx.verbosity.atLeast(Verbosity.Verbose)) {
-
                     if (event.startupOptions.isNotEmpty()) {
                         ctx.onNext(ctx.messageFactory.createMessage(
                                 ctx.buildMessage()
-                                        .append("startup options: ")
+                                        .append("Options ")
                                         .append(event.startupOptions.joinToStringEscaped().apply(Color.Details))
                                         .toString()))
                     }
@@ -29,7 +28,7 @@ class OptionsParsedHandler : EventHandler {
                     if (event.explicitStartupOptions.isNotEmpty()) {
                         ctx.onNext(ctx.messageFactory.createMessage(
                                 ctx.buildMessage()
-                                        .append("explicit startup options: ")
+                                        .append("Explicit options ")
                                         .append(event.explicitStartupOptions.joinToStringEscaped().apply(Color.Details))
                                         .toString()))
                     }
@@ -37,7 +36,7 @@ class OptionsParsedHandler : EventHandler {
                     if (event.cmdLines.isNotEmpty()) {
                         ctx.onNext(ctx.messageFactory.createMessage(
                                 ctx.buildMessage()
-                                        .append("command line:")
+                                        .append("Command ")
                                         .append(event.cmdLines.joinToString().apply(Color.Details))
                                         .toString()))
                     }
@@ -45,7 +44,7 @@ class OptionsParsedHandler : EventHandler {
                     if (event.explicitCmdLines.isNotEmpty()) {
                         ctx.onNext(ctx.messageFactory.createMessage(
                                 ctx.buildMessage()
-                                        .append("explicit command line: ")
+                                        .append("Explicit command ")
                                         .append(event.explicitCmdLines.joinToString().apply(Color.Details))
                                         .toString()))
                     }

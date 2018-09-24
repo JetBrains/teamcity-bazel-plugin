@@ -5,9 +5,11 @@ import bazel.Verbosity
 import bazel.atLeast
 import bazel.bazel.events.ActionExecuted
 import bazel.bazel.events.BazelEvent
+import bazel.bazel.events.File
 import bazel.messages.Color
 import bazel.messages.ServiceMessageContext
 import bazel.messages.apply
+import java.net.URI
 
 class ActionExecutedHandler : EventHandler {
     override val priority: HandlerPriority
@@ -20,10 +22,21 @@ class ActionExecutedHandler : EventHandler {
                     val actionName = "Action \"${event.type}\""
                     val details = StringBuilder()
                     details.appendln(event.cmdLines.joinToStringEscaped().trim())
-                    details.appendln("exit code: ${event.exitCode}")
-                    details.appendln("primary output: ${event.primaryOutput.name}")
-                    details.appendln("stdout: ${event.stdout.name}")
-                    details.appendln("stderr: ${event.stderr.name}")
+                    details.appendln("Exit code: ${event.exitCode}")
+                    var content = readFromFile(event.primaryOutput)
+                    if (content.isNotBlank()) {
+                        details.appendln(content)
+                    }
+
+                    content = readFromFile(event.stdout)
+                    if (content.isNotBlank()) {
+                        details.appendln(content)
+                    }
+
+                    content = readFromFile(event.stderr)
+                    if (content.isNotBlank()) {
+                        details.appendln(content)
+                    }
 
 
                     if (event.success) {
@@ -39,9 +52,9 @@ class ActionExecutedHandler : EventHandler {
                         }
                     } else {
                         ctx.onNext(ctx.messageFactory.createBuildProblem(
-                                ctx.buildMessage()
+                                ctx.buildMessage(false)
                                         .append(actionName)
-                                        .append(" failed to execute")
+                                        .append(" failed to execute ")
                                         .append(details.toString())
                                         .toString(),
                                 ctx.event.projectId,
@@ -52,4 +65,13 @@ class ActionExecutedHandler : EventHandler {
 
                 true
             } else ctx.handlerIterator.next().handle(ctx)
+
+
+    private fun readFromFile(file: File): String {
+        if (file.uri.isBlank()) {
+            return ""
+        }
+
+        return java.io.File(URI(file.uri)).readText()
+    }
 }

@@ -22,7 +22,7 @@ class UnstructuredCommandLineHandler : EventHandler {
                     ctx.onNext(ctx.messageFactory.createMessage(
                             ctx.buildMessage()
                                     .append("Run ")
-                                    .append(cmd.apply(Color.BuildStage))
+                                    .append(cmd.apply(Color.Details))
                                     .toString()))
                 }
 
