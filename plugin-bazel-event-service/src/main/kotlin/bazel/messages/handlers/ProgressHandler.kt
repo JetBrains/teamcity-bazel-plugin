@@ -16,21 +16,23 @@ class ProgressHandler : EventHandler {
     override fun handle(ctx: ServiceMessageContext) =
             if (ctx.event.payload is BazelEvent && ctx.event.payload.content is Progress) {
                 val event = ctx.event.payload.content
-                if (event.stdout.isNotBlank()) {
-                    if (ctx.verbosity.atLeast(Verbosity.Normal)) {
-                        ctx.onNext(ctx.messageFactory.createMessage(
-                                ctx.buildMessage()
-                                        .append(event.stdout)
-                                        .toString()
-                        ))
-                    }
+                if (ctx.verbosity.atLeast(Verbosity.Normal) && event.stdout.isNotBlank()) {
+                    ctx.onNext(ctx.messageFactory.createMessage(
+                            ctx.buildMessage()
+                                    .append(event.stdout)
+                                    .toString()
+                    ))
                 }
 
                 if (event.stderr.isNotBlank()) {
-                    for (err in decompose(event.stderr)) {
+                    for (errItem in decompose(event.stderr)) {
+                        if (errItem.color == Color.Success || errItem.color == Color.Error) {
+                            ctx.onNext(ctx.messageFactory.createBuildStatus(errItem.originalText))
+                        }
+
                         ctx.onNext(ctx.messageFactory.createMessage(
                                 ctx.buildMessage()
-                                        .append(err)
+                                        .append(errItem.text)
                                         .toString()
                         ))
                     }
@@ -39,19 +41,22 @@ class ProgressHandler : EventHandler {
                 true
             } else ctx.handlerIterator.next().handle(ctx)
 
-    private fun decompose(text: String): List<String> {
-        return text.split('\n').map { applyColor(it) }
+    private fun decompose(text: String): List<MessageItem> {
+        return text.split('\n').map { toMessageItem(it) }
     }
 
-    private fun applyColor(text: String): String {
+    private fun toMessageItem(text: String): MessageItem {
         for ((prefix, color) in prefixColors) {
             if (text.startsWith(prefix)) {
-                return prefix.apply(color) + text.substring(prefix.length)
+                val origText = text.substring(prefix.length)
+                return MessageItem(prefix.apply(color) + origText, origText, color)
             }
         }
 
-        return text
+        return MessageItem(text, text, Color.Default)
     }
+
+    private data class MessageItem(val text: String, val originalText: String, val color: Color)
 
     companion object {
         private val prefixColors = mapOf<String, Color>(
@@ -59,7 +64,10 @@ class ProgressHandler : EventHandler {
                 "FAILED:" to Color.Error,
                 "Action failed to execute:" to Color.Error,
                 "WARNING:" to Color.Warning,
-                "INFO:" to Color.Success
+                "Auto-Configuration Warning:" to Color.Warning,
+                "DEBUG:" to Color.Details,
+                "INFO:" to Color.Success,
+                "Analyzing:" to Color.Success
         )
     }
 }

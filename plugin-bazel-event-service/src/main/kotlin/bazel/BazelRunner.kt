@@ -2,6 +2,8 @@ package bazel
 
 import bazel.messages.Color
 import bazel.messages.apply
+import devteam.rx.Disposable
+import devteam.rx.use
 import java.io.BufferedReader
 import java.io.File
 
@@ -19,15 +21,34 @@ class BazelRunner(
                 .directory(workingDirectory)
                 .start()
 
-        val reader = process.errorStream.bufferedReader()
-        do {
-            val line = reader.readLine()
-            if (!line.isNullOrBlank() && _verbosity.atLeast(Verbosity.Diagnostic)) {
-                System.out.println("> ".apply(Color.Trace) + line)
-            }
-        } while (line != null)
+        ActiveReader(process.inputStream.bufferedReader()) { line ->
+            if (_verbosity.atLeast(Verbosity.Diagnostic)) System.out.println("> ".apply(Color.Trace) + line)
+        }.use {
+            ActiveReader(process.errorStream.bufferedReader()) { line ->
+                if (_verbosity.atLeast(Verbosity.Diagnostic)) System.out.println("> ".apply(Color.Trace) + line)
+            }.use { }
+        }
 
         process.waitFor()
         return process.exitValue()
+    }
+
+    private class ActiveReader(reader: BufferedReader, action: (line: String) -> Unit) : Disposable {
+        private val _tread: Thread = object : Thread() {
+            override fun run() {
+                do {
+                    val line = reader.readLine()
+                    if (!line.isNullOrBlank()) {
+                        action(line)
+                    }
+                } while (line != null)
+            }
+        }
+
+        init {
+            _tread.start()
+        }
+
+        override fun dispose() = _tread.join()
     }
 }

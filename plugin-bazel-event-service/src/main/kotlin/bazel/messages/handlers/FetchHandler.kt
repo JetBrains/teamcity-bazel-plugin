@@ -20,7 +20,7 @@ class FetchHandler : EventHandler {
                     if (ctx.verbosity.atLeast(Verbosity.Detailed)) {
                         ctx.onNext(ctx.messageFactory.createMessage(
                                 ctx.buildMessage()
-                                        .append("Fetch \"${event.url}\"".apply(Color.Details))
+                                        .append("Fetch \"${event.url}\"")
                                         .toString()))
                     }
                 } else {

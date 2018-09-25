@@ -4,7 +4,7 @@ enum class Color(val color: String) {
     Default(""),
     BuildStage("34"),
     Success("32"),
-    Warning("35"),
+    Warning("33"),
     Error("31"),
     Details("36"),
     Items("36"),
