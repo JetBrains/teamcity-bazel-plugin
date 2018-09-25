@@ -73,7 +73,7 @@ class ControllerSubject(
             message.setFlowId(event.streamId.buildId)
         }
 
-        // message.setTimestamp(event.eventTime)
+        message.setTimestamp(event.eventTime.date)
         return message
     }
 

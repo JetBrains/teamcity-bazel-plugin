@@ -49,7 +49,7 @@ class StreamSubject(
             message.setFlowId(event.streamId.invocationId)
         }
 
-        // message.setTimestamp(event.eventTime)
+        message.setTimestamp(event.eventTime.date)
         return message
     }
 
