@@ -16,7 +16,8 @@ class AbortedHandler : EventHandler {
                 val event = ctx.event.payload.content
                 ctx.hierarchy.tryAbortNode(ctx, event.id)?.let {
                     if (it.description.isNotEmpty()) {
-                        ctx.onNext(ctx.messageFactory.createMessage(
+                        ctx.onNext(ctx.messageFactory.
+                                createMessage(
                                 ctx.buildMessage(false)
                                         .append(it.description)
                                         .append(" aborted.".apply(Color.Error))

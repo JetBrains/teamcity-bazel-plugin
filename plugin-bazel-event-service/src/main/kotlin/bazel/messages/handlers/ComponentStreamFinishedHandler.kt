@@ -20,7 +20,6 @@ class ComponentStreamFinishedHandler : EventHandler {
                     FinishType.Finished ->
                         if (ctx.verbosity.atLeast(Verbosity.Verbose)) {
                             val description = "Component \"${ctx.event.payload.streamId.component}\" stream finished"
-                            ctx.onNext(ctx.messageFactory.createBuildStatus(description))
                             ctx.onNext(ctx.messageFactory.createMessage(
                                     ctx.buildMessage()
                                             .append(description.apply(Color.BuildStage))

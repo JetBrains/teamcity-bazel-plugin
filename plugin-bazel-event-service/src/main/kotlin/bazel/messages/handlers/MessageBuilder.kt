@@ -5,6 +5,7 @@ import bazel.atLeast
 import bazel.messages.Color
 import bazel.messages.ServiceMessageContext
 import bazel.messages.apply
+import com.intellij.openapi.util.ArrayTailCondition
 
 class MessageBuilder(
         private val _serviceMessageContext: ServiceMessageContext,
@@ -26,8 +27,8 @@ class MessageBuilder(
         }
     }
 
-    fun append(text: String, verbosity: Verbosity = _serviceMessageContext.verbosity): MessageBuilder {
-        if (_serviceMessageContext.verbosity.atLeast(verbosity)) {
+    fun append(text: String, verbosity: Verbosity = _serviceMessageContext.verbosity, condition: () -> Boolean = { true }): MessageBuilder {
+        if (condition() && _serviceMessageContext.verbosity.atLeast(verbosity)) {
             this._text.append(text)
         }
 

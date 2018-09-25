@@ -2,6 +2,7 @@ package bazel.messages.handlers
 
 import bazel.HandlerPriority
 import bazel.Verbosity
+import bazel.atLeast
 import bazel.bazel.events.BazelEvent
 import bazel.bazel.events.TargetComplete
 import bazel.messages.Color
@@ -24,12 +25,14 @@ class TargetCompletedHandler : EventHandler {
                                     } else {
                                         " failed".apply(Color.Error)
                                     })
-                            .append(", test timeout: ${event.testTimeoutSeconds}(seconds)", Verbosity.Verbose)
-                            .append(", tags: \"${event.tags.joinToStringEscaped(", ")}\"", Verbosity.Verbose)
+                            .append(", test timeout: ${event.testTimeoutSeconds}(seconds)", Verbosity.Verbose) { event.testTimeoutSeconds != 0L }
+                            .append(", tags: \"${event.tags.joinToStringEscaped(", ")}\"", Verbosity.Verbose) { event.tags.isNotEmpty() }
                             .toString()
 
                     if (event.success) {
-                        ctx.onNext(ctx.messageFactory.createMessage(description))
+                        if (ctx.verbosity.atLeast(Verbosity.Detailed)) {
+                            ctx.onNext(ctx.messageFactory.createMessage(description))
+                        }
                     } else {
                         ctx.onNext(ctx.messageFactory.createErrorMessage(description))
                     }

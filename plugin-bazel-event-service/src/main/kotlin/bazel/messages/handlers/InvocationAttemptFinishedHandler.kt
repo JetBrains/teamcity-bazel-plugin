@@ -16,8 +16,9 @@ class InvocationAttemptFinishedHandler : EventHandler {
     override fun handle(ctx: ServiceMessageContext) =
             if (ctx.event.payload is InvocationAttemptFinished) {
                 ctx.onNext(ctx.messageFactory.createFlowFinished(ctx.event.payload.streamId.invocationId))
-                if (ctx.verbosity.atLeast(Verbosity.Detailed)) {
-                    if (ctx.event.payload.invocationResult.status == BuildStatus.CommandSucceeded) {
+
+                if (ctx.event.payload.invocationResult.status == BuildStatus.CommandSucceeded) {
+                    if (ctx.verbosity.atLeast(Verbosity.Detailed)) {
                         val description = "Invocation attempt completed"
                         ctx.onNext(ctx.messageFactory.createBuildStatus(description))
                         if (ctx.verbosity.atLeast(Verbosity.Detailed)) {
@@ -27,14 +28,14 @@ class InvocationAttemptFinishedHandler : EventHandler {
                                             .append(", exit code: ${ctx.event.payload.exitCode}", Verbosity.Verbose)
                                             .toString()))
                         }
-                    } else {
-                        ctx.onNext(ctx.messageFactory.createErrorMessage(
-                                ctx.buildMessage(false)
-                                        .append("Invocation attempt failed")
-                                        .append(": \"${ctx.event.payload.invocationResult.status.description}\"", Verbosity.Detailed)
-                                        .append(", exit code: ${ctx.event.payload.exitCode}", Verbosity.Verbose)
-                                        .toString()))
                     }
+                } else {
+                    ctx.onNext(ctx.messageFactory.createErrorMessage(
+                            ctx.buildMessage(false)
+                                    .append("Invocation attempt failed")
+                                    .append(": \"${ctx.event.payload.invocationResult.status.description}\"", Verbosity.Detailed)
+                                    .append(", exit code: ${ctx.event.payload.exitCode}", Verbosity.Verbose)
+                                    .toString()))
                 }
 
                 true

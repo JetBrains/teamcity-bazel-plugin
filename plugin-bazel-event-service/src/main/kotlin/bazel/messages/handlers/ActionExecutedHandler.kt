@@ -18,50 +18,58 @@ class ActionExecutedHandler : EventHandler {
     override fun handle(ctx: ServiceMessageContext) =
             if (ctx.event.payload is BazelEvent && ctx.event.payload.content is ActionExecuted) {
                 val event = ctx.event.payload.content
-                if (ctx.verbosity.atLeast(Verbosity.Normal)) {
-                    val actionName = "Action \"${event.type}\""
-                    val details = StringBuilder()
-                    details.appendln(event.cmdLines.joinToStringEscaped().trim())
-                    details.appendln("Exit code: ${event.exitCode}")
-                    var content = readFromFile(event.primaryOutput)
-                    if (content.isNotBlank()) {
-                        details.appendln(content)
-                    }
+                val actionName = "Action \"${event.type}\""
+                ctx.hierarchy.createNode(event.id, event.children, actionName)
 
-                    content = readFromFile(event.stdout)
-                    if (content.isNotBlank()) {
-                        details.appendln(content)
-                    }
+                val details = StringBuilder()
+                details.appendln(event.cmdLines.joinToStringEscaped().trim())
 
-                    content = readFromFile(event.stderr)
-                    if (content.isNotBlank()) {
-                        details.appendln(content)
-                    }
-
-
-                    if (event.success) {
-                        ctx.hierarchy.createNode(event.id, event.children, actionName)
-                        ctx.onNext(ctx.messageFactory.createBuildStatus(actionName))
-                        if (ctx.verbosity.atLeast(Verbosity.Detailed)) {
-                            ctx.onNext(ctx.messageFactory.createMessage(
-                                    ctx.buildMessage()
-                                            .append(actionName.apply(Color.BuildStage))
-                                            .append(" executed")
-                                            .append(details.toString().apply(Color.Details), Verbosity.Verbose)
-                                            .toString()))
-                        }
-                    } else {
-                        ctx.onNext(ctx.messageFactory.createBuildProblem(
-                                ctx.buildMessage(false)
-                                        .append(actionName)
-                                        .append(" failed to execute ")
-                                        .append(details.toString())
-                                        .toString(),
-                                ctx.event.projectId,
-                                ctx.event.payload.content.id.toString()))
-                    }
+                var content = readFromFile(event.primaryOutput)
+                if (content.isNotBlank()) {
+                    details.appendln(content)
                 }
 
+                content = readFromFile(event.stdout)
+                if (content.isNotBlank()) {
+                    details.appendln(content)
+                }
+
+                content = readFromFile(event.stderr)
+                if (content.isNotBlank()) {
+                    details.appendln(content.apply(Color.Error))
+                }
+
+                details.appendln("Exit code: ${event.exitCode}")
+
+                if (event.success) {
+                    if (ctx.verbosity.atLeast(Verbosity.Detailed)) {
+                        ctx.onNext(ctx.messageFactory.createMessage(
+                                ctx.buildMessage()
+                                        .append(actionName.apply(Color.BuildStage))
+                                        .append(" executed.")
+                                        .toString()))
+
+                        ctx.onNext(ctx.messageFactory.createMessage(
+                                ctx.buildMessage()
+                                        .append(details.toString())
+                                        .toString()))
+                    }
+                } else {
+                    val error = ctx.buildMessage(false)
+                            .append(actionName)
+                            .append(" failed to execute.")
+                            .toString()
+
+                    ctx.onNext(ctx.messageFactory.createBuildProblem(
+                            error,
+                            ctx.event.projectId,
+                            ctx.event.payload.content.id.toString()))
+
+                    ctx.onNext(ctx.messageFactory.createErrorMessage(
+                            ctx.buildMessage()
+                                    .append(details.toString())
+                                    .toString()))
+                }
 
                 true
             } else ctx.handlerIterator.next().handle(ctx)
@@ -72,6 +80,6 @@ class ActionExecutedHandler : EventHandler {
             return ""
         }
 
-        return java.io.File(URI(file.uri)).readText()
+        return java.io.File(URI(file.uri)).readText().trim()
     }
 }

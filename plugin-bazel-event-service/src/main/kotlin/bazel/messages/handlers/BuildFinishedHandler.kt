@@ -18,7 +18,6 @@ class BuildFinishedHandler : EventHandler {
                 when (ctx.event.payload.result.status) {
                     BuildStatus.CommandSucceeded -> {
                         ctx.onNext(ctx.messageFactory.createBuildStatus(status))
-
                         ctx.onNext(ctx.messageFactory.createMessage(
                                 ctx.buildMessage()
                                         .append(status.apply(Color.Success))
@@ -31,11 +30,13 @@ class BuildFinishedHandler : EventHandler {
                     BuildStatus.UserError,
                     BuildStatus.ResourceExhausted,
                     BuildStatus.InvocationDeadlineExceeded,
-                    BuildStatus.RequestDeadlineExceeded ->
+                    BuildStatus.RequestDeadlineExceeded -> {
+                        ctx.onNext(ctx.messageFactory.createBuildStatus(status))
                         ctx.onNext(ctx.messageFactory.createBuildProblem(
                                 status,
                                 ctx.event.projectId,
                                 "Build:${ctx.event.payload.result.status}"))
+                    }
                 }
                 true
             } else ctx.handlerIterator.next().handle(ctx)

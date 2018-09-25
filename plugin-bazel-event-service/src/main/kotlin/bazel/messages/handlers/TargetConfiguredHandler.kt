@@ -24,8 +24,8 @@ class TargetConfiguredHandler : EventHandler {
                                 ctx.buildMessage()
                                         .append(targetName)
                                         .append(" configured")
-                                        .append(", aspect \"${event.aspect}\", test size \"${event.testSize}\"", Verbosity.Verbose)
-                                        .append(", tags: \"${event.tags.joinToStringEscaped(", ")}\"", Verbosity.Verbose)
+                                        .append(", aspect \"${event.aspect}\", test size \"${event.testSize}\"", Verbosity.Verbose) { event.aspect.isNotBlank() }
+                                        .append(", tags: \"${event.tags.joinToStringEscaped(", ")}\"", Verbosity.Verbose) { event.tags.isNotEmpty() }
                                         .toString()))
                     }
                 }

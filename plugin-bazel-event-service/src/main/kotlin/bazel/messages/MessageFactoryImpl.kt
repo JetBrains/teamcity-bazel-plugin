@@ -26,11 +26,11 @@ class MessageFactoryImpl : MessageFactory {
             BuildProblem(description.clean(), "$projectId-$errorId".take(60))
 
     override fun createBlockOpened(blockName: String, description: String): ServiceMessage {
-        return BlockOpened(blockName, description.clean())
+        return BlockOpened(blockName.clean(), description.clean())
     }
 
     override fun createBlockClosed(blockName: String): ServiceMessage {
-        return BlockClosed(blockName)
+        return BlockClosed(blockName.clean())
     }
     
     override fun createImportData(type: String, path: String): ServiceMessage {

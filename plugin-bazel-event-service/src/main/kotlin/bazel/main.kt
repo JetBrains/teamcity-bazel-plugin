@@ -60,8 +60,6 @@ fun main(args: Array<String>) {
         System.exit(1)
         return
     }
-
-    System.exit(0)
 }
 
 private fun println(line: String) {
