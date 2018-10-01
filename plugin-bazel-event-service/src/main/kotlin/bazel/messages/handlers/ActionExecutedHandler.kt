@@ -82,10 +82,16 @@ class ActionExecutedHandler : EventHandler {
         }
 
         return try {
-            java.io.File(URI(file.uri)).readText().trim()
+            val progressFile = java.io.File(URI(file.uri))
+            try {
+                progressFile.readText().trim()
+            } catch (ex: Exception) {
+                ctx.logError("Cannot read text from file \"$progressFile\"", ex)
+                ""
+            }
         } catch (ex: Exception) {
-            ctx.logError("Cannot parse file name from uri ${file.uri}", ex)
-            return ""
+            ctx.logError("Cannot parse file name from uri \"${file.uri}\"", ex)
+            ""
         }
     }
 }
