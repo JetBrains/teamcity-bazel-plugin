@@ -11,13 +11,15 @@ import jetbrains.buildServer.agent.runner.ParameterType
 import jetbrains.buildServer.agent.runner.ParametersService
 import jetbrains.buildServer.bazel.BazelCommand
 import jetbrains.buildServer.bazel.BazelConstants
+import jetbrains.buildServer.bazel.CommandLineBuilder
 import kotlin.coroutines.experimental.buildSequence
 
 /**
  * Provides arguments to bazel build command.
  */
 class BuildCommand(
-        private val _parametersService: ParametersService)
+        private val _parametersService: ParametersService,
+        override val commandLineBuilder: CommandLineBuilder)
     : BazelCommand {
 
     override val command: String = BazelConstants.COMMAND_BUILD

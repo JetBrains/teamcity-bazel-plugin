@@ -18,10 +18,28 @@
   <bean class="jetbrains.buildServer.agent.runner.ParametersServiceImpl"/>
   <bean class="jetbrains.buildServer.agent.runner.PathsServiceImpl"/>
 
+  <!--bazel services-->
+  <bean class="jetbrains.buildServer.bazel.BesCommandLineBuilder" id="besCommandLineBuilder"/>
+  <bean class="jetbrains.buildServer.bazel.BazelCommandLineBuilder" id="bazelCommandLineBuilder"/>
+  <bean class="jetbrains.buildServer.bazel.BazelServerShutdownMonitor">
+    <constructor-arg ref="shutdownCommand"/>
+  </bean>
+
   <!--bazel commands-->
-  <bean class="jetbrains.buildServer.bazel.BazelServerShutdownMonitor"/>
-  <bean class="jetbrains.buildServer.bazel.commands.BuildCommand"/>
-  <bean class="jetbrains.buildServer.bazel.commands.CleanCommand"/>
-  <bean class="jetbrains.buildServer.bazel.commands.RunCommand"/>
-  <bean class="jetbrains.buildServer.bazel.commands.TestCommand"/>
+  <bean class="jetbrains.buildServer.bazel.commands.BuildCommand">
+    <constructor-arg ref="besCommandLineBuilder"/>
+  </bean>
+  <bean class="jetbrains.buildServer.bazel.commands.CleanCommand">
+    <constructor-arg ref="bazelCommandLineBuilder"/>
+  </bean>
+  <bean class="jetbrains.buildServer.bazel.commands.RunCommand">
+    <constructor-arg ref="besCommandLineBuilder"/>
+  </bean>
+  <bean class="jetbrains.buildServer.bazel.commands.TestCommand">
+    <constructor-arg ref="besCommandLineBuilder"/>
+  </bean>
+  <bean class="jetbrains.buildServer.bazel.commands.ShutdownCommand" id="shutdownCommand">
+    <constructor-arg ref="bazelCommandLineBuilder"/>
+  </bean>
+
 </beans>

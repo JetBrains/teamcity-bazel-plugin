@@ -15,21 +15,14 @@ import jetbrains.buildServer.bazel.CommandLineBuilder
 import kotlin.coroutines.experimental.buildSequence
 
 /**
- * Provides arguments to bazel test command.
+ * Provides arguments to bazel shutdowm command.
  */
-class TestCommand(
-        private val _parametersService: ParametersService,
+class ShutdownCommand(
         override val commandLineBuilder: CommandLineBuilder)
     : BazelCommand {
 
-    override val command: String = BazelConstants.COMMAND_TEST
+    override val command: String = BazelConstants.COMMAND_SHUTDOWN
 
     override val arguments: Sequence<String>
-        get() = buildSequence {
-            _parametersService.tryGetParameter(ParameterType.Runner, BazelConstants.PARAM_TEST_TARGET)?.let {
-                if (!it.isBlank()) {
-                    yield(it)
-                }
-            }
-        }
+        get() = emptySequence()
 }
