@@ -9,6 +9,7 @@ import bazel.bazel.events.File
 import bazel.messages.Color
 import bazel.messages.ServiceMessageContext
 import bazel.messages.apply
+import bazel.messages.logError
 import java.net.URI
 
 class ActionExecutedHandler : EventHandler {
@@ -24,17 +25,17 @@ class ActionExecutedHandler : EventHandler {
                 val details = StringBuilder()
                 details.appendln(event.cmdLines.joinToStringEscaped().trim())
 
-                var content = readFromFile(event.primaryOutput)
+                var content = readFromFile(event.primaryOutput, ctx)
                 if (content.isNotBlank()) {
                     details.appendln(content)
                 }
 
-                content = readFromFile(event.stdout)
+                content = readFromFile(event.stdout, ctx)
                 if (content.isNotBlank()) {
                     details.appendln(content)
                 }
 
-                content = readFromFile(event.stderr)
+                content = readFromFile(event.stderr, ctx)
                 if (content.isNotBlank()) {
                     details.appendln(content.apply(Color.Error))
                 }
@@ -75,11 +76,16 @@ class ActionExecutedHandler : EventHandler {
             } else ctx.handlerIterator.next().handle(ctx)
 
 
-    private fun readFromFile(file: File): String {
+    private fun readFromFile(file: File, ctx: ServiceMessageContext): String {
         if (file.uri.isBlank()) {
             return ""
         }
 
-        return java.io.File(URI(file.uri)).readText().trim()
+        return try {
+            java.io.File(URI(file.uri)).readText().trim()
+        } catch (ex: Exception) {
+            ctx.logError("Cannot parse file name from uri ${file.uri}", ex)
+            return ""
+        }
     }
 }
