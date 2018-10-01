@@ -10,11 +10,16 @@
   <bean class="jetbrains.buildServer.bazel.BazelRunnerBuildService" scope="prototype"/>
   <bean class="jetbrains.buildServer.bazel.CommandExecutionAdapter" scope="prototype"/>
 
+  <!--agent service-->
+  <bean class="jetbrains.buildServer.agent.CommandLineExecutorImpl"/>
+  <bean class="jetbrains.buildServer.agent.AgentLifeCycleEventSourcesImpl"/>
+
   <!--runner service-->
   <bean class="jetbrains.buildServer.agent.runner.ParametersServiceImpl"/>
   <bean class="jetbrains.buildServer.agent.runner.PathsServiceImpl"/>
 
   <!--bazel commands-->
+  <bean class="jetbrains.buildServer.bazel.BazelServerShutdownMonitor"/>
   <bean class="jetbrains.buildServer.bazel.commands.BuildCommand"/>
   <bean class="jetbrains.buildServer.bazel.commands.CleanCommand"/>
   <bean class="jetbrains.buildServer.bazel.commands.RunCommand"/>

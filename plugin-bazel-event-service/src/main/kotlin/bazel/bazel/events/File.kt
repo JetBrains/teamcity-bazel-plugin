@@ -5,6 +5,7 @@ data class File(
         val name: String,
         // A location where the contents of the file can be found. The string is encoded according to RFC2396.
         val uri: String) {
+    @Suppress("UNUSED_PARAMETER")
     constructor(
             // identifier indicating the nature of the file (e.g., "stdout", "stderr")
             name: String,

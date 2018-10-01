@@ -23,6 +23,7 @@ object BazelConstants {
     const val COMMAND_CLEAN = "clean"
     const val COMMAND_RUN = "run"
     const val COMMAND_TEST = "test"
+    const val COMMAND_SHUTDOWN = "shutdown"
 
     const val PARAM_ARGUMENTS = "arguments"
     const val PARAM_COMMAND = "bazel-command"

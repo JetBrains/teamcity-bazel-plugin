@@ -23,7 +23,8 @@ class BazelRunnerBuildService(
         bazelCommands: List<BazelCommand>,
         private val _pathsService: PathsService,
         private val _parametersService: ParametersService,
-        private val _argumentsSplitter: BazelArgumentsSplitter) : BuildServiceAdapter() {
+        private val _argumentsSplitter: BazelArgumentsSplitter,
+        private val _commandRegistry: CommandRegistry) : BuildServiceAdapter() {
 
     private val _bazelCommands = bazelCommands.associate { it.command to it }
 
@@ -47,6 +48,8 @@ class BazelRunnerBuildService(
             buildException.isLogStacktrace = false
             throw buildException
         }
+
+        _commandRegistry.register(command)
 
         val sb = StringBuilder()
         sb.appendln(getPath(BazelConstants.BAZEL_CONFIG_NAME))
