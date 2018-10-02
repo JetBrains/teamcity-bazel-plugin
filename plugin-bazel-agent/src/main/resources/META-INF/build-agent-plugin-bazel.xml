@@ -6,6 +6,7 @@
   <bean class="jetbrains.buildServer.bazel.BazelArgumentsSplitterImpl"/>
   <bean class="jetbrains.buildServer.bazel.BazelBuildSessionFactory"/>
   <bean class="jetbrains.buildServer.bazel.BazelCommandBuildSession" scope="prototype"/>
+  <bean class="jetbrains.buildServer.bazel.BazelCacheCleaner"/>
   <bean class="jetbrains.buildServer.bazel.BazelToolProvider"/>
   <bean class="jetbrains.buildServer.bazel.BazelRunnerBuildService" scope="prototype"/>
   <bean class="jetbrains.buildServer.bazel.CommandExecutionAdapter" scope="prototype"/>
