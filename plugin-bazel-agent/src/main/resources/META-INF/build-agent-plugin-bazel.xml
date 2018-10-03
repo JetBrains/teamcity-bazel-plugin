@@ -14,6 +14,7 @@
   <!--agent service-->
   <bean class="jetbrains.buildServer.agent.CommandLineExecutorImpl"/>
   <bean class="jetbrains.buildServer.agent.AgentLifeCycleEventSourcesImpl"/>
+  <bean class="jetbrains.buildServer.agent.FileSystemServiceImpl"/>
 
   <!--runner service-->
   <bean class="jetbrains.buildServer.agent.runner.ParametersServiceImpl"/>
@@ -22,9 +23,11 @@
   <!--bazel services-->
   <bean class="jetbrains.buildServer.bazel.BesCommandLineBuilder" id="besCommandLineBuilder"/>
   <bean class="jetbrains.buildServer.bazel.BazelCommandLineBuilder" id="bazelCommandLineBuilder"/>
-  <bean class="jetbrains.buildServer.bazel.BazelServerShutdownMonitor">
+  <bean class="jetbrains.buildServer.bazel.WorkspaceExplorerImpl"/>
+  <bean class="jetbrains.buildServer.bazel.ShutdownMonitor">
     <constructor-arg ref="shutdownCommand"/>
   </bean>
+  <bean class="jetbrains.buildServer.bazel.WorkingDirectoryProviderImpl"/>
 
   <!--bazel commands-->
   <bean class="jetbrains.buildServer.bazel.commands.BuildCommand">

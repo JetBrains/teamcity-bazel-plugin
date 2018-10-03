@@ -16,8 +16,14 @@ class BazelArgumentsSplitterTest {
     }
 
     @Test(dataProvider = "testData")
-    fun splitArguments(arguments: String, expected: List<String>) {
+    fun splitArguments(arguments: String, expectedArgs: List<String>) {
+        // given
         val splitter = BazelArgumentsSplitterImpl()
-        Assert.assertEquals(splitter.splitArguments(arguments).toList(), expected)
+
+        // when
+        val actualArgs = splitter.splitArguments(arguments).toList()
+
+        // then
+        Assert.assertEquals(actualArgs, expectedArgs)
     }
 }

@@ -16,7 +16,7 @@ class CommandLineExecutorImpl : CommandLineExecutor {
         currentEnvironment.getOrPut("HOME") { System.getProperty("user.home") }
         cmd.envParams = currentEnvironment
 
-        LOG.info("Execute command line: ${cmd.commandLineString}")
+        LOG.info("Execute command line: \"${cmd.commandLineString}\" in the working directory \"${cmd.workDirectory}\"")
         val executor = jetbrains.buildServer.CommandLineExecutor(cmd)
         return executor.runProcess(executionTimeoutSeconds)?.exitCode ?: -1
     }

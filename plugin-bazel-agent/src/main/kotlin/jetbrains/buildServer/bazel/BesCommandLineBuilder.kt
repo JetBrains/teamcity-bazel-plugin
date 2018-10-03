@@ -9,6 +9,7 @@ import kotlin.coroutines.experimental.buildSequence
 class BesCommandLineBuilder(
         private val _pathsService: PathsService,
         private val _parametersService: ParametersService,
+        private val _workingDirectoryProvider: WorkingDirectoryProvider,
         private val _argumentsSplitter: BazelArgumentsSplitter)
     : CommandLineBuilder {
     override fun build(command: BazelCommand): ProgramCommandLine {
@@ -46,7 +47,7 @@ class BesCommandLineBuilder(
 
         return SimpleProgramCommandLine(
                 environmentVariables,
-                _pathsService.getPath(PathType.WorkingDirectory).absolutePath,
+                _workingDirectoryProvider.workingDirectory.absolutePath,
                 javaExecutable.absolutePath,
                 besArgs)
     }

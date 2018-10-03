@@ -6,6 +6,7 @@ import kotlin.coroutines.experimental.buildSequence
 class BazelCommandLineBuilder(
         private val _pathsService: PathsService,
         private val _parametersService: ParametersService,
+        private val _workingDirectoryProvider: WorkingDirectoryProvider,
         private val _argumentsSplitter: BazelArgumentsSplitter)
     : CommandLineBuilder {
     override fun build(command: BazelCommand): ProgramCommandLine {
@@ -15,7 +16,7 @@ class BazelCommandLineBuilder(
 
         return SimpleProgramCommandLine(
                 environmentVariables,
-                _pathsService.getPath(PathType.WorkingDirectory).absolutePath,
+                _workingDirectoryProvider.workingDirectory.absolutePath,
                 _pathsService.getToolPath(BazelConstants.BAZEL_CONFIG_NAME).absolutePath,
                 getArgs(command).toList())
     }
