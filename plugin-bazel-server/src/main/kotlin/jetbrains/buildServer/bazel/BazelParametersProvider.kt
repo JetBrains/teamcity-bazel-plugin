@@ -42,6 +42,9 @@ class BazelParametersProvider {
     val argumentsKey: String
         get() = BazelConstants.PARAM_ARGUMENTS
 
+    val startupOptionsKey: String
+        get() = BazelConstants.PARAM_STARTUP_OPTIONS
+
     val verbosityKey: String
         get() = BazelConstants.PARAM_VERBOSITY
 

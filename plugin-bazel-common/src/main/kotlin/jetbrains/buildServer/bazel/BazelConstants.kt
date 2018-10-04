@@ -26,6 +26,7 @@ object BazelConstants {
     const val COMMAND_SHUTDOWN = "shutdown"
 
     const val PARAM_ARGUMENTS = "arguments"
+    const val PARAM_STARTUP_OPTIONS = "startup-options"
     const val PARAM_COMMAND = "bazel-command"
     const val PARAM_BUILD_TARGET = "bazel-build-target"
     const val PARAM_CLEAN_TARGET = "bazel-clean-target"

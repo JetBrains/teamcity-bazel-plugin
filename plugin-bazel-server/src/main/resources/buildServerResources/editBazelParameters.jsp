@@ -19,6 +19,15 @@
 </props:selectSectionProperty>
 
 <tr class="advancedSetting">
+    <th><label for="${params.argumentsKey}">Startup options:</label></th>
+    <td>
+        <props:textProperty name="${params.startupOptionsKey}" className="longField" expandable="true"/>
+        <span class="error" id="error_${params.startupOptionsKey}"></span>
+        <span class="smallNote">Enter additional options that appear before the command.</span>
+    </td>
+</tr>
+
+<tr class="advancedSetting">
     <th><label for="${params.argumentsKey}">Command line parameters:</label></th>
     <td>
         <props:textProperty name="${params.argumentsKey}" className="longField" expandable="true"/>

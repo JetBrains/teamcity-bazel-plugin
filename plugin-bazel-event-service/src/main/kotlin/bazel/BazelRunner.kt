@@ -6,18 +6,39 @@ import devteam.rx.Disposable
 import devteam.rx.use
 import java.io.BufferedReader
 import java.io.File
+import kotlin.coroutines.experimental.buildSequence
 
 class BazelRunner(
         private val _verbosity: Verbosity,
         bazelCommandlineFile: File,
-        private val _besPort: Int) {
+        besPort: Int) {
 
-    val args: List<String> = bazelCommandlineFile.readLines()
+    val args: List<String> = buildSequence {
+        var hasBesBackendArg = false
+        val besBackendArgVal = "${besBackendArg}localhost:$besPort"
+        for (arg in bazelCommandlineFile.readLines()) {
+            // remove existing bes_backend arg
+            if (arg.startsWith(besBackendArg, true)) {
+                continue
+            }
+
+            if (arg.trim() == "--") {
+                yield(besBackendArgVal)
+                hasBesBackendArg = true
+            }
+
+            yield(arg)
+        }
+
+        if (!hasBesBackendArg) {
+            yield(besBackendArgVal)
+        }
+    }.toList()
 
     val workingDirectory: File = File(".").absoluteFile
 
     fun run(): Int {
-        val process = ProcessBuilder(args + listOf("--bes_backend=localhost:$_besPort"))
+        val process = ProcessBuilder(args)
                 .directory(workingDirectory)
                 .start()
 
@@ -31,6 +52,10 @@ class BazelRunner(
 
         process.waitFor()
         return process.exitValue()
+    }
+
+    companion object {
+        private const val besBackendArg = "--bes_backend="
     }
 
     private class ActiveReader(reader: BufferedReader, action: (line: String) -> Unit) : Disposable {

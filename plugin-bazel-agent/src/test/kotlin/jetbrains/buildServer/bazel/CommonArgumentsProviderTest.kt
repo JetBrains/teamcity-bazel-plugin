@@ -28,7 +28,10 @@ class CommonArgumentsProviderTest {
                         sequenceOf(CommandArgument(CommandArgumentType.Command, "myCommand"), CommandArgument(CommandArgumentType.Argument, "arg1"), CommandArgument(CommandArgumentType.Argument, "arg2"))),
                 arrayOf(
                         ParametersServiceStub(),
-                        sequenceOf(CommandArgument(CommandArgumentType.Command, "myCommand")))
+                        sequenceOf(CommandArgument(CommandArgumentType.Command, "myCommand"))),
+                arrayOf(
+                        ParametersServiceStub().add(ParameterType.Runner, BazelConstants.PARAM_ARGUMENTS, "args").add(ParameterType.Runner, BazelConstants.PARAM_STARTUP_OPTIONS, "opts"),
+                        sequenceOf(CommandArgument(CommandArgumentType.Command, "myCommand"), CommandArgument(CommandArgumentType.StartupOption, "opt1"), CommandArgument(CommandArgumentType.StartupOption, "opt2"), CommandArgument(CommandArgumentType.Argument, "arg1"), CommandArgument(CommandArgumentType.Argument, "arg2")))
         )
     }
 
@@ -43,6 +46,9 @@ class CommonArgumentsProviderTest {
 
                 allowing<BazelArgumentsSplitter>(_argumentsSplitter).splitArguments("args")
                 will(returnValue(sequenceOf("arg1", "arg2")))
+
+                allowing<BazelArgumentsSplitter>(_argumentsSplitter).splitArguments("opts")
+                will(returnValue(sequenceOf("opt1", "opt2")))
             }
         })
 
