@@ -10,12 +10,12 @@ class BesCommandLineBuilder(
         private val _pathsService: PathsService,
         private val _parametersService: ParametersService,
         private val _workingDirectoryProvider: WorkingDirectoryProvider,
-        private val _argumentsSplitter: BazelArgumentsSplitter)
+        private val _argumentsConverter: ArgumentsConverter)
     : CommandLineBuilder {
     override fun build(command: BazelCommand): ProgramCommandLine {
         val sb = StringBuilder()
         sb.appendln(_pathsService.getToolPath(BazelConstants.BAZEL_CONFIG_NAME))
-        for (arg in getArgs(command)) {
+        for (arg in _argumentsConverter.convert(getArgs(command))) {
             sb.appendln(arg)
         }
 
@@ -52,15 +52,11 @@ class BesCommandLineBuilder(
                 besArgs)
     }
 
-    private fun getArgs(command: BazelCommand): Sequence<String> = buildSequence {
-        yield(command.command)
+    private fun getArgs(command: BazelCommand): Sequence<CommandArgument> = buildSequence {
         yieldAll(command.arguments)
-        _parametersService.tryGetParameter(ParameterType.Runner, BazelConstants.PARAM_ARGUMENTS)?.trim()?.let {
-            yieldAll(_argumentsSplitter.splitArguments(it))
-        }
         _parametersService.tryGetParameter(ParameterType.System, "teamcity.buildType.id")?.let {
             if (!it.isBlank()) {
-                yield("--project_id=$it")
+                yield(CommandArgument(CommandArgumentType.Argument, "--project_id=$it"))
             }
         }
     }

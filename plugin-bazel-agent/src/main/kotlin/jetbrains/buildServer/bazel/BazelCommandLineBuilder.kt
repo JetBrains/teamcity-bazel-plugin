@@ -1,13 +1,12 @@
 package jetbrains.buildServer.bazel
 
 import jetbrains.buildServer.agent.runner.*
-import kotlin.coroutines.experimental.buildSequence
 
 class BazelCommandLineBuilder(
         private val _pathsService: PathsService,
         private val _parametersService: ParametersService,
         private val _workingDirectoryProvider: WorkingDirectoryProvider,
-        private val _argumentsSplitter: BazelArgumentsSplitter)
+        private val _argumentsConverter: ArgumentsConverter)
     : CommandLineBuilder {
     override fun build(command: BazelCommand): ProgramCommandLine {
         // get java executable
@@ -18,14 +17,6 @@ class BazelCommandLineBuilder(
                 environmentVariables,
                 _workingDirectoryProvider.workingDirectory.absolutePath,
                 _pathsService.getToolPath(BazelConstants.BAZEL_CONFIG_NAME).absolutePath,
-                getArgs(command).toList())
-    }
-
-    private fun getArgs(command: BazelCommand): Sequence<String> = buildSequence {
-        yield(command.command)
-        yieldAll(command.arguments)
-        _parametersService.tryGetParameter(ParameterType.Runner, BazelConstants.PARAM_ARGUMENTS)?.trim()?.let {
-            yieldAll(_argumentsSplitter.splitArguments(it))
-        }
+                _argumentsConverter.convert(command.arguments).toList())
     }
 }

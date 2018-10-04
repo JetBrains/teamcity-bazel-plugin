@@ -28,6 +28,8 @@
     <constructor-arg ref="shutdownCommand"/>
   </bean>
   <bean class="jetbrains.buildServer.bazel.WorkingDirectoryProviderImpl"/>
+  <bean class="jetbrains.buildServer.bazel.ArgumentsConverterImpl"/>
+  <bean class="jetbrains.buildServer.bazel.CommonArgumentsProvider"/>
 
   <!--bazel commands-->
   <bean class="jetbrains.buildServer.bazel.commands.BuildCommand">

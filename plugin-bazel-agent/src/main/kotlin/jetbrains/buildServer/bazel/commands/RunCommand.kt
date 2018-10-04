@@ -9,26 +9,26 @@ package jetbrains.buildServer.bazel.commands
 
 import jetbrains.buildServer.agent.runner.ParameterType
 import jetbrains.buildServer.agent.runner.ParametersService
-import jetbrains.buildServer.bazel.BazelCommand
-import jetbrains.buildServer.bazel.BazelConstants
-import jetbrains.buildServer.bazel.CommandLineBuilder
+import jetbrains.buildServer.bazel.*
 import kotlin.coroutines.experimental.buildSequence
 
 /**
  * Provides arguments to bazel run command.
  */
 class RunCommand(
+        override val commandLineBuilder: CommandLineBuilder,
         private val _parametersService: ParametersService,
-        override val commandLineBuilder: CommandLineBuilder)
+        private val _commonArgumentsProvider: ArgumentsProvider)
     : BazelCommand {
 
     override val command: String = BazelConstants.COMMAND_RUN
 
-    override val arguments: Sequence<String>
+    override val arguments: Sequence<CommandArgument>
         get() = buildSequence {
+            yieldAll(_commonArgumentsProvider.getArguments(this@RunCommand))
             _parametersService.tryGetParameter(ParameterType.Runner, BazelConstants.PARAM_RUN_TARGET)?.let {
                 if (!it.isBlank()) {
-                    yield(it)
+                    yield(CommandArgument(CommandArgumentType.Target, it))
                 }
             }
         }

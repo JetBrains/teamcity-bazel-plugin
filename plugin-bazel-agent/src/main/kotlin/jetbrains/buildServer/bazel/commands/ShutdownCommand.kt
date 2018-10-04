@@ -9,9 +9,7 @@ package jetbrains.buildServer.bazel.commands
 
 import jetbrains.buildServer.agent.runner.ParameterType
 import jetbrains.buildServer.agent.runner.ParametersService
-import jetbrains.buildServer.bazel.BazelCommand
-import jetbrains.buildServer.bazel.BazelConstants
-import jetbrains.buildServer.bazel.CommandLineBuilder
+import jetbrains.buildServer.bazel.*
 import kotlin.coroutines.experimental.buildSequence
 
 /**
@@ -23,6 +21,8 @@ class ShutdownCommand(
 
     override val command: String = BazelConstants.COMMAND_SHUTDOWN
 
-    override val arguments: Sequence<String>
-        get() = emptySequence()
+    override val arguments: Sequence<CommandArgument>
+        get() = buildSequence {
+            yield(CommandArgument(CommandArgumentType.Command, command))
+        }
 }
