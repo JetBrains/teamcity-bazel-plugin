@@ -16,13 +16,15 @@ import kotlin.coroutines.experimental.buildSequence
  * Provides arguments to bazel shutdowm command.
  */
 class ShutdownCommand(
-        override val commandLineBuilder: CommandLineBuilder)
+        override val commandLineBuilder: CommandLineBuilder,
+        private val _startupArgumentsProvider: ArgumentsProvider)
     : BazelCommand {
 
     override val command: String = BazelConstants.COMMAND_SHUTDOWN
 
     override val arguments: Sequence<CommandArgument>
         get() = buildSequence {
+            yieldAll(_startupArgumentsProvider.getArguments(this@ShutdownCommand))
             yield(CommandArgument(CommandArgumentType.Command, command))
         }
 }

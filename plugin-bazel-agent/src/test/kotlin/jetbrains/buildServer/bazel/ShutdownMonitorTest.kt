@@ -41,7 +41,7 @@ class ShutdownMonitorTest {
     }
 
     @Test
-    fun shouldShutdownBazelServerSeveralTimesForSeveralDirectories() {
+    fun shouldShutdownBazelServerSeveralTimesWhenSeveralDirectories() {
         // given
         val buildFinishedSource = subjectOf<AgentLifeCycleEventSources.BuildFinishedEvent>()
         _ctx.checking(object : Expectations() {
@@ -55,8 +55,14 @@ class ShutdownMonitorTest {
                 allowing<BazelCommand>(_command1).command
                 will(returnValue(BazelConstants.COMMAND_BUILD))
 
+                allowing<BazelCommand>(_command1).arguments
+                will(returnValue(sequenceOf(CommandArgument(CommandArgumentType.Argument, "arg"))))
+
                 allowing<BazelCommand>(_command2).command
                 will(returnValue(BazelConstants.COMMAND_TEST))
+
+                allowing<BazelCommand>(_command2).arguments
+                will(returnValue(sequenceOf(CommandArgument(CommandArgumentType.Argument, "arg"))))
 
                 oneOf<CommandLineBuilder>(_shutdownCommandLineBuilder).build(_shutdownCommand)
                 will(returnValue(_shutdownCommandLine1))
@@ -97,7 +103,7 @@ class ShutdownMonitorTest {
     }
 
     @Test
-    fun shouldShutdownBazelServerOnceForSameDirectories() {
+    fun shouldShutdownBazelServerSeveralTimesWhenDifferentStartupOptions() {
         // given
         val buildFinishedSource = subjectOf<AgentLifeCycleEventSources.BuildFinishedEvent>()
         _ctx.checking(object : Expectations() {
@@ -111,8 +117,76 @@ class ShutdownMonitorTest {
                 allowing<BazelCommand>(_command1).command
                 will(returnValue(BazelConstants.COMMAND_BUILD))
 
+                allowing<BazelCommand>(_command1).arguments
+                will(returnValue(sequenceOf(CommandArgument(CommandArgumentType.StartupOption, "opt"))))
+
                 allowing<BazelCommand>(_command2).command
                 will(returnValue(BazelConstants.COMMAND_TEST))
+
+                allowing<BazelCommand>(_command2).arguments
+                will(returnValue(sequenceOf(CommandArgument(CommandArgumentType.StartupOption, "opt"), CommandArgument(CommandArgumentType.StartupOption, "opt2"))))
+
+                oneOf<CommandLineBuilder>(_shutdownCommandLineBuilder).build(_shutdownCommand)
+                will(returnValue(_shutdownCommandLine1))
+
+                allowing<ProgramCommandLine>(_shutdownCommandLine1).workingDirectory
+                will(returnValue("dir"))
+
+                oneOf<WorkspaceExplorer>(_workspaceExplorer).tryFindWorkspace(File("dir"))
+                will(returnValue(Workspace(File(File("ws"), BazelConstants.WORKSPACE_FILE_NAME))))
+
+                oneOf<CommandLineBuilder>(_shutdownCommandLineBuilder).build(_shutdownCommand)
+                will(returnValue(_shutdownCommandLine2))
+
+                allowing<ProgramCommandLine>(_shutdownCommandLine2).workingDirectory
+                will(returnValue("dir"))
+
+                oneOf<WorkspaceExplorer>(_workspaceExplorer).tryFindWorkspace(File("dir"))
+                will(returnValue(Workspace(File(File("ws"), BazelConstants.WORKSPACE_FILE_NAME))))
+
+                oneOf<CommandLineExecutor>(_commandLineExecutor).tryExecute(_shutdownCommandLine1)
+                will(returnValue(0))
+
+                oneOf<CommandLineExecutor>(_commandLineExecutor).tryExecute(_shutdownCommandLine2)
+                will(returnValue(0))
+            }
+        })
+
+        val shutdownMonitor = ShutdownMonitor(_agentLifeCycleEventSources, _commandLineExecutor, _workspaceExplorer, _shutdownCommand)
+
+        // when
+        shutdownMonitor.register(_command1)
+        shutdownMonitor.register(_command2)
+
+        buildFinishedSource.onNext(AgentLifeCycleEventSources.BuildFinishedEvent(_agentRunningBuild, BuildFinishedStatus.FINISHED_SUCCESS))
+
+        // then
+        _ctx.assertIsSatisfied()
+    }
+
+    @Test
+    fun shouldShutdownBazelServerOnceForSameDirectoriesAndSameOptions() {
+        // given
+        val buildFinishedSource = subjectOf<AgentLifeCycleEventSources.BuildFinishedEvent>()
+        _ctx.checking(object : Expectations() {
+            init {
+                oneOf<AgentLifeCycleEventSources>(_agentLifeCycleEventSources).buildFinishedSource
+                will(returnValue(buildFinishedSource))
+
+                allowing<BazelCommand>(_shutdownCommand).commandLineBuilder
+                will(returnValue(_shutdownCommandLineBuilder))
+
+                allowing<BazelCommand>(_command1).command
+                will(returnValue(BazelConstants.COMMAND_BUILD))
+
+                allowing<BazelCommand>(_command1).arguments
+                will(returnValue(sequenceOf(CommandArgument(CommandArgumentType.StartupOption, "opt2"), CommandArgument(CommandArgumentType.StartupOption, "opt1"))))
+
+                allowing<BazelCommand>(_command2).command
+                will(returnValue(BazelConstants.COMMAND_TEST))
+
+                allowing<BazelCommand>(_command2).arguments
+                will(returnValue(sequenceOf(CommandArgument(CommandArgumentType.StartupOption, "opt1"), CommandArgument(CommandArgumentType.StartupOption, "opt2"))))
 
                 oneOf<CommandLineBuilder>(_shutdownCommandLineBuilder).build(_shutdownCommand)
                 will(returnValue(_shutdownCommandLine1))
@@ -164,8 +238,14 @@ class ShutdownMonitorTest {
                 allowing<BazelCommand>(_command1).command
                 will(returnValue(BazelConstants.COMMAND_BUILD))
 
+                allowing<BazelCommand>(_command1).arguments
+                will(returnValue(sequenceOf(CommandArgument(CommandArgumentType.StartupOption, "opt"))))
+
                 allowing<BazelCommand>(_command2).command
                 will(returnValue(BazelConstants.COMMAND_TEST))
+
+                allowing<BazelCommand>(_command2).arguments
+                will(returnValue(sequenceOf(CommandArgument(CommandArgumentType.StartupOption, "opt"))))
 
                 oneOf<CommandLineBuilder>(_shutdownCommandLineBuilder).build(_shutdownCommand)
                 will(returnValue(_shutdownCommandLine1))

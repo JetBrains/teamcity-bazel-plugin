@@ -8,17 +8,15 @@ import org.testng.annotations.BeforeMethod
 import org.testng.annotations.DataProvider
 import org.testng.annotations.Test
 
-class CommonArgumentsProviderTest {
+class StartupArgumentsProviderTest {
     private lateinit var _ctx: Mockery
     private lateinit var _argumentsSplitter: BazelArgumentsSplitter
-    private lateinit var _startupArgumentsProvider: ArgumentsProvider
     private lateinit var _command: BazelCommand
 
     @BeforeMethod
     fun setUp() {
         _ctx = Mockery()
         _argumentsSplitter = _ctx.mock<BazelArgumentsSplitter>(BazelArgumentsSplitter::class.java)
-        _startupArgumentsProvider = _ctx.mock<ArgumentsProvider>(ArgumentsProvider::class.java)
         _command = _ctx.mock<BazelCommand>(BazelCommand::class.java)
     }
 
@@ -26,28 +24,22 @@ class CommonArgumentsProviderTest {
     fun testData(): Array<Array<out Any?>> {
         return arrayOf(
                 arrayOf(
-                        ParametersServiceStub().add(ParameterType.Runner, BazelConstants.PARAM_ARGUMENTS, "args"),
-                        sequenceOf(CommandArgument(CommandArgumentType.Command, "myCommand"), CommandArgument(CommandArgumentType.Argument, "arg1"), CommandArgument(CommandArgumentType.Argument, "arg2"), CommandArgument(CommandArgumentType.StartupOption, "opt"))),
-                arrayOf(
                         ParametersServiceStub(),
-                        sequenceOf(CommandArgument(CommandArgumentType.Command, "myCommand"), CommandArgument(CommandArgumentType.StartupOption, "opt")))
+                        emptySequence<CommandArgument>()),
+                arrayOf(
+                        ParametersServiceStub().add(ParameterType.Runner, BazelConstants.PARAM_STARTUP_OPTIONS, "opts"),
+                        sequenceOf(CommandArgument(CommandArgumentType.StartupOption, "opt1"), CommandArgument(CommandArgumentType.StartupOption, "opt2")))
         )
     }
 
     @Test(dataProvider = "testData")
     fun shouldProvideCommonArguments(parametersService: ParametersServiceStub, expectedArguments: Sequence<CommandArgument>) {
         // given
-        val argumentsProvider = CommonArgumentsProvider(parametersService, _argumentsSplitter, _startupArgumentsProvider)
+        val argumentsProvider = StartupArgumentsProvider(parametersService, _argumentsSplitter)
         _ctx.checking(object : Expectations() {
             init {
-                oneOf<BazelCommand>(_command).command
-                will(returnValue("myCommand"))
-
-                allowing<BazelArgumentsSplitter>(_argumentsSplitter).splitArguments("args")
-                will(returnValue(sequenceOf("arg1", "arg2")))
-
-                oneOf<ArgumentsProvider>(_startupArgumentsProvider).getArguments(_command)
-                will(returnValue(sequenceOf(CommandArgument(CommandArgumentType.StartupOption, "opt"))))
+                allowing<BazelArgumentsSplitter>(_argumentsSplitter).splitArguments("opts")
+                will(returnValue(sequenceOf("opt1", "opt2")))
             }
         })
 

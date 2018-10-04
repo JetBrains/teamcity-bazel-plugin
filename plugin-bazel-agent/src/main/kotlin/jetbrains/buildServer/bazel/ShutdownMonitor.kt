@@ -36,26 +36,31 @@ class ShutdownMonitor(
         val commandLine = _shutdownCommand.commandLineBuilder.build(_shutdownCommand)
         val workingDirectory = File(commandLine.workingDirectory)
         val workspaceDirectory = _workspaceExplorer.tryFindWorkspace(workingDirectory)?.workspace?.parentFile ?: workingDirectory
-        LOG.info("Bazel command \"${command.command}\" was registered, workspace directory is \"$workspaceDirectory\"")
-        _shutdownCommands.add(ShutdownCommandLine(commandLine, workspaceDirectory))
+        val startupOptions = command.arguments.filter { it.type == CommandArgumentType.StartupOption }.map { it.value }.toSet()
+        val shutdownCommandLine = ShutdownCommandLine(commandLine, workspaceDirectory, startupOptions)
+        LOG.info("Bazel command \"${command.command}\" was registered, workspace directory is \"${shutdownCommandLine.workspaceDirectory}\", startup options are: ${shutdownCommandLine.startupArguments.map { it }.joinToString(" ")}")
+        _shutdownCommands.add(shutdownCommandLine)
     }
 
     override fun dispose() = _subscriptionToken.dispose()
 
-    private class ShutdownCommandLine(val commandLine: ProgramCommandLine, private val _workspaceDirectory: File) {
+    private class ShutdownCommandLine(val commandLine: ProgramCommandLine, val workspaceDirectory: File, val startupArguments: Set<String>) {
         override fun equals(other: Any?): Boolean {
             if (this === other) return true
             if (javaClass != other?.javaClass) return false
 
             other as ShutdownCommandLine
 
-            if (_workspaceDirectory != other._workspaceDirectory) return false
+            if (workspaceDirectory != other.workspaceDirectory) return false
+            if (startupArguments != other.startupArguments) return false
 
             return true
         }
 
         override fun hashCode(): Int {
-            return _workspaceDirectory.hashCode()
+            var result = workspaceDirectory.hashCode()
+            result = 31 * result + startupArguments.hashCode()
+            return result
         }
     }
 

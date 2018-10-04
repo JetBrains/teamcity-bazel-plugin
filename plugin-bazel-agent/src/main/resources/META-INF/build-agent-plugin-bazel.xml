@@ -29,23 +29,31 @@
   </bean>
   <bean class="jetbrains.buildServer.bazel.WorkingDirectoryProviderImpl"/>
   <bean class="jetbrains.buildServer.bazel.ArgumentsConverterImpl"/>
-  <bean class="jetbrains.buildServer.bazel.CommonArgumentsProvider"/>
+  <bean class="jetbrains.buildServer.bazel.StartupArgumentsProvider" id="startupArgumentsProvider"/>
+  <bean class="jetbrains.buildServer.bazel.CommonArgumentsProvider" id="commonArgumentsProvider">
+    <constructor-arg ref="startupArgumentsProvider"/>
+  </bean>
 
   <!--bazel commands-->
   <bean class="jetbrains.buildServer.bazel.commands.BuildCommand">
     <constructor-arg ref="besCommandLineBuilder"/>
+    <constructor-arg ref="commonArgumentsProvider"/>
   </bean>
   <bean class="jetbrains.buildServer.bazel.commands.CleanCommand">
     <constructor-arg ref="bazelCommandLineBuilder"/>
+    <constructor-arg ref="commonArgumentsProvider"/>
   </bean>
   <bean class="jetbrains.buildServer.bazel.commands.RunCommand">
     <constructor-arg ref="besCommandLineBuilder"/>
+    <constructor-arg ref="commonArgumentsProvider"/>
   </bean>
   <bean class="jetbrains.buildServer.bazel.commands.TestCommand">
     <constructor-arg ref="besCommandLineBuilder"/>
+    <constructor-arg ref="commonArgumentsProvider"/>
   </bean>
   <bean class="jetbrains.buildServer.bazel.commands.ShutdownCommand" id="shutdownCommand">
     <constructor-arg ref="bazelCommandLineBuilder"/>
+    <constructor-arg ref="startupArgumentsProvider"/>
   </bean>
 
 </beans>
