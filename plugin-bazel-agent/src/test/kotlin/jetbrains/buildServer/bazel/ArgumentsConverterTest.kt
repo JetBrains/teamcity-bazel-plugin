@@ -16,8 +16,8 @@ class ArgumentsConverterTest {
                         true),
                 arrayOf(
                         sequenceOf(CommandArgument(CommandArgumentType.Command, BazelConstants.COMMAND_SHUTDOWN), CommandArgument(CommandArgumentType.Command, BazelConstants.COMMAND_CLEAN)),
-                        emptySequence<String>(),
-                        false),
+                        sequenceOf(BazelConstants.COMMAND_SHUTDOWN, BazelConstants.COMMAND_CLEAN),
+                        true),
                 arrayOf(
                         emptySequence<CommandArgument>(),
                         emptySequence<String>(),

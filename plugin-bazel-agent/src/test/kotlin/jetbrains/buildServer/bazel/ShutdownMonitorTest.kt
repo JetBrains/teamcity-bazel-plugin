@@ -1,10 +1,7 @@
 package jetbrains.buildServer.bazel
 
 import devteam.rx.subjectOf
-import jetbrains.buildServer.agent.AgentLifeCycleEventSources
-import jetbrains.buildServer.agent.AgentRunningBuild
-import jetbrains.buildServer.agent.BuildFinishedStatus
-import jetbrains.buildServer.agent.CommandLineExecutor
+import jetbrains.buildServer.agent.*
 import jetbrains.buildServer.agent.runner.*
 import org.jmock.Expectations
 import org.jmock.Mockery
@@ -71,7 +68,7 @@ class ShutdownMonitorTest {
                 will(returnValue("dir1"))
 
                 oneOf<WorkspaceExplorer>(_workspaceExplorer).tryFindWorkspace(File("dir1"))
-                will(returnValue(Workspace(File(File("ws1"), BazelConstants.WORKSPACE_FILE_NAME))))
+                will(returnValue(Workspace(File("ws1"))))
 
                 oneOf<CommandLineBuilder>(_shutdownCommandLineBuilder).build(_shutdownCommand)
                 will(returnValue(_shutdownCommandLine2))
@@ -80,13 +77,13 @@ class ShutdownMonitorTest {
                 will(returnValue("dir2"))
 
                 oneOf<WorkspaceExplorer>(_workspaceExplorer).tryFindWorkspace(File("dir2"))
-                will(returnValue(Workspace(File(File("ws2"), BazelConstants.WORKSPACE_FILE_NAME))))
+                will(returnValue(Workspace(File("ws2"))))
 
                 oneOf<CommandLineExecutor>(_commandLineExecutor).tryExecute(_shutdownCommandLine1)
-                will(returnValue(0))
+                will(returnValue(CommandLineResult()))
 
                 oneOf<CommandLineExecutor>(_commandLineExecutor).tryExecute(_shutdownCommandLine2)
-                will(returnValue(0))
+                will(returnValue(CommandLineResult()))
             }
         })
 
@@ -133,7 +130,7 @@ class ShutdownMonitorTest {
                 will(returnValue("dir"))
 
                 oneOf<WorkspaceExplorer>(_workspaceExplorer).tryFindWorkspace(File("dir"))
-                will(returnValue(Workspace(File(File("ws"), BazelConstants.WORKSPACE_FILE_NAME))))
+                will(returnValue(Workspace(File("ws"))))
 
                 oneOf<CommandLineBuilder>(_shutdownCommandLineBuilder).build(_shutdownCommand)
                 will(returnValue(_shutdownCommandLine2))
@@ -142,13 +139,13 @@ class ShutdownMonitorTest {
                 will(returnValue("dir"))
 
                 oneOf<WorkspaceExplorer>(_workspaceExplorer).tryFindWorkspace(File("dir"))
-                will(returnValue(Workspace(File(File("ws"), BazelConstants.WORKSPACE_FILE_NAME))))
+                will(returnValue(Workspace(File("ws"))))
 
                 oneOf<CommandLineExecutor>(_commandLineExecutor).tryExecute(_shutdownCommandLine1)
-                will(returnValue(0))
+                will(returnValue(CommandLineResult()))
 
                 oneOf<CommandLineExecutor>(_commandLineExecutor).tryExecute(_shutdownCommandLine2)
-                will(returnValue(0))
+                will(returnValue(CommandLineResult()))
             }
         })
 
@@ -195,7 +192,7 @@ class ShutdownMonitorTest {
                 will(returnValue("dir1"))
 
                 oneOf<WorkspaceExplorer>(_workspaceExplorer).tryFindWorkspace(File("dir1"))
-                will(returnValue(Workspace(File(File("ws1"), BazelConstants.WORKSPACE_FILE_NAME))))
+                will(returnValue(Workspace(File("ws1"))))
 
                 oneOf<CommandLineBuilder>(_shutdownCommandLineBuilder).build(_shutdownCommand)
                 will(returnValue(_shutdownCommandLine2))
@@ -204,10 +201,10 @@ class ShutdownMonitorTest {
                 will(returnValue("dir1"))
 
                 oneOf<WorkspaceExplorer>(_workspaceExplorer).tryFindWorkspace(File("dir1"))
-                will(returnValue(Workspace(File(File("ws1"), BazelConstants.WORKSPACE_FILE_NAME))))
+                will(returnValue(Workspace(File("ws1"))))
 
                 oneOf<CommandLineExecutor>(_commandLineExecutor).tryExecute(_shutdownCommandLine1)
-                will(returnValue(0))
+                will(returnValue(CommandLineResult()))
             }
         })
 
@@ -224,7 +221,7 @@ class ShutdownMonitorTest {
     }
 
     @Test
-    fun shouldShutdownBazelServerWhenWrokspaceWasNotFound() {
+    fun shouldShutdownBazelServerWhenWorkspaceWasNotFound() {
         // given
         val buildFinishedSource = subjectOf<AgentLifeCycleEventSources.BuildFinishedEvent>()
         _ctx.checking(object : Expectations() {
@@ -263,10 +260,10 @@ class ShutdownMonitorTest {
                 will(returnValue("dir2"))
 
                 oneOf<WorkspaceExplorer>(_workspaceExplorer).tryFindWorkspace(File("dir2"))
-                will(returnValue(Workspace(File(File("dir"), BazelConstants.WORKSPACE_FILE_NAME))))
+                will(returnValue(Workspace(File("dir"))))
 
                 oneOf<CommandLineExecutor>(_commandLineExecutor).tryExecute(_shutdownCommandLine1)
-                will(returnValue(0))
+                will(returnValue(CommandLineResult()))
             }
         })
 

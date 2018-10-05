@@ -35,7 +35,7 @@ class ShutdownMonitor(
     override fun register(command: BazelCommand) {
         val commandLine = _shutdownCommand.commandLineBuilder.build(_shutdownCommand)
         val workingDirectory = File(commandLine.workingDirectory)
-        val workspaceDirectory = _workspaceExplorer.tryFindWorkspace(workingDirectory)?.workspace?.parentFile ?: workingDirectory
+        val workspaceDirectory = _workspaceExplorer.tryFindWorkspace(workingDirectory)?.path ?: workingDirectory
         val startupOptions = command.arguments.filter { it.type == CommandArgumentType.StartupOption }.map { it.value }.toSet()
         val shutdownCommandLine = ShutdownCommandLine(commandLine, workspaceDirectory, startupOptions)
         LOG.info("Bazel command \"${command.command}\" was registered, workspace directory is \"${shutdownCommandLine.workspaceDirectory}\", startup options are: ${shutdownCommandLine.startupArguments.map { it }.joinToString(" ")}")
