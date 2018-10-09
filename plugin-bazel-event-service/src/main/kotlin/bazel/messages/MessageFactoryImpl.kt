@@ -25,17 +25,14 @@ class MessageFactoryImpl : MessageFactory {
     override fun createBuildProblem(description: String, projectId: String, errorId: String) =
             BuildProblem(description.clean(), "$projectId-$errorId".take(60))
 
-    override fun createBlockOpened(blockName: String, description: String): ServiceMessage {
-        return BlockOpened(blockName.clean(), description.clean())
-    }
+    override fun createBlockOpened(blockName: String, description: String): ServiceMessage =
+            BlockOpened(blockName.clean(), description.clean())
 
-    override fun createBlockClosed(blockName: String): ServiceMessage {
-        return BlockClosed(blockName.clean())
-    }
+    override fun createBlockClosed(blockName: String): ServiceMessage =
+            BlockClosed(blockName.clean())
     
-    override fun createImportData(type: String, path: String): ServiceMessage {
-        return ImportData(type, path)
-    }
+    override fun createImportData(type: String, path: String): ServiceMessage =
+            ImportData(type, path)
 
     companion object {
         private const val Normal = "NORMAL"

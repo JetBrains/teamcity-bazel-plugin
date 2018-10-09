@@ -17,7 +17,6 @@ class BuildFinishedHandler : EventHandler {
                 @Suppress("NON_EXHAUSTIVE_WHEN")
                 when (ctx.event.payload.result.status) {
                     BuildStatus.CommandSucceeded -> {
-                        ctx.onNext(ctx.messageFactory.createBuildStatus(status))
                         ctx.onNext(ctx.messageFactory.createMessage(
                                 ctx.buildMessage()
                                         .append(status.apply(Color.Success))

@@ -33,7 +33,6 @@ class BuildStartedHandler : EventHandler {
                     }
                 }
 
-                ctx.onNext(ctx.messageFactory.createBuildStatus(description))
                 true
             } else ctx.handlerIterator.next().handle(ctx)
 }

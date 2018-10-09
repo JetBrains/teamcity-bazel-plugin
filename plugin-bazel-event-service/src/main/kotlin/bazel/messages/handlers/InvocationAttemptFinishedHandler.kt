@@ -19,15 +19,11 @@ class InvocationAttemptFinishedHandler : EventHandler {
 
                 if (ctx.event.payload.invocationResult.status == BuildStatus.CommandSucceeded) {
                     if (ctx.verbosity.atLeast(Verbosity.Detailed)) {
-                        val description = "Invocation attempt completed"
-                        ctx.onNext(ctx.messageFactory.createBuildStatus(description))
-                        if (ctx.verbosity.atLeast(Verbosity.Detailed)) {
-                            ctx.onNext(ctx.messageFactory.createMessage(
-                                    ctx.buildMessage()
-                                            .append(description.apply(Color.BuildStage))
-                                            .append(", exit code: ${ctx.event.payload.exitCode}", Verbosity.Verbose)
-                                            .toString()))
-                        }
+                        ctx.onNext(ctx.messageFactory.createMessage(
+                                ctx.buildMessage()
+                                        .append("Invocation attempt completed".apply(Color.Success))
+                                        .append(", exit code: ${ctx.event.payload.exitCode}", Verbosity.Verbose)
+                                        .toString()))
                     }
                 } else {
                     ctx.onNext(ctx.messageFactory.createErrorMessage(
