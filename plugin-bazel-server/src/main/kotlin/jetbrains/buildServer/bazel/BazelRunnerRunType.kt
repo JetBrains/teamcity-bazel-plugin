@@ -57,10 +57,10 @@ class BazelRunnerRunType(private val myPluginDescriptor: PluginDescriptor,
         parameters[BazelConstants.PARAM_COMMAND]?.let {
             builder.append(" $it")
             when(it) {
-                BazelConstants.COMMAND_BUILD -> builder.append(" ${parameters[BazelConstants.PARAM_BUILD_TARGET]}")
-                BazelConstants.COMMAND_CLEAN -> builder.append(" ${parameters[BazelConstants.PARAM_CLEAN_TARGET]}")
-                BazelConstants.COMMAND_RUN -> builder.append(" ${parameters[BazelConstants.PARAM_RUN_TARGET]}")
-                BazelConstants.COMMAND_TEST -> builder.append(" ${parameters[BazelConstants.PARAM_TEST_TARGET]}")
+                BazelConstants.COMMAND_BUILD -> builder.append(" ${parameters[BazelConstants.PARAM_BUILD_TARGETS]}")
+                BazelConstants.COMMAND_CLEAN -> builder.append(" ${parameters[BazelConstants.PARAM_CLEAN_TARGETS]}")
+                BazelConstants.COMMAND_RUN -> builder.append(" ${parameters[BazelConstants.PARAM_RUN_TARGETS]}")
+                BazelConstants.COMMAND_TEST -> builder.append(" ${parameters[BazelConstants.PARAM_TEST_TARGETS]}")
                 else -> {}
             }
         }

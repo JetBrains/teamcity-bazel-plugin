@@ -18,7 +18,8 @@ import kotlin.coroutines.experimental.buildSequence
 class CleanCommand(
         override val commandLineBuilder: CommandLineBuilder,
         private val _parametersService: ParametersService,
-        private val _commonArgumentsProvider: ArgumentsProvider)
+        private val _commonArgumentsProvider: ArgumentsProvider,
+        private val _argumentsSplitter: BazelArgumentsSplitter)
     : BazelCommand {
 
     override val command: String = BazelConstants.COMMAND_CLEAN
@@ -26,9 +27,9 @@ class CleanCommand(
     override val arguments: Sequence<CommandArgument>
         get() = buildSequence {
             yieldAll(_commonArgumentsProvider.getArguments(this@CleanCommand))
-            _parametersService.tryGetParameter(ParameterType.Runner, BazelConstants.PARAM_CLEAN_TARGET)?.let {
+            _parametersService.tryGetParameter(ParameterType.Runner, BazelConstants.PARAM_CLEAN_TARGETS)?.let {
                 if (!it.isBlank()) {
-                    yield(CommandArgument(CommandArgumentType.Target, it))
+                    yieldAll(_argumentsSplitter.splitArguments(it).map { CommandArgument(CommandArgumentType.Target, it) })
                 }
             }
         }

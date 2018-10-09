@@ -3,8 +3,8 @@
 <jsp:useBean id="propertiesBean" scope="request" type="jetbrains.buildServer.controllers.BasePropertiesBean"/>
 <jsp:useBean id="params" class="jetbrains.buildServer.bazel.BazelParametersProvider"/>
 
-<c:if test="${not empty propertiesBean.properties[params.cleanTargetKey]}">
+<c:if test="${not empty propertiesBean.properties[params.cleanTargetsKey]}">
     <div class="parameter">
-        Target: <props:displayValue name="${params.cleanTargetKey}"/>
+        Targets: <props:displayValue name="${params.cleanTargetsKey}"/>
     </div>
 </c:if>

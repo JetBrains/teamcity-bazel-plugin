@@ -27,17 +27,17 @@ class BazelParametersProvider {
     val commandKey: String
         get() = BazelConstants.PARAM_COMMAND
 
-    val buildTargetKey: String
-        get() = BazelConstants.PARAM_BUILD_TARGET
+    val buildTargetsKey: String
+        get() = BazelConstants.PARAM_BUILD_TARGETS
 
-    val cleanTargetKey: String
-        get() = BazelConstants.PARAM_CLEAN_TARGET
+    val cleanTargetsKey: String
+        get() = BazelConstants.PARAM_CLEAN_TARGETS
 
-    val testTargetKey: String
-        get() = BazelConstants.PARAM_TEST_TARGET
+    val testTargetsKey: String
+        get() = BazelConstants.PARAM_TEST_TARGETS
 
-    val runTargetKey: String
-        get() = BazelConstants.PARAM_RUN_TARGET
+    val runTargetsKey: String
+        get() = BazelConstants.PARAM_RUN_TARGETS
 
     val argumentsKey: String
         get() = BazelConstants.PARAM_ARGUMENTS

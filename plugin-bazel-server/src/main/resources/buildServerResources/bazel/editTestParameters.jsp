@@ -7,12 +7,13 @@
 <jsp:useBean id="params" class="jetbrains.buildServer.bazel.BazelParametersProvider"/>
 
 <tr>
-    <th><label for="${params.testTargetKey}">Target:</label></th>
+    <th><label for="${params.testTargetsKey}">Targets:</label></th>
     <td>
-        <props:textProperty name="${params.testTargetKey}" className="longField"/>
+        <props:textProperty name="${params.testTargetsKey}" className="longField"/>
         <bs:projectData type="BazelTargets" sourceFieldId="${params.workingDirKey}"
-                        targetFieldId="${params.testTargetKey}" popupTitle="Select targets"
+                        targetFieldId="${params.testTargetsKey}" popupTitle="Select targets"
                         selectionMode="multiple"/>
-        <span class="error" id="error_${params.testTargetKey}"></span>
+        <span class="error" id="error_${params.testTargetsKey}"></span>
+        <span class="smallNote">Enter the list of targets to test.</span>
     </td>
 </tr>

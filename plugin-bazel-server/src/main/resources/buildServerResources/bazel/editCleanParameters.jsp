@@ -7,13 +7,13 @@
 <jsp:useBean id="params" class="jetbrains.buildServer.bazel.BazelParametersProvider"/>
 
 <tr>
-    <th><label for="${params.cleanTargetKey}">Target:</label></th>
+    <th><label for="${params.cleanTargetsKey}">Targets:</label></th>
     <td>
-        <props:textProperty name="${params.cleanTargetKey}" className="longField"/>
+        <props:textProperty name="${params.cleanTargetsKey}" className="longField"/>
         <bs:projectData type="BazelTargets" sourceFieldId="${params.workingDirKey}"
-                        targetFieldId="${params.cleanTargetKey}" popupTitle="Select targets"
+                        targetFieldId="${params.cleanTargetsKey}" popupTitle="Select targets"
                         selectionMode="multiple"/>
-        <span class="error" id="error_${params.cleanTargetKey}"></span>
-        <span class="smallNote">Target to clean artifacts for.</span>
+        <span class="error" id="error_${params.cleanTargetsKey}"></span>
+        <span class="smallNote">Enter the list of targets to clean artifacts for.</span>
     </td>
 </tr>
