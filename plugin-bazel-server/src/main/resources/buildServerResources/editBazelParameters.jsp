@@ -60,6 +60,10 @@
     // Use delay while waiting user typing
     var timer, delay = 500;
     $j(document).on('change keyup input paste', commandId, function () {
+        var value = $j(commandId).val();
+        if (value !== value.trim()) {
+            $j(commandId).val(value.trim())
+        }
         clearTimeout(timer);
         timer = setTimeout(function() {
             BS.BazelParametersForm.updateElements();
@@ -72,7 +76,7 @@
 </script>
 
 <tr>
-    <th><label for="${params.commandKey}">Command:</label></th>
+    <th><label for="${params.commandKey}">Command: <l:star/></label></th>
     <td>
         <props:textProperty name="${params.commandKey}" className="longField"/>
         <bs:projectData type="BazelCommands" sourceFieldId="${params.workingDirKey}"

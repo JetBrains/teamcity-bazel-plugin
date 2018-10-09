@@ -9,6 +9,7 @@ package jetbrains.buildServer.bazel
 
 import jetbrains.buildServer.requirements.Requirement
 import jetbrains.buildServer.requirements.RequirementType
+import jetbrains.buildServer.serverSide.InvalidProperty
 import jetbrains.buildServer.serverSide.PropertiesProcessor
 import jetbrains.buildServer.serverSide.RunType
 import jetbrains.buildServer.serverSide.RunTypeRegistry
@@ -37,7 +38,14 @@ class BazelRunnerRunType(private val myPluginDescriptor: PluginDescriptor,
     }
 
     override fun getRunnerPropertiesProcessor(): PropertiesProcessor? {
-        return PropertiesProcessor { emptyList() }
+        return PropertiesProcessor { properties ->
+            val command = properties?.get(BazelConstants.PARAM_COMMAND)
+            if (command.isNullOrEmpty()) {
+                return@PropertiesProcessor arrayListOf(InvalidProperty(BazelConstants.PARAM_COMMAND, "Command must be set"))
+            }
+
+            emptyList<InvalidProperty>()
+        }
     }
 
     override fun getEditRunnerParamsJspFilePath(): String? {
