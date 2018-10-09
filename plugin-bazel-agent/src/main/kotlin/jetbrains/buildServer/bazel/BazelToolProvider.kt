@@ -59,8 +59,13 @@ class BazelToolProvider(toolsRegistry: ToolProvidersRegistry,
 
     override fun getPath(toolName: String,
                          build: AgentRunningBuild,
-                         runner: BuildRunnerContext) =
+                         runner: BuildRunnerContext): String {
+        return if (runner.isVirtualContext) {
+            BazelConstants.EXECUTABLE
+        } else {
             build.agentConfiguration.configurationParameters[CONFIG_PATH] ?: getPath(toolName)
+        }
+    }
 
     /**
      * Returns a first matching file in the list of directories.
@@ -100,6 +105,6 @@ class BazelToolProvider(toolsRegistry: ToolProvidersRegistry,
         private const val CONFIG_NAME = BazelConstants.BAZEL_CONFIG_NAME
         private const val CONFIG_PATH = BazelConstants.BAZEL_CONFIG_PATH
         private val VERSION_PATTERN = Regex("Build label:\\s([^\\s]+)", RegexOption.IGNORE_CASE)
-        private val PATH_PATTERN = Regex("^.*$CONFIG_NAME(\\.(exe))?$", RegexOption.IGNORE_CASE)
+        private val PATH_PATTERN = Regex("^.*${BazelConstants.EXECUTABLE}(\\.(exe))?$", RegexOption.IGNORE_CASE)
     }
 }

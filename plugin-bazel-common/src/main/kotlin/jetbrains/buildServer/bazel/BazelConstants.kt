@@ -16,6 +16,8 @@ object BazelConstants {
     const val RUNNER_TYPE = "bazel"
     const val RUNNER_DISPLAY_NAME = "bazel"
     const val RUNNER_DESCRIPTION = "Provides bazel build system support"
+    const val EXECUTABLE = "bazel"
+
     const val BAZEL_CONFIG_NAME = "Bazel"
     const val BAZEL_CONFIG_PATH = BAZEL_CONFIG_NAME + "_Path"
 

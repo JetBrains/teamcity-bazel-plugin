@@ -33,7 +33,11 @@ class BazelRunnerBuildService(
         }
 
         val command = _commandFactory.createCommand(commandName)
-        _commandRegistry.register(command)
+
+        // Register for shutdown only on build agent
+        if (!runnerContext.isVirtualContext) {
+            _commandRegistry.register(command)
+        }
 
         return command.commandLineBuilder.build(command)
     }
