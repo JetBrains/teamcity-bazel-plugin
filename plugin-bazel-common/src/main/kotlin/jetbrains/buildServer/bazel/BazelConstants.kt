@@ -26,7 +26,7 @@ object BazelConstants {
     const val COMMAND_SHUTDOWN = "shutdown"
 
     const val PARAM_ARGUMENTS = "arguments"
-    const val PARAM_STARTUP_OPTIONS = "startup-options"
+    const val PARAM_STARTUP_OPTIONS = "startupOptions"
     const val PARAM_COMMAND = "command"
     const val PARAM_TARGETS = "targets"
     const val PARAM_WORKING_DIR = AgentRuntimeProperties.BUILD_WORKING_DIR
