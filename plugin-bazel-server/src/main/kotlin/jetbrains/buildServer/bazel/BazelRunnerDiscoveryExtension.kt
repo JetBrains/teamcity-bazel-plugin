@@ -42,7 +42,7 @@ class BazelRunnerDiscoveryExtension : BuildRunnerDiscoveryExtension {
             workingDir != null -> yield(DiscoveredObject(BazelConstants.RUNNER_TYPE, mapOf(
                     BazelConstants.PARAM_WORKING_DIR to workingDir,
                     BazelConstants.PARAM_COMMAND to BazelConstants.COMMAND_BUILD,
-                    BazelConstants.PARAM_BUILD_TARGETS to "//..."
+                    BazelConstants.PARAM_TARGETS to "//..."
             )))
             else -> {
                 // Scan nested directories

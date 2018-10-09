@@ -8,22 +8,15 @@
 package jetbrains.buildServer.bazel
 
 import jetbrains.buildServer.RunBuildException
-import jetbrains.buildServer.agent.ToolCannotBeFoundException
 import jetbrains.buildServer.agent.runner.*
-import jetbrains.buildServer.runner.JavaRunnerConstants
-import jetbrains.buildServer.util.StringUtil
-import java.io.File
-import kotlin.coroutines.experimental.buildSequence
 
 /**
  * Bazel runner service.
  */
 class BazelRunnerBuildService(
         buildStepContext: BuildStepContext,
-        bazelCommands: List<BazelCommand>,
-        private val _commandRegistry: CommandRegistry) : BuildServiceAdapter() {
-
-    private val _bazelCommands = bazelCommands.associate { it.command to it }
+        private val _commandRegistry: CommandRegistry,
+        private val _commandFactory: BazelCommandFactory) : BuildServiceAdapter() {
 
     init {
         initialize(buildStepContext.runnerContext.build, buildStepContext.runnerContext)
@@ -32,21 +25,16 @@ class BazelRunnerBuildService(
     override fun makeProgramCommandLine(): ProgramCommandLine {
         val parameters = runnerParameters
 
-        val commandName = parameters[BazelConstants.PARAM_COMMAND]
-        if (StringUtil.isEmpty(commandName)) {
+        val commandName = parameters[BazelConstants.PARAM_COMMAND]?.trim()
+        if (commandName == null || commandName.isEmpty()) {
             val buildException = RunBuildException("Bazel command name is empty")
             buildException.isLogStacktrace = false
             throw buildException
         }
 
-        val command = _bazelCommands[commandName]
-        if (command == null) {
-            val buildException = RunBuildException("Unable to construct arguments for bazel command $commandName")
-            buildException.isLogStacktrace = false
-            throw buildException
-        }
-
+        val command = _commandFactory.createCommand(commandName)
         _commandRegistry.register(command)
+
         return command.commandLineBuilder.build(command)
     }
 

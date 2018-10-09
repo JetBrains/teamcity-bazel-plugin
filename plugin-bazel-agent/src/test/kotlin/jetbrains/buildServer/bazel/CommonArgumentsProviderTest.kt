@@ -58,4 +58,34 @@ class CommonArgumentsProviderTest {
         _ctx.assertIsSatisfied()
         Assert.assertEquals(actualArguments, expectedArguments.toList())
     }
+
+    @Test
+    fun shouldProviderTargets() {
+        // given
+        val parametersService = ParametersServiceStub().add(ParameterType.Runner, BazelConstants.PARAM_TARGETS, ":t1 :t2")
+        val argumentsProvider = CommonArgumentsProvider(parametersService, _argumentsSplitter, _startupArgumentsProvider)
+        _ctx.checking(object : Expectations() {
+            init {
+                oneOf<BazelCommand>(_command).command
+                will(returnValue("myCommand"))
+
+                allowing<BazelArgumentsSplitter>(_argumentsSplitter).splitArguments(":t1 :t2")
+                will(returnValue(sequenceOf(":t1", ":t2")))
+
+                oneOf<ArgumentsProvider>(_startupArgumentsProvider).getArguments(_command)
+                will(returnValue(emptySequence<CommandArgument>()))
+            }
+        })
+
+        // when
+        val actualArguments = argumentsProvider.getArguments(_command).toList()
+
+        // then
+        _ctx.assertIsSatisfied()
+        Assert.assertEquals(actualArguments, listOf(
+                CommandArgument(CommandArgumentType.Command, "myCommand"),
+                CommandArgument(CommandArgumentType.Target, ":t1"),
+                CommandArgument(CommandArgumentType.Target, ":t2")
+        ))
+    }
 }

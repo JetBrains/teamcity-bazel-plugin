@@ -35,6 +35,10 @@
   <bean class="jetbrains.buildServer.bazel.CommonArgumentsProvider" id="commonArgumentsProvider">
     <constructor-arg ref="startupArgumentsProvider"/>
   </bean>
+  <bean class="jetbrains.buildServer.bazel.BazelCommandFactory">
+    <constructor-arg ref="bazelCommandLineBuilder"/>
+    <constructor-arg ref="commonArgumentsProvider"/>
+  </bean>
 
   <!--bazel commands-->
   <bean class="jetbrains.buildServer.bazel.commands.BuildCommand">

@@ -4,12 +4,21 @@
 <jsp:useBean id="params" class="jetbrains.buildServer.bazel.BazelParametersProvider"/>
 <jsp:useBean id="teamcityPluginResourcesPath" scope="request" type="java.lang.String"/>
 
-<c:forEach items="${params.types}" var="type">
-    <c:if test="${propertiesBean.properties[params.commandKey] eq type.name}">
-        <div class="parameter">
-            Command: <strong><c:out value="${type.name}"/></strong>
-        </div>
+<div class="parameter">
+    Command: <props:displayValue name="${params.commandKey}"/>
 
-        <jsp:include page="${teamcityPluginResourcesPath}/bazel/${type.viewPage}"/>
+    <c:if test="${not empty propertiesBean.properties[params.targetsKey]}">
+        <props:displayValue name="${params.targetsKey}"/>
     </c:if>
-</c:forEach>
+
+    <c:if test="${not empty propertiesBean.properties[params.argumentsKey]}">
+        <props:displayValue name="${params.argumentsKey}"/>
+    </c:if>
+</div>
+
+<c:if test="${not empty propertiesBean.properties[params.workingDirKey]}">
+    <div class="parameter">
+        Working directory: <props:displayValue name="${params.workingDirKey}"/>
+    </div>
+</c:if>
+

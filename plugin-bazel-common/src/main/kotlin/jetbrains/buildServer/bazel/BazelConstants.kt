@@ -27,11 +27,8 @@ object BazelConstants {
 
     const val PARAM_ARGUMENTS = "arguments"
     const val PARAM_STARTUP_OPTIONS = "startup-options"
-    const val PARAM_COMMAND = "bazel-command"
-    const val PARAM_BUILD_TARGETS = "bazel-build-targets"
-    const val PARAM_CLEAN_TARGETS = "bazel-clean-targets"
-    const val PARAM_TEST_TARGETS = "bazel-test-targets"
-    const val PARAM_RUN_TARGETS = "bazel-run-targets"
+    const val PARAM_COMMAND = "command"
+    const val PARAM_TARGETS = "targets"
     const val PARAM_WORKING_DIR = AgentRuntimeProperties.BUILD_WORKING_DIR
     const val PARAM_VERBOSITY = "verbosity"
 

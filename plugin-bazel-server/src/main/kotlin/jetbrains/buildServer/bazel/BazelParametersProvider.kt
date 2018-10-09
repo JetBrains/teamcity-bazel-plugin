@@ -7,19 +7,10 @@
 
 package jetbrains.buildServer.bazel
 
-import jetbrains.buildServer.bazel.commands.CommandType
-import jetbrains.buildServer.bazel.commands.bazel.*
-
 /**
  * Provides parameters for bazel runner.
  */
 class BazelParametersProvider {
-
-    val types: List<CommandType> = listOf(
-            BuildCommandType(),
-            CleanCommandType(),
-            RunCommandType(),
-            TestCommandType())
 
     val workingDirKey: String
         get() = BazelConstants.PARAM_WORKING_DIR
@@ -27,17 +18,8 @@ class BazelParametersProvider {
     val commandKey: String
         get() = BazelConstants.PARAM_COMMAND
 
-    val buildTargetsKey: String
-        get() = BazelConstants.PARAM_BUILD_TARGETS
-
-    val cleanTargetsKey: String
-        get() = BazelConstants.PARAM_CLEAN_TARGETS
-
-    val testTargetsKey: String
-        get() = BazelConstants.PARAM_TEST_TARGETS
-
-    val runTargetsKey: String
-        get() = BazelConstants.PARAM_RUN_TARGETS
+    val targetsKey: String
+        get() = BazelConstants.PARAM_TARGETS
 
     val argumentsKey: String
         get() = BazelConstants.PARAM_ARGUMENTS

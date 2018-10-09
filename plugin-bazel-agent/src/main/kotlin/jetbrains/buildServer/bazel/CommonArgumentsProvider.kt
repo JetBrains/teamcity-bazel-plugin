@@ -12,8 +12,18 @@ class CommonArgumentsProvider(
             buildSequence {
                 yield(CommandArgument(CommandArgumentType.Command, command.command))
 
+                _parametersService.tryGetParameter(ParameterType.Runner, BazelConstants.PARAM_TARGETS)?.let {
+                        if (it.isNotBlank()) {
+                            yieldAll (_argumentsSplitter.splitArguments(it).map {  target ->
+                                CommandArgument(CommandArgumentType.Target, target)
+                            })
+                        }
+                }
+
                 _parametersService.tryGetParameter(ParameterType.Runner, BazelConstants.PARAM_ARGUMENTS)?.trim()?.let {
-                    yieldAll(_argumentsSplitter.splitArguments(it).map { CommandArgument(CommandArgumentType.Argument, it) })
+                    yieldAll(_argumentsSplitter.splitArguments(it).map {  argument ->
+                        CommandArgument(CommandArgumentType.Argument, argument)
+                    })
                 }
 
                 yieldAll(_startupArgumentsProvider.getArguments(command))
