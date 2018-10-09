@@ -17,12 +17,10 @@ class BuildCompletedHandler : EventHandler {
             if (ctx.event.payload is BazelEvent && ctx.event.payload.content is BuildFinished) {
                 val event = ctx.event.payload.content
                 if (event.exitCode == 0) {
-                    val description = "Build finished"
-                    ctx.onNext(ctx.messageFactory.createBuildStatus(description))
                     if (ctx.verbosity.atLeast(Verbosity.Detailed)) {
                         ctx.onNext(ctx.messageFactory.createMessage(
                                 ctx.buildMessage()
-                                        .append(description)
+                                        .append("Build finished")
                                         .append(" with exit code ${event.exitCode}")
                                         .append("(${event.exitCodeName})", Verbosity.Verbose)
                                         .toString()))

@@ -16,7 +16,6 @@ class StructuredCommandLineHandler : EventHandler {
     override fun handle(ctx: ServiceMessageContext) =
             if (ctx.event.payload is BazelEvent && ctx.event.payload.content is StructuredCommandLine) {
                 val commandLine = ctx.event.payload.content
-                ctx.onNext(ctx.messageFactory.createBuildStatus("Run ${commandLine.commandLineLabel}"))
                 if (ctx.verbosity.atLeast(Verbosity.Detailed)) {
                     ctx.onNext(ctx.messageFactory.createMessage(
                             ctx.buildMessage()

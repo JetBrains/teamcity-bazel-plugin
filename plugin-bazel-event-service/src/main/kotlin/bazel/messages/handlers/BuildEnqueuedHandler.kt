@@ -10,7 +10,7 @@ class BuildEnqueuedHandler : EventHandler {
 
     override fun handle(ctx: ServiceMessageContext) =
             if (ctx.event.payload is BuildEnqueued) {
-                ctx.onNext(ctx.messageFactory.createBuildStatus("Build enqueued"))
+                ctx.onNext(ctx.messageFactory.createMessage("Build enqueued"))
                 true
             } else ctx.handlerIterator.next().handle(ctx)
 }
