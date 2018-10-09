@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~  Copyright 2000 - 2018 JetBrains s.r.o.
+  ~
+  ~  Licensed under the Apache License, Version 2.0 (the "License").
+  ~  See LICENSE in the project root for license information.
+  -->
+
+<dsl-extension kind="buildStep" type="bazel" generateDslJar="true" applicable="params['command'] == 'clean'">
+    <class name="BazelCleanStep">
+        <description>
+            A [bazel clean step](https://github.com/JetBrains/teamcity-bazel-plugin) to execute bazel command
+        </description>
+    </class>
+    <function name="bazelClean">
+        <description>
+            Adds a [bazel clean step](https://github.com/JetBrains/teamcity-bazel-plugin) to execute bazel command
+            @see BazelCleanStep
+        </description>
+    </function>
+    <init>
+        <param name="command" value="clean"/>
+    </init>
+    <params>
+        <param name="teamcity.build.workingDir" dslName="workingDir">
+            <description>
+                [Build working directory](https://confluence.jetbrains.com/display/TCDL/Build+Working+Directory) for
+                script, specify it if it is different from the [checkout
+                directory](https://confluence.jetbrains.com/display/TCDL/Build+Checkout+Directory).
+            </description>
+        </param>
+        <param name="targets">
+            <description>Enter list of command targets.</description>
+        </param>
+        <param name="arguments">
+            <description>Enter additional command line arguments for bazel command.</description>
+        </param>
+        <param name="startupOptions">
+            <description>Enter additional options that appear before the bazel command.</description>
+        </param>
+        <param name="verbosity" dslName="logging" type="Verbosity">
+            <description>
+                Specify logging verbosity
+                @see Verbosity
+            </description>
+        </param>
+    </params>
+    <types>
+        <enum name="Verbosity">
+            <description>
+                Logging verbosity
+            </description>
+            <option name="Quiet" value="Quiet"/>
+            <option name="Minimal" value="Minimal"/>
+            <option name="Normal" value="Normal"/>
+            <option name="Detailed" value="Detailed"/>
+            <option name="Diagnostic" value="Diagnostic"/>
+        </enum>
+    </types>
+</dsl-extension>
