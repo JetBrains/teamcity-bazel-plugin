@@ -88,8 +88,8 @@
 
 <props:workingDirectory/>
 
-<tr class="bazel build clean run test">
-    <th><label for="${params.targetsKey}">Target:</label></th>
+<tr class="bazel build run test">
+    <th><label for="${params.targetsKey}">Targets:</label></th>
     <td>
         <props:textProperty name="${params.targetsKey}" className="longField"/>
         <bs:projectData type="BazelTargets" sourceFieldId="${params.workingDirKey}"
