@@ -11,6 +11,8 @@ interface FileSystemService {
 
     fun isAbsolute(file: File): Boolean
 
+    fun createDirectory(path: File): Boolean
+
     fun write(file: File, writer: (OutputStream) -> Unit)
 
     fun read(file: File, reader: (InputStream) -> Unit)

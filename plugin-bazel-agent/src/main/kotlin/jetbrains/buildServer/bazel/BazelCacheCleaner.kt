@@ -1,16 +1,21 @@
 package jetbrains.buildServer.bazel
 
 import com.intellij.openapi.diagnostic.Logger
-import jetbrains.buildServer.agent.DirectoryCleanersProvider
-import jetbrains.buildServer.agent.DirectoryCleanersProviderContext
-import jetbrains.buildServer.agent.DirectoryCleanersRegistry
-import java.io.File
+import jetbrains.buildServer.agent.*
+import jetbrains.buildServer.agent.runner.MultiCommandBuildSessionFactory
+import jetbrains.buildServer.agent.runner.ParametersService
+import jetbrains.buildServer.agent.runner.ProgramCommandLine
+import jetbrains.buildServer.agent.runner.SimpleProgramCommandLine
 import java.util.*
 
 /**
  * Cleans up local bazel disk caches.
  */
-class BazelCacheCleaner : DirectoryCleanersProvider {
+class BazelCacheCleaner(
+        private val _workspaceRegistry: WorkspaceRegistry,
+        private val _commandLineExecutor: CommandLineExecutor,
+        private val _multiCommandBuildSessionFactory: MultiCommandBuildSessionFactory)
+    : DirectoryCleanersProvider {
 
     override fun getCleanerName(): String {
         return "Bazel Cache Cleaner"
@@ -18,38 +23,26 @@ class BazelCacheCleaner : DirectoryCleanersProvider {
 
     override fun registerDirectoryCleaners(context: DirectoryCleanersProviderContext,
                                            registry: DirectoryCleanersRegistry) {
-        val userHome = System.getProperty("user.home")
-        val userName = System.getProperty("user.name")
-        if (userHome.isNotEmpty() && userName.isNotEmpty()) {
-            // Packages cache since NuGet 3.0
-            val homeCache = File(userHome, "_bazel_$userName")
-            if (homeCache.exists()) {
-                registerBuildCaches(registry, homeCache)
-            }
-        }
-    }
-
-    private fun registerBuildCaches(registry: DirectoryCleanersRegistry, directory: File) {
-        LOG.info("Registering packages in $directory for cleaning")
-
-        directory.listFiles()?.let { packages ->
-            for (file in packages) {
-                if (file == directory) continue
-                if (!file.isDirectory) continue
-                if (BAZEL_DIRS.contains(file.name)) continue
-
-                registry.addCleaner(file, Date(file.lastModified()))
-            }
-        }
-
-        // Cleanup bazel directories in the end
-        BAZEL_DIRS.forEach { dir ->
-            registry.addCleaner(File(directory, dir), Date())
+        _multiCommandBuildSessionFactory.createSession((context.runningBuild as AgentRunningBuildEx).currentRunnerContext)
+        _workspaceRegistry.workspaces.forEach {
+            LOG.info("Register a cleaner for the workspace $it")
+            registry.addCleaner(it.path.absoluteFile, Date(it.path.lastModified()), WorkspaceCleaner(_workspaceRegistry, it, _commandLineExecutor))
         }
     }
 
     companion object {
         private val LOG = Logger.getInstance(BazelCacheCleaner::class.java.name)
-        private val BAZEL_DIRS = setOf("cache", "install")
+    }
+
+    private class WorkspaceCleaner(
+            private val _workspaceRegistry: WorkspaceRegistry,
+            private val _workspace: Workspace,
+            private val _commandLineExecutor: CommandLineExecutor)
+        : Runnable {
+        override fun run() {
+            LOG.info("Clean the workspace $_workspace")
+            _workspaceRegistry.unregister(_workspace)
+            _commandLineExecutor.tryExecute(_workspace.cleanCommandLine)
+        }
     }
 }

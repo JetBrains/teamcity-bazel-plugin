@@ -6,14 +6,15 @@ import java.io.File
 
 class WorkspaceExplorerImpl(
         private val _commandLineExecutor: CommandLineExecutor,
-        private val _infoWorkspaceCommand: BazelCommand)
+        private val _infoWorkspaceCommand: BazelCommand,
+        private val _cleanCommand: BazelCommand)
     : WorkspaceExplorer {
     override fun tryFindWorkspace(path: File): Workspace? {
-        var commandLine = _infoWorkspaceCommand.commandLineBuilder.build(_infoWorkspaceCommand)
+        val commandLine = _infoWorkspaceCommand.commandLineBuilder.build(_infoWorkspaceCommand)
         val result = _commandLineExecutor.tryExecute(commandLine)
         if (result.exitCode == 0) {
             try {
-                val workspace = Workspace(File(result.stdOut.trim()))
+                val workspace = Workspace(File(result.stdOut.trim()), _cleanCommand.commandLineBuilder.build(_cleanCommand))
                 LOG.info("The workspace \"${workspace.path}\" was found for \"$path\"")
                 return workspace
             } catch (ex: Exception) {

@@ -82,6 +82,10 @@ class BazelToolProvider(toolsRegistry: ToolProvidersRegistry,
                     try {
                         val commandLine = getVersionCommandLine(it)
                         val result = SimpleCommandLineProcessRunner.runCommand(commandLine, byteArrayOf())
+                        if (result.stdout.isBlank()) {
+                            return null
+                        }
+
                         val version = VERSION_PATTERN.find(result.stdout)?.destructured?.component1() ?: result.stdout
                         it to Version.valueOf(version)
                     } catch (e: Throwable) {

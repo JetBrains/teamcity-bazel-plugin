@@ -60,7 +60,7 @@ class CommonArgumentsProviderTest {
     }
 
     @Test
-    fun shouldProviderTargets() {
+    fun shouldNotProviderTargets() {
         // given
         val parametersService = ParametersServiceStub().add(ParameterType.Runner, BazelConstants.PARAM_TARGETS, ":t1 :t2")
         val argumentsProvider = CommonArgumentsProvider(parametersService, _argumentsSplitter, _startupArgumentsProvider)
@@ -83,9 +83,7 @@ class CommonArgumentsProviderTest {
         // then
         _ctx.assertIsSatisfied()
         Assert.assertEquals(actualArguments, listOf(
-                CommandArgument(CommandArgumentType.Command, "myCommand"),
-                CommandArgument(CommandArgumentType.Target, ":t1"),
-                CommandArgument(CommandArgumentType.Target, ":t2")
+                CommandArgument(CommandArgumentType.Command, "myCommand")
         ))
     }
 }

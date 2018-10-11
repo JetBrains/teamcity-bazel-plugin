@@ -1,5 +1,5 @@
 plugins {
-    id "org.jetbrains.kotlin.jvm" version "1.2.50"
+    id "org.jetbrains.kotlin.jvm" version "1.2.71"
 }
 
 ext {
@@ -9,6 +9,10 @@ ext {
     teamcityVersion = project.hasProperty('teamcityVersion') ? property('teamcityVersion') : '2018.1.2'
 }
 
+repositories {
+    mavenCentral()
+} 
+    
 group = projectIds.group
 version = projectIds.version
 
@@ -33,5 +37,5 @@ subprojects {
 }
 
 task wrapper(type: Wrapper) {
-    gradleVersion = '4.9'
+    gradleVersion = '4.10.2'
 }

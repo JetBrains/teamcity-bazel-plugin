@@ -49,6 +49,11 @@ class VirtualFileSystemService : FileSystemService {
 
     override fun isAbsolute(file: File): Boolean = _directories[file]?.attributes?.isAbsolute ?: _files[file]?.attributes?.isAbsolute ?: false
 
+    override fun createDirectory(path: File): Boolean {
+        addDirectory(path)
+        return true
+    }
+
     override fun copy(source: File, destination: File) {
         if (!isDirectory(source)) {
             val sourceFile = _files[source]!!

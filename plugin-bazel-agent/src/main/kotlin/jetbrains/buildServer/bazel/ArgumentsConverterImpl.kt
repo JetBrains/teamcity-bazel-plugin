@@ -9,13 +9,12 @@ class ArgumentsConverterImpl : ArgumentsConverter {
                 val commands = mutableListOf<String>()
                 val args = mutableListOf<String>()
                 val targets = mutableListOf<String>()
-                for (arg in arguments) {
-                    when (arg.type) {
-                        CommandArgumentType.StartupOption -> yield(arg.value)
-                        CommandArgumentType.Command -> commands.add(arg.value)
-                        CommandArgumentType.Argument -> args.add(arg.value)
-                        CommandArgumentType.Target -> targets.add(arg.value)
-                        else -> throw RunBuildException("The command argument type ${arg.type} is not supported.")
+                for ((type, value) in arguments) {
+                    when (type) {
+                        CommandArgumentType.StartupOption -> yield(value)
+                        CommandArgumentType.Command -> commands.add(value)
+                        CommandArgumentType.Argument -> args.add(value)
+                        CommandArgumentType.Target -> targets.add(value)
                     }
                 }
 
