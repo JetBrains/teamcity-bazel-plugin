@@ -8,13 +8,12 @@ class BesServer<TEvent>(
         private val _gRpcServer: GRpcServer,
         private val _verbosity: Verbosity,
         private val _bindableEventService: BindableEventService<TEvent>,
-        private val _buildEventConverter: Converter<Event<TEvent>, Event<OrderedBuildEvent>>)
+        private val _buildEventConverter: Converter<Event<TEvent>, Event<OrderedBuildEvent>>,
+        private val _messageFactory: MessageFactory)
     : Observable<String> {
 
     override fun subscribe(observer: Observer<String>): Disposable {
-        val messageFactory = MessageFactoryImpl()
-        val serviceMessageSubject = ServiceMessageRootSubject(ControllerSubject(_verbosity, messageFactory, HierarchyImpl()) { StreamSubject(_verbosity, messageFactory, HierarchyImpl()) })
-        val buildEventSource = _bindableEventService.map { _buildEventConverter.convert(it) }.share()
+        val serviceMessageSubject = ServiceMessageRootSubject(ControllerSubject(_verbosity, _messageFactory, HierarchyImpl()) { StreamSubject(_verbosity, _messageFactory, HierarchyImpl()) })
         val subscription = disposableOf(
                 // service messages subscription
                 serviceMessageSubject.map { it.asString() }.subscribe(observer),
@@ -23,7 +22,7 @@ class BesServer<TEvent>(
                 serviceMessageSubject.subscribe({ }, { _gRpcServer.shutdown() }, { _gRpcServer.shutdown() }),
 
                 // converting subscription
-                buildEventSource.subscribe(serviceMessageSubject)
+                _bindableEventService.map { _buildEventConverter.convert(it) }.subscribe(serviceMessageSubject)
         )
 
         // gRpc server token

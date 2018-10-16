@@ -1,6 +1,7 @@
 package bazel
 
 import bazel.messages.Color
+import bazel.messages.MessageFactory
 import bazel.messages.apply
 import devteam.rx.Disposable
 import devteam.rx.use
@@ -37,21 +38,32 @@ class BazelRunner(
 
     val workingDirectory: File = File(".").absoluteFile
 
-    fun run(): Int {
+    fun run(): Result {
         val process = ProcessBuilder(args)
                 .directory(workingDirectory)
                 .start()
 
+        val errors = mutableListOf<String>()
+
         ActiveReader(process.inputStream.bufferedReader()) { line ->
-            if (_verbosity.atLeast(Verbosity.Diagnostic)) System.out.println("> ".apply(Color.Trace) + line)
+            if (_verbosity.atLeast(Verbosity.Diagnostic)) {
+                System.out.println("> ".apply(Color.Trace) + line)
+            }
         }.use {
             ActiveReader(process.errorStream.bufferedReader()) { line ->
-                if (_verbosity.atLeast(Verbosity.Diagnostic)) System.out.println("> ".apply(Color.Trace) + line)
+                if (line.startsWith("ERROR:")) {
+                    errors.add(line)
+                }
+
+                if (_verbosity.atLeast(Verbosity.Diagnostic)) {
+                    System.out.println("> ".apply(Color.Trace) + line)
+                }
             }.use { }
         }
 
         process.waitFor()
-        return process.exitValue()
+        val exitCode = process.exitValue()
+        return Result(exitCode, errors)
     }
 
     companion object {
@@ -76,4 +88,6 @@ class BazelRunner(
 
         override fun dispose() = _tread.join()
     }
+
+    data class Result(val exitCode: Int, val errors: List<String>)
 }

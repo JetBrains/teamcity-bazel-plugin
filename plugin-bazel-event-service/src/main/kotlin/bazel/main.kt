@@ -1,5 +1,6 @@
 package bazel
 
+import bazel.messages.MessageFactoryImpl
 import bazel.v1.BuildEventConverter
 import bazel.v1.PublishBuildEventService
 import bazel.v1.converters.BuildComponentConverter
@@ -10,6 +11,7 @@ import org.apache.log4j.Level
 import java.io.File
 import java.io.IOException
 import java.util.logging.Logger
+import javax.xml.soap.MessageFactory
 
 @Throws(IOException::class, InterruptedException::class)
 fun main(args: Array<String>) {
@@ -39,20 +41,33 @@ fun main(args: Array<String>) {
         println("BES Port: ${gRpcServer.port}")
     }
 
+    val messageFactory = MessageFactoryImpl()
+    var besIsActive: Boolean = false
     try {
         BesServer(
                 gRpcServer,
                 verbosity,
                 PublishBuildEventService(),
-                BuildEventConverter(StreamIdConverter(BuildComponentConverter())))
-                .subscribe { println(it) }
+                BuildEventConverter(StreamIdConverter(BuildComponentConverter())),
+                messageFactory)
+                .subscribe {
+                    besIsActive = true
+                    println(it)
+                }
                 .use {
                     if (bazelCommandlineFile != null) {
                         val bazelRunner = BazelRunner(verbosity, bazelCommandlineFile, gRpcServer.port)
                         val commandLine = bazelRunner.args.joinToString(" ") { if (it.contains(' ')) "\"$it\"" else it }
                         println("Starting: $commandLine")
                         println("in directory: ${bazelRunner.workingDirectory}")
-                        System.exit(bazelRunner.run())
+                        val result = bazelRunner.run()
+                        if (!besIsActive) {
+                            for (error in result.errors) {
+                                bazel.println(messageFactory.createErrorMessage(error).asString())
+                            }
+                        }
+
+                        System.exit(result.exitCode)
                     }
                 }
     } catch (ex: Exception) {
