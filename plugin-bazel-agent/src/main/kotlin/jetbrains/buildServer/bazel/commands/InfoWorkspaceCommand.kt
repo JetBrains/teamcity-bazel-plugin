@@ -12,8 +12,8 @@ class InfoWorkspaceCommand(
 
     override val arguments: Sequence<CommandArgument>
         get() = buildSequence {
-            yieldAll(_startupArgumentsProvider.getArguments(this@InfoWorkspaceCommand))
             yield(CommandArgument(CommandArgumentType.Command, "info"))
             yield(CommandArgument(CommandArgumentType.Command, "workspace"))
+            yieldAll(_startupArgumentsProvider.getArguments(this@InfoWorkspaceCommand))
         }
 }

@@ -27,7 +27,7 @@
   <bean class="jetbrains.buildServer.bazel.BazelCommandLineBuilder" id="bazelCommandLineBuilder"/>
   <bean class="jetbrains.buildServer.bazel.WorkspaceExplorerImpl">
     <constructor-arg ref="infoWorkspaceCommand"/>
-    <constructor-arg ref="cleanCommand"/>
+    <constructor-arg ref="fullCleanCommand"/>
   </bean>
   <bean class="jetbrains.buildServer.bazel.ShutdownMonitor">
     <constructor-arg ref="shutdownCommand"/>
@@ -65,6 +65,10 @@
     <constructor-arg ref="startupArgumentsProvider"/>
   </bean>
   <bean class="jetbrains.buildServer.bazel.commands.InfoWorkspaceCommand" id="infoWorkspaceCommand">
+    <constructor-arg ref="bazelCommandLineBuilder"/>
+    <constructor-arg ref="startupArgumentsProvider"/>
+  </bean>
+  <bean class="jetbrains.buildServer.bazel.commands.FullCleanCommand" id="fullCleanCommand">
     <constructor-arg ref="bazelCommandLineBuilder"/>
     <constructor-arg ref="startupArgumentsProvider"/>
   </bean>

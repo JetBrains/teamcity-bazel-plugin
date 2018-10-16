@@ -24,7 +24,7 @@ class ShutdownCommand(
 
     override val arguments: Sequence<CommandArgument>
         get() = buildSequence {
-            yieldAll(_startupArgumentsProvider.getArguments(this@ShutdownCommand))
             yield(CommandArgument(CommandArgumentType.Command, command))
+            yieldAll(_startupArgumentsProvider.getArguments(this@ShutdownCommand))
         }
 }

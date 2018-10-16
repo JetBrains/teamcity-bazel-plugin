@@ -1,9 +1,6 @@
 package jetbrains.buildServer.bazel.commands
 
-import jetbrains.buildServer.bazel.ArgumentsProvider
-import jetbrains.buildServer.bazel.BazelCommand
-import jetbrains.buildServer.bazel.CommandArgument
-import jetbrains.buildServer.bazel.CommandLineBuilder
+import jetbrains.buildServer.bazel.*
 import kotlin.coroutines.experimental.buildSequence
 
 /**
@@ -15,6 +12,7 @@ class CustomCommand(override val command: String,
 
     override val arguments: Sequence<CommandArgument>
         get() = buildSequence {
+            yield(CommandArgument(CommandArgumentType.Command, command))
             yieldAll(_commonArgumentsProvider.getArguments(this@CustomCommand))
         }
 }

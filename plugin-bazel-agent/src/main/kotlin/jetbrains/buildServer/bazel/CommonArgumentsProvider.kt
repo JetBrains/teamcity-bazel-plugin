@@ -10,8 +10,6 @@ class CommonArgumentsProvider(
         private val _startupArgumentsProvider: ArgumentsProvider) : ArgumentsProvider {
     override fun getArguments(command: BazelCommand): Sequence<CommandArgument> =
             buildSequence {
-                yield(CommandArgument(CommandArgumentType.Command, command.command))
-
                 _parametersService.tryGetParameter(ParameterType.Runner, BazelConstants.PARAM_ARGUMENTS)?.trim()?.let {
                     yieldAll(_argumentsSplitter.splitArguments(it).map { argument ->
                         CommandArgument(CommandArgumentType.Argument, argument)

@@ -27,10 +27,10 @@ class CommonArgumentsProviderTest {
         return arrayOf(
                 arrayOf(
                         ParametersServiceStub().add(ParameterType.Runner, BazelConstants.PARAM_ARGUMENTS, "args"),
-                        sequenceOf(CommandArgument(CommandArgumentType.Command, "myCommand"), CommandArgument(CommandArgumentType.Argument, "arg1"), CommandArgument(CommandArgumentType.Argument, "arg2"), CommandArgument(CommandArgumentType.StartupOption, "opt"))),
+                        sequenceOf(CommandArgument(CommandArgumentType.Argument, "arg1"), CommandArgument(CommandArgumentType.Argument, "arg2"), CommandArgument(CommandArgumentType.StartupOption, "opt"))),
                 arrayOf(
                         ParametersServiceStub(),
-                        sequenceOf(CommandArgument(CommandArgumentType.Command, "myCommand"), CommandArgument(CommandArgumentType.StartupOption, "opt")))
+                        sequenceOf(CommandArgument(CommandArgumentType.StartupOption, "opt")))
         )
     }
 
@@ -40,9 +40,6 @@ class CommonArgumentsProviderTest {
         val argumentsProvider = CommonArgumentsProvider(parametersService, _argumentsSplitter, _startupArgumentsProvider)
         _ctx.checking(object : Expectations() {
             init {
-                oneOf<BazelCommand>(_command).command
-                will(returnValue("myCommand"))
-
                 allowing<BazelArgumentsSplitter>(_argumentsSplitter).splitArguments("args")
                 will(returnValue(sequenceOf("arg1", "arg2")))
 
@@ -57,33 +54,5 @@ class CommonArgumentsProviderTest {
         // then
         _ctx.assertIsSatisfied()
         Assert.assertEquals(actualArguments, expectedArguments.toList())
-    }
-
-    @Test
-    fun shouldNotProviderTargets() {
-        // given
-        val parametersService = ParametersServiceStub().add(ParameterType.Runner, BazelConstants.PARAM_TARGETS, ":t1 :t2")
-        val argumentsProvider = CommonArgumentsProvider(parametersService, _argumentsSplitter, _startupArgumentsProvider)
-        _ctx.checking(object : Expectations() {
-            init {
-                oneOf<BazelCommand>(_command).command
-                will(returnValue("myCommand"))
-
-                allowing<BazelArgumentsSplitter>(_argumentsSplitter).splitArguments(":t1 :t2")
-                will(returnValue(sequenceOf(":t1", ":t2")))
-
-                oneOf<ArgumentsProvider>(_startupArgumentsProvider).getArguments(_command)
-                will(returnValue(emptySequence<CommandArgument>()))
-            }
-        })
-
-        // when
-        val actualArguments = argumentsProvider.getArguments(_command).toList()
-
-        // then
-        _ctx.assertIsSatisfied()
-        Assert.assertEquals(actualArguments, listOf(
-                CommandArgument(CommandArgumentType.Command, "myCommand")
-        ))
     }
 }
