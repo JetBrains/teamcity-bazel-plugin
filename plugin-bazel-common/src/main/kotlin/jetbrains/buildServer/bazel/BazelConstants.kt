@@ -18,8 +18,8 @@ object BazelConstants {
     const val RUNNER_DESCRIPTION = "Provides bazel build system support"
     const val EXECUTABLE = "bazel"
 
-    const val BAZEL_CONFIG_NAME = "Bazel"
-    const val BAZEL_CONFIG_PATH = BAZEL_CONFIG_NAME + "_Path"
+    const val BAZEL_CONFIG_NAME = "$RUNNER_TYPE.version"
+    const val BAZEL_CONFIG_PATH = "$RUNNER_TYPE.path"
 
     const val COMMAND_BUILD = "build"
     const val COMMAND_CLEAN = "clean"

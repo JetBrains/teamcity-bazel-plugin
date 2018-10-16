@@ -1,9 +1,6 @@
 package jetbrains.buildServer.bazel
 
-import jetbrains.buildServer.agent.AgentRunningBuild
-import jetbrains.buildServer.agent.BuildRunnerContext
-import jetbrains.buildServer.agent.ToolProvider
-import jetbrains.buildServer.agent.ToolProvidersRegistry
+import jetbrains.buildServer.agent.*
 import jetbrains.buildServer.agent.impl.AgentEventDispatcher
 import org.jmock.Expectations
 import org.jmock.Mockery
@@ -14,11 +11,17 @@ import org.testng.annotations.Test
 class BazelToolProviderTest {
     private lateinit var _ctx: Mockery
     private lateinit var _toolProvidersRegistry: ToolProvidersRegistry
+    private lateinit var _environment: Environment
+    private lateinit var _fileSystemService: FileSystemService
+    private lateinit var _commandLineExecutor: CommandLineExecutor
 
     @BeforeMethod
     fun setUp() {
         _ctx = Mockery()
         _toolProvidersRegistry = _ctx.mock(ToolProvidersRegistry::class.java)
+        _environment = _ctx.mock(Environment::class.java)
+        _fileSystemService = _ctx.mock(FileSystemService::class.java)
+        _commandLineExecutor = _ctx.mock(CommandLineExecutor::class.java)
     }
 
     @Test
@@ -43,5 +46,8 @@ class BazelToolProviderTest {
     private fun createInstance(): ToolProvider =
             BazelToolProvider(
                     _toolProvidersRegistry,
-                    AgentEventDispatcher())
+                    AgentEventDispatcher(),
+                    _environment,
+                    _fileSystemService,
+                    _commandLineExecutor)
 }

@@ -8,22 +8,25 @@
 package jetbrains.buildServer.bazel
 
 import com.github.zafarkhaja.semver.Version
-import com.intellij.execution.configurations.GeneralCommandLine
 import com.intellij.openapi.diagnostic.Logger
-import jetbrains.buildServer.SimpleCommandLineProcessRunner
 import jetbrains.buildServer.agent.*
+import jetbrains.buildServer.agent.runner.SimpleProgramCommandLine
 import jetbrains.buildServer.util.EventDispatcher
 import jetbrains.buildServer.util.StringUtil
-
 import java.io.File
 
 /**
  * Determines bazel tool location.
  */
-class BazelToolProvider(toolsRegistry: ToolProvidersRegistry,
-                        events: EventDispatcher<AgentLifeCycleListener>)
+class BazelToolProvider(
+        toolsRegistry: ToolProvidersRegistry,
+        events: EventDispatcher<AgentLifeCycleListener>,
+        private val _environment: Environment,
+        private val _fileSystemService: FileSystemService,
+        private val _commandLineExecutor: CommandLineExecutor)
     : AgentLifeCycleAdapter(), ToolProvider {
 
+    private var _lastVersion: Pair<String, Version>? = null
 
     init {
         toolsRegistry.registerToolProvider(this)
@@ -31,84 +34,66 @@ class BazelToolProvider(toolsRegistry: ToolProvidersRegistry,
     }
 
     override fun beforeAgentConfigurationLoaded(agent: BuildAgent) {
-        LOG.info("Locating $CONFIG_NAME tool")
-        findToolPath()?.let {
-            LOG.info("Found $CONFIG_NAME at ${it.first}")
+        LOG.info("Locating ${BazelConstants.BAZEL_CONFIG_NAME} tool")
+        _lastVersion = findVersions().sortedByDescending { it.second }.firstOrNull()
+        if (_lastVersion != null) {
+            val version = _lastVersion!!
+            LOG.info("Found ${BazelConstants.BAZEL_CONFIG_NAME} at ${version.first}")
             agent.configuration.apply {
-                addConfigurationParameter(CONFIG_PATH, it.first)
-                addConfigurationParameter(CONFIG_NAME, it.second.toString())
+                addConfigurationParameter(BazelConstants.BAZEL_CONFIG_PATH, version.first)
+                addConfigurationParameter(BazelConstants.BAZEL_CONFIG_NAME, version.second.toString())
             }
+        } else {
+            LOG.warn(unableToLocateToolErrorMessage)
         }
     }
 
-    override fun supports(toolName: String): Boolean {
-        return CONFIG_NAME.equals(toolName, true)
-    }
+    override fun supports(toolName: String): Boolean = BazelConstants.BAZEL_CONFIG_NAME.equals(toolName, true)
 
     override fun getPath(toolName: String): String {
         if (!supports(toolName)) throw ToolCannotBeFoundException("Unsupported tool $toolName")
-
-        findToolPath()?.let {
-            return it.first
-        }
-
-        throw ToolCannotBeFoundException("""
-                Unable to locate tool $toolName in system. Please make sure to add it in the PATH variable
-                """.trimIndent())
+        return _lastVersion?.first ?: throw ToolCannotBeFoundException(unableToLocateToolErrorMessage)
     }
 
-    override fun getPath(toolName: String,
-                         build: AgentRunningBuild,
-                         runner: BuildRunnerContext): String {
-        return if (runner.isVirtualContext) {
-            BazelConstants.EXECUTABLE
-        } else {
-            build.agentConfiguration.configurationParameters[CONFIG_PATH] ?: getPath(toolName)
-        }
-    }
+    override fun getPath(toolName: String, build: AgentRunningBuild, runner: BuildRunnerContext): String =
+            if (runner.isVirtualContext) BazelConstants.EXECUTABLE else build.agentConfiguration.configurationParameters[BazelConstants.BAZEL_CONFIG_PATH] ?: getPath(toolName)
 
-    /**
-     * Returns a first matching file in the list of directories.
-     *
-     * @return first matching file.
-     */
-    private fun findToolPath(): Pair<String, Version>? {
-        val paths = StringUtil.splitHonorQuotes(System.getenv("PATH"), File.pathSeparatorChar)
-
-        return paths.mapNotNull { File(it).listFiles() }
-                .flatMap { it.map { it.absolutePath } }
-                .filter { PATH_PATTERN.matches(it) }
-                .mapNotNull {
-                    try {
-                        val commandLine = getVersionCommandLine(it)
-                        val result = SimpleCommandLineProcessRunner.runCommand(commandLine, byteArrayOf())
-                        if (result.stdout.isBlank()) {
-                            return null
+    private fun findVersions(): Sequence<Pair<String, Version>> =
+            StringUtil.splitHonorQuotes(_environment.tryGetEnvironmentVariable("PATH") ?: "", File.pathSeparatorChar)
+                    .asSequence()
+                    .filter { it.isNotBlank() }
+                    .flatMap { _fileSystemService.list(File(it)) }
+                    .map { it.absolutePath }
+                    .filter { PATH_PATTERN.matches(it) }
+                    .map {
+                        val result = _commandLineExecutor.tryExecute(SimpleProgramCommandLine(_environment.EnvironmentVariables.toMutableMap(), ".", it, listOf("version")))
+                        var version: Version? = null
+                        if (result.exitCode == 0 && result.stdOut.isNotBlank()) {
+                            version = tryParseVersion(result.stdOut)
                         }
 
-                        val version = VERSION_PATTERN.find(result.stdout)?.destructured?.component1() ?: result.stdout
-                        it to Version.valueOf(version)
-                    } catch (e: Throwable) {
-                        LOG.warnAndDebugDetails("Failed to parse $CONFIG_NAME version: ${e.message}", e)
-                        null
-                    }
-                }
-                .sortedByDescending { it.second }
-                .firstOrNull()
-    }
+                        if (version == null) {
+                            LOG.warn(result.stdErr)
+                        }
 
-    private fun getVersionCommandLine(toolPath: String): GeneralCommandLine {
-        val commandLine = GeneralCommandLine()
-        commandLine.exePath = toolPath
-        commandLine.addParameter("version")
-        return commandLine
-    }
+                        Pair(it, version)
+                    }
+                    .filter { it.second != null }
+                    .map { Pair(it.first, it.second!!) }
+
+
+    private fun tryParseVersion(text: String): Version? =
+            try {
+                Version.valueOf(VERSION_PATTERN.find(text)?.destructured?.component1() ?: text)
+            } catch (e: Throwable) {
+                LOG.warnAndDebugDetails("Failed to parse ${BazelConstants.BAZEL_CONFIG_NAME} version: ${e.message}", e)
+                null
+            }
 
     companion object {
         private val LOG = Logger.getInstance(BazelToolProvider::class.java.name)
-        private const val CONFIG_NAME = BazelConstants.BAZEL_CONFIG_NAME
-        private const val CONFIG_PATH = BazelConstants.BAZEL_CONFIG_PATH
         private val VERSION_PATTERN = Regex("Build label:\\s([^\\s]+)", RegexOption.IGNORE_CASE)
         private val PATH_PATTERN = Regex("^.*${BazelConstants.EXECUTABLE}(\\.(exe))?$", RegexOption.IGNORE_CASE)
+        private const val unableToLocateToolErrorMessage = "Unable to locate tool ${BazelConstants.EXECUTABLE} in system. Please make sure to add it in the PATH variable."
     }
 }
