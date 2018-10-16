@@ -26,11 +26,19 @@ class ProgressHandler : EventHandler {
 
                 if (event.stderr.isNotBlank()) {
                     for (errItem in decompose(event.stderr)) {
-                        ctx.onNext(ctx.messageFactory.createMessage(
-                                ctx.buildMessage()
-                                        .append(errItem.text)
-                                        .toString()
-                        ))
+                        if (errItem.color == Color.Error) {
+                            ctx.onNext(ctx.messageFactory.createBuildProblem(
+                                    "${errItem.prefix} ${errItem.originalText}",
+                                    ctx.event.projectId,
+                                    ctx.event.payload.content.id.toString()
+                            ))
+                        } else {
+                            ctx.onNext(ctx.messageFactory.createMessage(
+                                    ctx.buildMessage()
+                                            .append(errItem.text)
+                                            .toString()
+                            ))
+                        }
                     }
                 }
 
