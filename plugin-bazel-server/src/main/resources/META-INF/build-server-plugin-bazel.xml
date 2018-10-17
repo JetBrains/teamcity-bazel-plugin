@@ -4,6 +4,7 @@
        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd"
        default-autowire="constructor">
     <bean class="jetbrains.buildServer.bazel.BazelRunnerRunType"/>
+    <bean class="jetbrains.buildServer.bazel.BazelBuildFeature"/>
     <bean class="jetbrains.buildServer.bazel.BazelRunnerDiscoveryExtension"/>
     <bean class="jetbrains.buildServer.bazel.fetchers.BazelCommandFetcher"/>
     <bean class="jetbrains.buildServer.bazel.fetchers.BazelTargetFetcher"/>

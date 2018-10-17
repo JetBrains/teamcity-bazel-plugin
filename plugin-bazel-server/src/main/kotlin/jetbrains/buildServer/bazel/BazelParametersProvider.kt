@@ -32,4 +32,8 @@ class BazelParametersProvider {
 
     val verbosityValues: List<Verbosity>
         get() = Verbosity.values().toList()
+
+    // Build feature
+    val remoteCacheKey: String
+        get() = BazelConstants.PARAM_REMOTE_CACHE
 }

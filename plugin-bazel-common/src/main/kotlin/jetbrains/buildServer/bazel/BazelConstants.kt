@@ -18,6 +18,9 @@ object BazelConstants {
     const val RUNNER_DESCRIPTION = "Provides bazel build system support"
     const val EXECUTABLE = "bazel"
 
+    const val BUILD_FEATURE_TYPE = "bazel-build-feature"
+    const val BUILD_FEATURE_DISPLAY_NAME = "Bazel"
+
     const val BAZEL_CONFIG_NAME = "$RUNNER_TYPE.version"
     const val BAZEL_CONFIG_PATH = "$RUNNER_TYPE.path"
 
@@ -33,6 +36,9 @@ object BazelConstants {
     const val PARAM_TARGETS = "targets"
     const val PARAM_WORKING_DIR = AgentRuntimeProperties.BUILD_WORKING_DIR
     const val PARAM_VERBOSITY = "verbosity"
+
+    // build feature
+    const val PARAM_REMOTE_CACHE = "remote_http_cache"
 
     val BUILD_FILE_NAME = Regex("BUILD(\\.bazel)?")
     const val WORKSPACE_FILE_NAME = "WORKSPACE"
