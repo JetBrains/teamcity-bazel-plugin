@@ -1,8 +1,10 @@
 package jetbrains.buildServer.agent.runner
 
+import jetbrains.buildServer.agent.AgentBuildFeature
+
+
 class ParametersServiceImpl(
         private val _buildStepContext: BuildStepContext) : ParametersService {
-
     override fun tryGetParameter(parameterType: ParameterType, parameterName: String) = when (parameterType) {
         ParameterType.Runner -> _buildStepContext.runnerContext.runnerParameters[parameterName]
         ParameterType.Configuration -> _buildStepContext.runnerContext.configParameters[parameterName]
@@ -16,6 +18,13 @@ class ParametersServiceImpl(
         ParameterType.Environment -> getNames(_buildStepContext.runnerContext.buildParameters.environmentVariables)
         ParameterType.System -> getNames(_buildStepContext.runnerContext.buildParameters.systemProperties)
     }
+
+    override fun tryGetBuildFeatureParameter(buildFeatureType: String, parameterName: String): String? =
+            _buildStepContext.runnerContext.build
+                    .getBuildFeaturesOfType(buildFeatureType)
+                    .filter { buildFeatureType.equals(it.type, true) }
+                    .map { it.parameters[parameterName] }
+                    .firstOrNull()
 
     private fun getNames(map: Map<String?, String?>): Sequence<String> =
             map.keys.filter { it != null }.map { it as String }.asSequence()
