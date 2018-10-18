@@ -16,7 +16,7 @@ It provides the following features for bazel projects:
  
 # Download
 
-You can [download the plugin](https://teamcity.jetbrains.com/repository/download/TeamCityPluginsByJetBrains_TeamcityBazelPlugin_Build/.lastSuccessful/teamcity-bazel-plugin.zip?guest=1) and install it as [an additional TeamCity plugin](https://confluence.jetbrains.com/display/TCDL/Installing+Additional+Plugins).
+You can [download the plugin](https://plugins.jetbrains.com/plugin/11248-bazel-build-system-support) and install it as [an additional TeamCity plugin](https://confluence.jetbrains.com/display/TCDL/Installing+Additional+Plugins).
 
 # Compatibility
 
