@@ -14,12 +14,12 @@ import jetbrains.buildServer.agent.AgentRuntimeProperties
  */
 object BazelConstants {
     const val RUNNER_TYPE = "bazel"
-    const val RUNNER_DISPLAY_NAME = "bazel"
+    const val RUNNER_DISPLAY_NAME = "Bazel"
     const val RUNNER_DESCRIPTION = "Provides bazel build system support"
     const val EXECUTABLE = "bazel"
 
-    const val BUILD_FEATURE_TYPE = "bazel-build-feature"
-    const val BUILD_FEATURE_DISPLAY_NAME = "Bazel"
+    const val BUILD_FEATURE_TYPE = "BazelBuildFeature"
+    const val BUILD_FEATURE_DISPLAY_NAME = "Bazel build settings"
 
     const val BAZEL_CONFIG_NAME = "$RUNNER_TYPE.version"
     const val BAZEL_CONFIG_PATH = "$RUNNER_TYPE.path"
@@ -38,7 +38,7 @@ object BazelConstants {
     const val PARAM_VERBOSITY = "verbosity"
 
     // build feature
-    const val PARAM_REMOTE_CACHE = "remote_http_cache"
+    const val PARAM_REMOTE_CACHE = "remoteHttpCache"
 
     val BUILD_FILE_NAME = Regex("BUILD(\\.bazel)?")
     const val WORKSPACE_FILE_NAME = "WORKSPACE"

@@ -1,7 +1,11 @@
 package jetbrains.buildServer.bazel
 
 import jetbrains.buildServer.serverSide.BuildFeature
+import jetbrains.buildServer.serverSide.InvalidProperty
+import jetbrains.buildServer.serverSide.PropertiesProcessor
 import jetbrains.buildServer.web.openapi.PluginDescriptor
+import java.net.MalformedURLException
+import java.net.URL
 
 class BazelBuildFeature(
         descriptor: PluginDescriptor)
@@ -17,11 +21,34 @@ class BazelBuildFeature(
     override fun isMultipleFeaturesPerBuildTypeAllowed(): Boolean = false
 
     override fun describeParameters(params: MutableMap<String, String>): String {
-        val sb = java.lang.StringBuilder()
-        params[BazelConstants.PARAM_REMOTE_CACHE]?.let {
-            sb.append("$it remote cache is used by build steps to share build outputs.")
+        val description = StringBuilder()
+        params[BazelConstants.PARAM_REMOTE_CACHE]?.let { remoteCache ->
+            val url = try {
+                URL(remoteCache.trim())
+            } catch (e: MalformedURLException) {
+                return@let
+            }
+            description.append("Use remote cache server: ").append(url.protocol).append("://").append(url.host)
+            if (url.port != -1 && url.port != url.defaultPort) {
+                description.append(":").append(url.port)
+            }
+            description.append(url.path)
         }
 
-        return super.describeParameters(params)
+        return description.toString()
+    }
+
+    override fun getParametersProcessor(): PropertiesProcessor? {
+        return PropertiesProcessor { properties ->
+            val result = mutableListOf<InvalidProperty>()
+            properties?.get(BazelConstants.PARAM_REMOTE_CACHE)?.let { remoteCache ->
+                try {
+                    URL(remoteCache.trim())
+                } catch (e: MalformedURLException) {
+                    result.add(InvalidProperty(BazelConstants.PARAM_REMOTE_CACHE, "Invalid remote cache URL"))
+                }
+            }
+            result
+        }
     }
 }

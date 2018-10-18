@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<dsl-extension kind="buildFeature" type="BazelBuildFeature" generateDslJar="true">
+    <class name="BazelBuildFeature">
+        <description>
+            A build feature to configure Bazel build behaviour.
+        </description>
+    </class>
+    <function name="bazelBuildFeature">
+        <description>
+            Configures Bazel build behaviour.
+            @see BazelBuildFeature
+        </description>
+    </function>
+    <params>
+        <param name="remoteHttpCache">
+            <description>
+                Specify the URL of Bazel HTTP caching service.
+            </description>
+        </param>
+    </params>
+</dsl-extension>

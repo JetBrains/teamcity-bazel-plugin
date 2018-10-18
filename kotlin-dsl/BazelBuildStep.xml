@@ -6,27 +6,29 @@
   ~  See LICENSE in the project root for license information.
   -->
 
-<dsl-extension kind="buildStep" type="bazel" generateDslJar="true" applicable="params['command'] == 'run'">
-    <class name="BazelRunStep">
+<dsl-extension kind="buildStep" type="bazel" generateDslJar="true">
+    <class name="BazelStep">
         <description>
-            A [bazel run step](https://github.com/JetBrains/teamcity-bazel-plugin) to execute bazel command
+            A [bazel step](https://github.com/JetBrains/teamcity-bazel-plugin) to execute bazel command
         </description>
     </class>
-    <function name="bazelRun">
+    <function name="bazel">
         <description>
-            Adds a [bazel run step](https://github.com/JetBrains/teamcity-bazel-plugin) to execute bazel command
-            @see BazelRunStep
+            Adds a [bazel step](https://github.com/JetBrains/teamcity-bazel-plugin) to execute bazel command
+            @see BazelStep
         </description>
     </function>
-    <init>
-        <param name="command" value="run"/>
-    </init>
     <params>
         <param name="teamcity.build.workingDir" dslName="workingDir">
             <description>
                 [Build working directory](https://confluence.jetbrains.com/display/TCDL/Build+Working+Directory) for
                 script, specify it if it is different from the [checkout
                 directory](https://confluence.jetbrains.com/display/TCDL/Build+Checkout+Directory).
+            </description>
+        </param>
+        <param name="command">
+            <description>
+                Specify the bazel command name.
             </description>
         </param>
         <param name="targets">

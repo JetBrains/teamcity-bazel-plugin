@@ -6,6 +6,7 @@
     <bean class="jetbrains.buildServer.bazel.BazelRunnerRunType"/>
     <bean class="jetbrains.buildServer.bazel.BazelBuildFeature"/>
     <bean class="jetbrains.buildServer.bazel.BazelRunnerDiscoveryExtension"/>
+    <bean class="jetbrains.buildServer.bazel.BazelPasswordProvider"/>
     <bean class="jetbrains.buildServer.bazel.fetchers.BazelCommandFetcher"/>
     <bean class="jetbrains.buildServer.bazel.fetchers.BazelTargetFetcher"/>
 </beans>

@@ -60,10 +60,6 @@
     // Use delay while waiting user typing
     var timer, delay = 500;
     $j(document).on('change keyup input paste', commandId, function () {
-        var value = $j(commandId).val();
-        if (value !== value.trim()) {
-            $j(commandId).val(value.trim())
-        }
         clearTimeout(timer);
         timer = setTimeout(function() {
             BS.BazelParametersForm.updateElements();
@@ -75,8 +71,12 @@
     });
 </script>
 
+<props:workingDirectory/>
+
 <tr>
-    <th><label for="${params.commandKey}">Command: <l:star/></label></th>
+    <th><label for="${params.commandKey}">
+        Command:<bs:help urlPrefix="https://docs.bazel.build/versions/master/command-line-reference.html#commands" file=""/><l:star/>
+    </label></th>
     <td>
         <props:textProperty name="${params.commandKey}" className="longField"/>
         <bs:projectData type="BazelCommands" sourceFieldId="${params.workingDirKey}"
@@ -86,10 +86,11 @@
     </td>
 </tr>
 
-<props:workingDirectory/>
 
 <tr class="bazel build run test">
-    <th><label for="${params.targetsKey}">Targets:</label></th>
+    <th><label for="${params.targetsKey}">
+        Targets:<bs:help urlPrefix="https://docs.bazel.build/versions/master/command-line-reference.html#target-pattern-syntax" file=""/>
+    </label></th>
     <td>
         <props:textProperty name="${params.targetsKey}" className="longField"/>
         <bs:projectData type="BazelTargets" sourceFieldId="${params.workingDirKey}"
@@ -101,24 +102,26 @@
 </tr>
 
 <tr class="advancedSetting">
-    <th><label for="${params.argumentsKey}">Startup options:</label></th>
+    <th><label for="${params.argumentsKey}">Command arguments:</label></th>
     <td>
-        <props:textProperty name="${params.startupOptionsKey}" className="longField" expandable="true"/>
-        <span class="error" id="error_${params.startupOptionsKey}"></span>
-        <span class="smallNote">Enter additional options that appear before the command.</span>
+        <props:textProperty name="${params.argumentsKey}" className="longField" expandable="true"/>
+        <span class="error" id="error_${params.argumentsKey}"></span>
+        <span class="smallNote">Enter additional Bazel command arguments.</span>
     </td>
 </tr>
 
 <tr class="advancedSetting">
-    <th><label for="${params.argumentsKey}">Command line parameters:</label></th>
+    <th><label for="${params.argumentsKey}">
+        Startup options:<bs:help urlPrefix="https://docs.bazel.build/versions/master/command-line-reference.html#startup-options" file=""/>
+    </label></th>
     <td>
-        <props:textProperty name="${params.argumentsKey}" className="longField" expandable="true"/>
-        <span class="error" id="error_${params.argumentsKey}"></span>
-        <span class="smallNote">Enter additional command line parameters for bazel.</span>
+        <props:textProperty name="${params.startupOptionsKey}" className="longField" expandable="true"/>
+        <span class="error" id="error_${params.startupOptionsKey}"></span>
+        <span class="smallNote">Enter Bazel startup options.</span>
     </td>
 </tr>
 
-<tr class="advancedSetting" id="logging">
+<tr class="advancedSetting">
     <th><label for="${params.verbosityKey}">Logging verbosity:</label></th>
     <td>
         <props:selectProperty name="${params.verbosityKey}" enableFilter="true" className="mediumField">

@@ -38,7 +38,7 @@ class BuildCommand(
 
             _parametersService.tryGetBuildFeatureParameter(BazelConstants.BUILD_FEATURE_TYPE, BazelConstants.PARAM_REMOTE_CACHE)?.let {
                 if (it.isNotBlank()) {
-                    yield(CommandArgument(CommandArgumentType.Argument, "--remote_http_cache=$it"))
+                    yield(CommandArgument(CommandArgumentType.Argument, "--remote_http_cache=${it.trim()}"))
                 }
             }
         }
