@@ -10,7 +10,9 @@
 </tr>
 
 <tr>
-    <th><label for="${params.argumentsKey}">Startup options:</label></th>
+    <th><label for="${params.argumentsKey}">
+        Startup options:<bs:help urlPrefix="https://docs.bazel.build/versions/master/command-line-reference.html#startup-options" file=""/>
+    </label></th>
     <td>
         <props:textProperty name="${params.startupOptionsKey}" className="longField" expandable="true"/>
         <span class="error" id="error_${params.startupOptionsKey}"></span>
@@ -21,7 +23,7 @@
 <tr>
   <th>
       <label for="${params.remoteCacheKey}">
-          Remote cache: <bs:help urlPrefix="https://docs.bazel.build/versions/master/remote-caching.html" file=""/>
+          Remote cache:<bs:help urlPrefix="https://docs.bazel.build/versions/master/remote-caching.html" file=""/>
       </label>
   </th>
   <td>

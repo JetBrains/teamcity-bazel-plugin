@@ -43,7 +43,7 @@ class BazelBuildFeature(
             } catch (e: MalformedURLException) {
                 return@let
             }
-            description.append("Use remote cache server: ").append(url.protocol).append("://").append(url.host)
+            description.append("Remote cache server: ").append(url.protocol).append("://").append(url.host)
             if (url.port != -1 && url.port != url.defaultPort) {
                 description.append(":").append(url.port)
             }
