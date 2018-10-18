@@ -4,20 +4,25 @@ import jetbrains.buildServer.agent.runner.ParameterType
 import jetbrains.buildServer.agent.runner.ParametersService
 
 class ParametersServiceStub : ParametersService {
-    private val _dict = mutableMapOf<Key, String>()
+    private val _params = mutableMapOf<Key, String>()
+    private val _featureParams = mutableMapOf<String, MutableMap<String, String>>()
 
     override fun tryGetParameter(parameterType: ParameterType, parameterName: String): String? =
-            _dict[Key(parameterType, parameterName)]
+            _params[Key(parameterType, parameterName)]
 
     override fun getParameterNames(parameterType: ParameterType): Sequence<String> =
-            _dict.filter { it.key.parameterType == parameterType }.map { it.key.parameterName }.asSequence()
+            _params.filter { it.key.parameterType == parameterType }.map { it.key.parameterName }.asSequence()
 
-    override fun tryGetBuildFeatureParameter(buildFeatureType: String, parameterName: String): String? {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
+    override fun tryGetBuildFeatureParameter(buildFeatureType: String, parameterName: String): String? =
+            _featureParams[buildFeatureType]?.get(parameterName)
 
     fun add(parameterType: ParameterType, parameterName: String, parameterValue: String): ParametersServiceStub {
-        _dict[Key(parameterType, parameterName)] = parameterValue
+        _params[Key(parameterType, parameterName)] = parameterValue
+        return this
+    }
+
+    fun add(buildFeatureType: String, parameterName: String, parameterValue: String): ParametersServiceStub {
+        _featureParams.getOrPut(buildFeatureType) { mutableMapOf() }[parameterName] = parameterValue
         return this
     }
 

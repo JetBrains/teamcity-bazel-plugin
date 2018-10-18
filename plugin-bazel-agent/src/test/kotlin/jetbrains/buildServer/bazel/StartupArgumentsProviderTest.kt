@@ -27,8 +27,15 @@ class StartupArgumentsProviderTest {
                         ParametersServiceStub(),
                         emptySequence<CommandArgument>()),
                 arrayOf(
-                        ParametersServiceStub().add(ParameterType.Runner, BazelConstants.PARAM_STARTUP_OPTIONS, "opts"),
-                        sequenceOf(CommandArgument(CommandArgumentType.StartupOption, "opt1"), CommandArgument(CommandArgumentType.StartupOption, "opt2")))
+                        ParametersServiceStub()
+                                .add(ParameterType.Runner, BazelConstants.PARAM_STARTUP_OPTIONS, "opts"),
+                        sequenceOf(CommandArgument(CommandArgumentType.StartupOption, "opt1"), CommandArgument(CommandArgumentType.StartupOption, "opt2"))),
+
+                arrayOf(
+                        ParametersServiceStub()
+                                .add(ParameterType.Runner, BazelConstants.PARAM_STARTUP_OPTIONS, "opts")
+                                .add(BazelConstants.BUILD_FEATURE_TYPE, BazelConstants.PARAM_STARTUP_OPTIONS, "feature_opts"),
+                        sequenceOf(CommandArgument(CommandArgumentType.StartupOption, "opt0"), CommandArgument(CommandArgumentType.StartupOption, "opt1"), CommandArgument(CommandArgumentType.StartupOption, "opt2")))
         )
     }
 
@@ -38,6 +45,9 @@ class StartupArgumentsProviderTest {
         val argumentsProvider = StartupArgumentsProvider(parametersService, _argumentsSplitter)
         _ctx.checking(object : Expectations() {
             init {
+                allowing<BazelArgumentsSplitter>(_argumentsSplitter).splitArguments("feature_opts")
+                will(returnValue(sequenceOf("opt0")))
+
                 allowing<BazelArgumentsSplitter>(_argumentsSplitter).splitArguments("opts")
                 will(returnValue(sequenceOf("opt1", "opt2")))
             }

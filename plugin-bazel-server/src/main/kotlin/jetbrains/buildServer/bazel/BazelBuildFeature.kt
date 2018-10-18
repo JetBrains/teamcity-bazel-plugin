@@ -4,6 +4,7 @@ import jetbrains.buildServer.serverSide.BuildFeature
 import jetbrains.buildServer.serverSide.InvalidProperty
 import jetbrains.buildServer.serverSide.PropertiesProcessor
 import jetbrains.buildServer.web.openapi.PluginDescriptor
+import kotlin.coroutines.experimental.buildSequence
 import java.net.MalformedURLException
 import java.net.URL
 
@@ -21,8 +22,22 @@ class BazelBuildFeature(
     override fun isMultipleFeaturesPerBuildTypeAllowed(): Boolean = false
 
     override fun describeParameters(params: MutableMap<String, String>): String {
-        val description = StringBuilder()
+        val options = getOptions(params).toList()
+        return when(options.size) {
+            0 -> ""
+            else -> options.joinToString("\n")
+        }
+    }
+
+    private fun getOptions(params: MutableMap<String, String>): Sequence<String> = buildSequence {
+        params[BazelConstants.PARAM_STARTUP_OPTIONS]?.let { startupOptions ->
+            if (startupOptions.isNotBlank()) {
+                yield("Startup options: $startupOptions")
+            }
+        }
+
         params[BazelConstants.PARAM_REMOTE_CACHE]?.let { remoteCache ->
+            val description = StringBuilder()
             val url = try {
                 URL(remoteCache.trim())
             } catch (e: MalformedURLException) {
@@ -33,9 +48,8 @@ class BazelBuildFeature(
                 description.append(":").append(url.port)
             }
             description.append(url.path)
+            yield(description.toString())
         }
-
-        return description.toString()
     }
 
     override fun getParametersProcessor(): PropertiesProcessor? {
