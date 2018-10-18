@@ -12,6 +12,10 @@ class ParametersServiceStub : ParametersService {
     override fun getParameterNames(parameterType: ParameterType): Sequence<String> =
             _dict.filter { it.key.parameterType == parameterType }.map { it.key.parameterName }.asSequence()
 
+    override fun tryGetBuildFeatureParameter(buildFeatureType: String, parameterName: String): String? {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
     fun add(parameterType: ParameterType, parameterName: String, parameterValue: String): ParametersServiceStub {
         _dict[Key(parameterType, parameterName)] = parameterValue
         return this

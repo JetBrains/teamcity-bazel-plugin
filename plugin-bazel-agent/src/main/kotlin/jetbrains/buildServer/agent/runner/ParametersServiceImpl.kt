@@ -1,7 +1,5 @@
 package jetbrains.buildServer.agent.runner
 
-import jetbrains.buildServer.agent.AgentBuildFeature
-
 
 class ParametersServiceImpl(
         private val _buildStepContext: BuildStepContext) : ParametersService {
