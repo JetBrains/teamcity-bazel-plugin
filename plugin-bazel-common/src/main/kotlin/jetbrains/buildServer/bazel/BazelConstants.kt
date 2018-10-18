@@ -15,7 +15,7 @@ import jetbrains.buildServer.agent.AgentRuntimeProperties
 object BazelConstants {
     const val RUNNER_TYPE = "bazel"
     const val RUNNER_DISPLAY_NAME = "Bazel"
-    const val RUNNER_DESCRIPTION = "Provides bazel build system support"
+    const val RUNNER_DESCRIPTION = "Provides Bazel build support"
     const val EXECUTABLE = "bazel"
 
     const val BUILD_FEATURE_TYPE = "BazelBuildFeature"
