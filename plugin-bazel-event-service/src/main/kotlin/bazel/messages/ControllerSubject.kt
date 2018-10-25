@@ -51,7 +51,7 @@ class ControllerSubject(
 
     override fun onError(error: Exception) = _controllerSubject.onError(error)
 
-    override fun onCompleted() = _controllerSubject.onCompleted()
+    override fun onCompleted() {}
 
     override fun subscribe(observer: Observer<ServiceMessage>): Disposable = _controllerSubject.subscribe(observer)
 

@@ -56,22 +56,27 @@ fun main(args: Array<String>) {
                 }
                 .use {
                     if (bazelCommandlineFile != null) {
-                        val bazelRunner = BazelRunner(verbosity, bazelCommandlineFile, gRpcServer.port)
-                        val commandLine = bazelRunner.args.joinToString(" ") { if (it.contains(' ')) "\"$it\"" else it }
-                        println("Starting: $commandLine")
-                        println("in directory: ${bazelRunner.workingDirectory}")
-                        val result = bazelRunner.run()
-                        if (!besIsActive) {
-                            for (error in result.errors) {
-                                bazel.println(messageFactory.createErrorMessage(error).asString())
+                        try {
+                            val bazelRunner = BazelRunner(verbosity, bazelCommandlineFile, gRpcServer.port)
+                            val commandLine = bazelRunner.args.joinToString(" ") { if (it.contains(' ')) "\"$it\"" else it }
+                            println("Starting: $commandLine")
+                            println("in directory: ${bazelRunner.workingDirectory}")
+                            val result = bazelRunner.run()
+                            if (!besIsActive) {
+                                for (error in result.errors) {
+                                    bazel.println(messageFactory.createErrorMessage(error).asString())
+                                }
                             }
-                        }
 
-                        System.exit(result.exitCode)
+                            System.exit(result.exitCode)
+                        } catch (ex: Exception) {
+                            gRpcServer.shutdown()
+                            throw ex;
+                        }
                     }
                 }
     } catch (ex: Exception) {
-        logger.severe(ex.toString())
+        bazel.println(messageFactory.createErrorMessage(ex.message ?: ex.toString()).asString())
         System.exit(1)
         return
     }

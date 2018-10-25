@@ -27,7 +27,7 @@ class GRpcServer(private val _port: Int)
         logger.log(Level.FINE, "Server started, listening on {0}", _port)
         return disposableOf {
             _server?.awaitTermination()
-            logger.log(Level.FINE, "Server shut down")
+            logger.log(Level.FINE, "Server is shutdown")
         }
     }
 
@@ -35,7 +35,7 @@ class GRpcServer(private val _port: Int)
         val shutdownTread = object : Thread() {
             override fun run() {
                 _server?.let {
-                    logger.log(Level.FINE, "Server shutting down")
+                    logger.log(Level.FINE, "Server is shutting down")
                     it.shutdownNow()
                 }
             }

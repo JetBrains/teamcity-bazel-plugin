@@ -30,7 +30,10 @@ internal class PublishBuildEventService
 
         _projectId.compareAndSet("", request?.projectId ?: "")
 
-        if (request?.hasBuildEvent() == true) _eventSubject.onNext(Event(_projectId.get(), request.buildEvent))
+        if (request?.hasBuildEvent() == true) {
+            _eventSubject.onNext(Event(_projectId.get(), request.buildEvent))
+        }
+
         responseObserver?.let {
             it.onNext(Empty.getDefaultInstance())
             it.onCompleted()
@@ -56,21 +59,28 @@ internal class PublishBuildEventService
         override fun onNext(value: PublishBuildToolEventStreamRequest) {
             logger.log(Level.FINE, "onNext: $value")
 
-            if (!value.hasOrderedBuildEvent()) {
+            // send response
+            _responseObserver.onNext(
+                    PublishBuildToolEventStreamResponse.newBuilder()
+                            .setSequenceNumber(value.orderedBuildEventOrBuilder.sequenceNumber)
+                            .setStreamId(value.orderedBuildEventOrBuilder.streamId)
+                            .build())
+
+            if (value.hasOrderedBuildEvent()) {
+                _eventObserver.onNext(Event(_projectId, value.orderedBuildEvent))
+            } else {
                 logger.log(Level.SEVERE, "OrderedBuildEvent was not found.")
-                return
             }
 
-            _eventObserver.onNext(Event(_projectId, value.orderedBuildEvent))
-
             if (value.orderedBuildEvent.event.hasComponentStreamFinished()) {
+                // send onCompleted
                 logger.log(Level.FINE, "The ComponentStreamFinished event was received.")
                 _responseObserver.onCompleted()
             }
         }
 
         override fun onError(error: Exception) {
-            logger.log(Level.FINE, "onError: $error")
+            logger.log(Level.SEVERE, "onError: $error")
             _eventObserver.onError(error)
         }
 
