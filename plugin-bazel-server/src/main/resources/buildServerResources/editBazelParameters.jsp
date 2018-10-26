@@ -89,7 +89,7 @@
 
 <tr class="bazel build run test">
     <th><label for="${params.targetsKey}">
-        Targets:<bs:help urlPrefix="https://docs.bazel.build/versions/master/command-line-reference.html#target-pattern-syntax" file=""/>
+        Targets:<bs:help urlPrefix="https://docs.bazel.build/versions/master/guide.html#target-patterns" file=""/>
     </label></th>
     <td>
         <props:textProperty name="${params.targetsKey}" className="longField"/>
