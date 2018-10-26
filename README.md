@@ -12,7 +12,8 @@ It provides the following features for bazel projects:
 * Structured build log provider
 * Auto-discovery of build steps
 * Bazel tests reporter
-* Cleaner of bazel cache directories
+* Cleaner of bazel workspace caches
+* Bazel build feature to configure common startup options & remote cache
  
 # Download
 
