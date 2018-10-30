@@ -10,6 +10,7 @@ import bazel.messages.Color
 import bazel.messages.ServiceMessageContext
 import bazel.messages.apply
 import bazel.messages.logError
+import com.intellij.openapi.util.SystemInfo
 import java.net.URI
 
 class ActionExecutedHandler : EventHandler {
@@ -75,23 +76,38 @@ class ActionExecutedHandler : EventHandler {
                 true
             } else ctx.handlerIterator.next().handle(ctx)
 
+    companion object {
+        private val FILE_SCHEMA = Regex("(file\\:\\/\\/)([a-z]+\\:\\/.*)", RegexOption.IGNORE_CASE)
 
-    private fun readFromFile(file: File, ctx: ServiceMessageContext): String {
-        if (file.uri.isBlank()) {
-            return ""
+        private fun normalizeURI(uri: String): String {
+            if (!SystemInfo.isWindows) return uri
+            return FILE_SCHEMA.matchEntire(uri)?.let {
+                val (_, path) = it.destructured
+                return "file:////$path"
+            } ?: uri
         }
 
-        return try {
-            val progressFile = java.io.File(URI(file.uri))
-            try {
-                progressFile.readText().trim()
+        private fun getFile(uri: String): java.io.File {
+            return java.io.File(URI(normalizeURI(uri)))
+        }
+
+        private fun readFromFile(file: File, ctx: ServiceMessageContext): String {
+            if (file.uri.isBlank()) {
+                return ""
+            }
+
+            return try {
+                val progressFile = getFile(file.uri)
+                try {
+                    progressFile.readText().trim()
+                } catch (ex: Exception) {
+                    ctx.logError("Cannot read text from file \"$progressFile\"", ex)
+                    ""
+                }
             } catch (ex: Exception) {
-                ctx.logError("Cannot read text from file \"$progressFile\"", ex)
+                ctx.logError("Cannot parse file name from uri \"${file.uri}\"", ex)
                 ""
             }
-        } catch (ex: Exception) {
-            ctx.logError("Cannot parse file name from uri \"${file.uri}\"", ex)
-            ""
         }
     }
 }
