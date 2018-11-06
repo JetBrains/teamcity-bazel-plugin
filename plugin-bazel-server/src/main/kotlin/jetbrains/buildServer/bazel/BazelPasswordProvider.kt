@@ -13,12 +13,13 @@ class BazelPasswordProvider : PasswordsProvider {
         val parameters = mutableListOf<Parameter>()
         build.getBuildFeaturesOfType(BazelConstants.BUILD_FEATURE_TYPE).forEach { feature ->
             feature.parameters[BazelConstants.PARAM_REMOTE_CACHE]?.let { remoteCache ->
-                val url = try {
+                try {
                     URL(remoteCache.trim())
                 } catch (e: MalformedURLException) {
                     return@let
+                }.userInfo?.let {
+                    parameters.add(SimpleParameter(BazelConstants.PARAM_REMOTE_CACHE + "-user", it))
                 }
-                parameters.add(SimpleParameter(BazelConstants.PARAM_REMOTE_CACHE + "-user", url.userInfo))
             }
         }
         return parameters
