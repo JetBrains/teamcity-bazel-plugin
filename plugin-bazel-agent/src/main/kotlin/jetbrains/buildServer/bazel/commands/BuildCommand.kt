@@ -19,7 +19,7 @@ class BuildCommand(
         private val _parametersService: ParametersService,
         private val _argumentsSplitter: BazelArgumentsSplitter,
         override val commandLineBuilder: CommandLineBuilder,
-        private val _commonArgumentsProvider: ArgumentsProvider)
+        private val _buildArgumentsProvider: ArgumentsProvider)
     : BazelCommand {
 
     override val command: String = BazelConstants.COMMAND_BUILD
@@ -27,19 +27,6 @@ class BuildCommand(
     override val arguments: Sequence<CommandArgument>
         get() = buildSequence {
             yield(CommandArgument(CommandArgumentType.Command, command))
-            yieldAll(_commonArgumentsProvider.getArguments(this@BuildCommand))
-            _parametersService.tryGetParameter(ParameterType.Runner, BazelConstants.PARAM_TARGETS)?.let {
-                if (it.isNotBlank()) {
-                    yieldAll(_argumentsSplitter.splitArguments(it).map { target ->
-                        CommandArgument(CommandArgumentType.Target, target)
-                    })
-                }
-            }
-
-            _parametersService.tryGetBuildFeatureParameter(BazelConstants.BUILD_FEATURE_TYPE, BazelConstants.PARAM_REMOTE_CACHE)?.let {
-                if (it.isNotBlank()) {
-                    yield(CommandArgument(CommandArgumentType.Argument, "--remote_http_cache=${it.trim()}"))
-                }
-            }
+            yieldAll(_buildArgumentsProvider.getArguments(this@BuildCommand))
         }
 }

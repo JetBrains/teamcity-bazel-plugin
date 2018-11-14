@@ -19,7 +19,7 @@ class TestCommand(
         private val _parametersService: ParametersService,
         private val _argumentsSplitter: BazelArgumentsSplitter,
         override val commandLineBuilder: CommandLineBuilder,
-        private val _commonArgumentsProvider: ArgumentsProvider)
+        private val _buildArgumentsProvider: ArgumentsProvider)
     : BazelCommand {
 
     override val command: String = BazelConstants.COMMAND_TEST
@@ -27,13 +27,6 @@ class TestCommand(
     override val arguments: Sequence<CommandArgument>
         get() = buildSequence {
             yield(CommandArgument(CommandArgumentType.Command, command))
-            yieldAll(_commonArgumentsProvider.getArguments(this@TestCommand))
-            _parametersService.tryGetParameter(ParameterType.Runner, BazelConstants.PARAM_TARGETS)?.let {
-                if (it.isNotBlank()) {
-                    yieldAll(_argumentsSplitter.splitArguments(it).map { target ->
-                        CommandArgument(CommandArgumentType.Target, target)
-                    })
-                }
-            }
+            yieldAll(_buildArgumentsProvider.getArguments(this@TestCommand))
         }
 }

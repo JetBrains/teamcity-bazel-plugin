@@ -1,5 +1,6 @@
 package jetbrains.buildServer.bazel
 
+import jetbrains.buildServer.bazel.commands.ArgumentsProvider
 import jetbrains.buildServer.bazel.commands.CustomCommand
 
 class BazelCommandFactory(bazelCommands: List<BazelCommand>,

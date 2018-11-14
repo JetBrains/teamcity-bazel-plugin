@@ -7,8 +7,6 @@
 
 package jetbrains.buildServer.bazel.commands
 
-import jetbrains.buildServer.agent.runner.ParameterType
-import jetbrains.buildServer.agent.runner.ParametersService
 import jetbrains.buildServer.bazel.*
 import kotlin.coroutines.experimental.buildSequence
 

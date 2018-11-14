@@ -1,6 +1,7 @@
 package jetbrains.buildServer.bazel
 
 import jetbrains.buildServer.agent.runner.ParameterType
+import jetbrains.buildServer.bazel.commands.StartupArgumentsProvider
 import org.jmock.Expectations
 import org.jmock.Mockery
 import org.testng.Assert
