@@ -51,7 +51,7 @@ class BazelRunner(
             }
         }.use {
             ActiveReader(process.errorStream.bufferedReader()) { line ->
-                if (line.startsWith("ERROR:")) {
+                if (line.startsWith("ERROR:") || line.startsWith("FATAL:")) {
                     errors.add(line)
                 }
 
