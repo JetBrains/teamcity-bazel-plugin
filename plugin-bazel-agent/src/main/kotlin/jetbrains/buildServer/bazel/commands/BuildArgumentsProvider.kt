@@ -13,8 +13,9 @@ class BuildArgumentsProvider(
         private val _targetsArgumentsProvider: ArgumentsProvider)
     : ArgumentsProvider {
     override fun getArguments(command: BazelCommand): Sequence<CommandArgument> = buildSequence {
+        yieldAll(_commonArgumentsProvider.getArguments(command))
+        yieldAll(_targetsArgumentsProvider.getArguments(command))
         _parametersService.tryGetBuildFeatureParameter(BazelConstants.BUILD_FEATURE_TYPE, BazelConstants.PARAM_REMOTE_CACHE)?.let {
-            yieldAll(_targetsArgumentsProvider.getArguments(command))
             if (it.isNotBlank()) {
                 yield(CommandArgument(CommandArgumentType.Argument, "--remote_http_cache=${it.trim()}"))
             }
