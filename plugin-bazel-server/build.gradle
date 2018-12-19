@@ -18,7 +18,9 @@ teamcity {
 
 dependencies {
     compile project(':plugin-bazel-common')
-    compile project(':bazel-build')
+    compile (project(':bazel-build')) {
+        exclude group: 'com.ibm.icu'
+    }
     compile "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
     provided 'javax.servlet:jstl:1.1.2'
     provided "org.jetbrains.teamcity.internal:server:$teamcityVersion"
