@@ -17,8 +17,6 @@ class BuildStartedHandler : EventHandler {
             if (ctx.event.payload is BazelEvent && ctx.event.payload.content is BuildStarted) {
                 val event = ctx.event.payload.content
                 val description = event.command
-                ctx.hierarchy.createNode(event.id, event.children, description)
-
                 val details = ctx.buildMessage(false)
                         .append(description, Verbosity.Normal)
                         .append(" v${event.buildToolVersion}", Verbosity.Verbose)

@@ -24,6 +24,10 @@ class HierarchyImpl : Hierarchy {
                 node.value.action(ctx)
             }
 
+            if (it.children.isEmpty()) {
+               _nodes.remove(id)
+            }
+
             it
         }
     }
