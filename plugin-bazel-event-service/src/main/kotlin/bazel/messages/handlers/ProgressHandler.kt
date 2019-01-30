@@ -26,7 +26,7 @@ class ProgressHandler : EventHandler {
 
                 if (event.stderr.isNotBlank()) {
                     for (errItem in decompose(event.stderr)) {
-                        if (errItem.color == Color.Error) {
+                        if (errItem.state.failed) {
                             ctx.onNext(ctx.messageFactory.createBuildProblem(
                                     "${errItem.prefix} ${errItem.originalText}",
                                     ctx.event.projectId,
@@ -50,32 +50,35 @@ class ProgressHandler : EventHandler {
     }
 
     private fun toMessageItem(text: String): MessageItem {
-        for ((regex, color) in prefixColors) {
+        for ((regex, state) in prefixColors) {
             regex.find(text)?.let {
                 val prefix = it.groupValues[1]
                 val message = it.groupValues[2]
-                return MessageItem("${prefix.apply(color)} $message", prefix, message, color)
+                return MessageItem("${prefix.apply(state.color)} $message", prefix, message, state)
             }
         }
 
-        return MessageItem(text, "", text, Color.Default)
+        return MessageItem(text, "", text, State(Color.Default))
     }
 
-    private data class MessageItem(val text: String, val prefix: String, val originalText: String, val color: Color)
+    private data class MessageItem(val text: String, val prefix: String, val originalText: String, val state: State)
+    private data class State(val color: Color, val failed: Boolean = false)
 
     companion object {
-        private val prefixColors = mapOf<Regex, Color>(
-                "^(ERROR:)\\s*(.+)".toRegex() to Color.Error,
-                "^(FAILED:)\\s*(.+)".toRegex() to Color.Error,
-                "^(Action failed to execute:)\\s*(.+)".toRegex() to Color.Error,
-                "^(WARNING:)\\s*(.+)".toRegex() to Color.Warning,
-                "^(Auto-Configuration Warning:)\\s*(.+)".toRegex() to Color.Warning,
-                "^(DEBUG:)\\s*(.+)".toRegex() to Color.Trace,
-                "^(INFO:)\\s*(.+)".toRegex() to Color.Success,
-                "^(Analyzing:)\\s*(.+)\$".toRegex() to Color.Success,
-                "^(Building:)\\s*(.+)\$".toRegex() to Color.Success,
-                "^(\\[\\s*\\d+\\s*\\/\\s*\\d+\\s*\\])\\s*\\[\\s*\\-+\\s*\\]\\s*(.+)\$".toRegex() to Color.Success,
-                "^(\\[\\s*\\d+\\s*\\/\\s*\\d+\\s*\\])\\s*(.+)\$".toRegex() to Color.Success
+        private val prefixColors = mapOf<Regex, State>(
+                "^(ERROR:)\\s*(.+)".toRegex() to State(Color.Error, true),
+                "^(FAILED:)\\s*(.+)".toRegex() to State(Color.Error, true),
+                "^(FAIL:)\\s*(.+)".toRegex() to State(Color.Error),
+                "^(Action failed to execute:)\\s*(.+)".toRegex() to State(Color.Error, true),
+                "^(WARNING:)\\s*(.+)".toRegex() to State(Color.Warning),
+                "^(FLAKY:)\\s*(.+)".toRegex() to State(Color.Warning),
+                "^(Auto-Configuration Warning:)\\s*(.+)".toRegex() to State(Color.Warning),
+                "^(DEBUG:)\\s*(.+)".toRegex() to State(Color.Trace),
+                "^(INFO:)\\s*(.+)".toRegex() to State(Color.Success),
+                "^(Analyzing:)\\s*(.+)\$".toRegex() to State(Color.Success),
+                "^(Building:)\\s*(.+)\$".toRegex() to State(Color.Success),
+                "^(\\[\\s*\\d+\\s*\\/\\s*\\d+\\s*\\])\\s*\\[\\s*\\-+\\s*\\]\\s*(.+)\$".toRegex() to State(Color.Success),
+                "^(\\[\\s*\\d+\\s*\\/\\s*\\d+\\s*\\])\\s*(.+)\$".toRegex() to State(Color.Success)
         )
     }
 }
