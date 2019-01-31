@@ -43,8 +43,11 @@ fabric.properties
 
 # Build artifacts
 .gradle
-build
+/build
+*/build
 
 # gradle-teamcity-plugin
 data/
 servers/
+plugin-bazel-inegration-tests/samples/**/bazel-*
+plugin-bazel-inegration-tests/samples/FlakyTests/.idea/

@@ -1,0 +1,33 @@
+apply plugin: 'java'
+apply plugin: 'kotlin'
+apply plugin: 'idea'
+
+dependencies {
+  compile "org.jetbrains.kotlin:kotlin-stdlib"
+  testCompile 'org.testng:testng:6.8'
+  testCompile 'io.cucumber:cucumber-java:4.2.0'
+  compile project(':plugin-bazel-event-service')
+}
+
+repositories {
+    mavenCentral()
+    mavenLocal()
+    maven { url "https://download.jetbrains.com/teamcity-repository/" }
+}
+
+configurations {
+    cucumberRuntime {
+        extendsFrom testRuntime
+    }
+}
+
+task integration() {
+    dependsOn assemble, compileTestKotlin
+    doLast {
+        javaexec {
+            main = "cucumber.api.cli.Main"
+            classpath = configurations.cucumberRuntime + sourceSets.main.output + sourceSets.test.output
+            args = ['--plugin', 'pretty', '--glue', 'jetbrains.bazel.integration', 'src/test/resources']
+        }
+    }
+}

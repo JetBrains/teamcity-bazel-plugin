@@ -29,24 +29,47 @@ class TestResultHandler : EventHandler {
                 }
 
                 val hasNextAttempt = event.children.size > 0
-                if (!hasNextAttempt) {
-                    for (test in event.testActionOutput) {
-                        val file = File(URI(test.uri))
-                        if (ctx.verbosity.atLeast(Verbosity.Verbose)) {
-                            ctx.onNext(ctx.messageFactory.createMessage("$file".apply(Color.Items)))
+                for (test in event.testActionOutput) {
+                    val file = File(URI(test.uri))
+                    if (ctx.verbosity.atLeast(Verbosity.Verbose)) {
+                        ctx.onNext(ctx.messageFactory.createMessage("$file".apply(Color.Items)))
+                    }
+
+                    if (!file.exists()) {
+                        if (ctx.verbosity.atLeast(Verbosity.Detailed)) {
+                            ctx.onNext(ctx.messageFactory.createMessage("File \"$file\" does not exist.".apply(Color.Warning)))
                         }
 
-                        if (file.name.endsWith(".xml", true)) {
-                            if (!file.exists()) {
-                                ctx.onNext(ctx.messageFactory.createMessage("File \"$file\" does not exist".apply(Color.Warning)))
+                        continue
+                    }
+
+                    when (file.extension.toLowerCase()) {
+                        "xml" -> {
+                            traceFile(ctx, file)
+
+                            // check that it is last attempt
+                            if (!hasNextAttempt) {
+                                // import test results
+                                file.setLastModified(System.currentTimeMillis())
+                                ctx.onNext(ctx.messageFactory.createImportData("junit", file.absolutePath))
                             }
-
-                            file.setLastModified(System.currentTimeMillis())
-                            ctx.onNext(ctx.messageFactory.createImportData("junit", file.absolutePath))
                         }
+
+                        "log" -> traceFile(ctx, file)
                     }
                 }
 
                 true
             } else ctx.handlerIterator.next().handle(ctx)
+
+    private fun traceFile(ctx: ServiceMessageContext, file: File) {
+        if (ctx.verbosity.atLeast(Verbosity.Diagnostic)) {
+            ctx.messageFactory.createTraceMessage("File \"${file.canonicalPath}\":");
+            file.bufferedReader().use {
+                for (line in it.lineSequence()) {
+                    ctx.onNext(ctx.messageFactory.createTraceMessage("$\t$line"));
+                }
+            }
+        }
+    }
 }

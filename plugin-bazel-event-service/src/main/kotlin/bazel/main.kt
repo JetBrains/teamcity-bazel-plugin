@@ -11,7 +11,6 @@ import org.apache.log4j.Level
 import java.io.File
 import java.io.IOException
 import java.util.logging.Logger
-import javax.xml.soap.MessageFactory
 
 @Throws(IOException::class, InterruptedException::class)
 fun main(args: Array<String>) {

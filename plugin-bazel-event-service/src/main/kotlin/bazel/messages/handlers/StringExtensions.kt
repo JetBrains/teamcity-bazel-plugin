@@ -7,4 +7,4 @@ fun <T> Iterable<T>.joinToStringEscaped(separator: CharSequence = " ", transform
     }
 }
 
-fun String.clean() = this.trim().replace("\u001B[1A", "").replace("\u001B[K", "").replace("\r\n\r", "\n")
+fun String.clean() = this.trimEnd().replace("\u001B[1A", "").replace("\u001B[K", "").replace("\r\n\r", "\n")
