@@ -15,6 +15,7 @@ public class BazelSteps {
     private val _options: MutableList<String> = mutableListOf()
     private var _command: String = ""
     private val _args: MutableList<String> = mutableListOf()
+    private val _besArgs: MutableList<String> = mutableListOf()
     private val _targets: MutableList<String> = mutableListOf()
     private var _runResult: RunResult = RunResult()
 
@@ -32,12 +33,15 @@ public class BazelSteps {
     @When("^add the target (.+)$")
     fun addProjectStep(argument: String) = _targets.add(argument)
 
+    @When("^add the build event service argument (.+)$")
+    fun addBesArgumentStep(argument: String): Boolean = _besArgs.add(prepareArg(argument))
+
     @When("^run in (.+)$")
     fun runStep(scenario: String) {
         try {
-            val cleanResult = run(scenario, emptyList(), "clean", emptyList(), emptyList())
+            val cleanResult = run(scenario, emptyList(), emptyList(), "clean", emptyList(), emptyList())
             Assert.assertEquals(cleanResult.exitCode, 0)
-            _runResult = run(scenario, _options, _command, _args, _targets)
+            _runResult = run(scenario, _besArgs, _options, _command, _args, _targets)
             // run(scenario, listOf("clean", "--expunge"), emptyList())
         }
         finally {
@@ -67,7 +71,7 @@ public class BazelSteps {
     }
 
     companion object {
-        private val argReplacements = mapOf<String, () -> String >(
+        private val argReplacements = mapOf(
                 "#id" to { UUID.randomUUID().toString().replace("-", "") },
                 "#tmp" to { File(System.getProperty("java.io.tmpdir")).canonicalPath },
                 "#sandbox" to { Environment.sandboxDirectory.canonicalPath } )
@@ -81,7 +85,13 @@ public class BazelSteps {
             return arg
         }
 
-        fun run(scenario: String, options: List<String>, command: String, args: List<String>, targets: List<String>): RunResult {
+        fun run(
+                scenario: String,
+                besArgs: List<String>,
+                options: List<String>,
+                command: String, args:
+                List<String>,
+                targets: List<String>): RunResult {
             val cmdArgs = mutableListOf<String>()
             cmdArgs.add(Environment.bazelExecutable.canonicalPath)
             cmdArgs.addAll(options)
@@ -97,21 +107,21 @@ public class BazelSteps {
             argsFile.appendText(cmdArgs.joinToString(System.getProperty("line.separator")))
             val scenarioDirectory = File(Environment.samplesDirectory, scenario)
             if (!scenarioDirectory.exists() || !scenarioDirectory.isDirectory) {
-                Assert.fail("Samples directory \"${scenarioDirectory}\" was not found for scenario \"${scenario}\".")
+                Assert.fail("Samples directory \"$scenarioDirectory\" was not found for scenario \"$scenario\".")
             }
 
-            return runProcess(
-                    ProcessBuilder(
-                            listOf<String>(
-                                Environment.javaExecutable.canonicalPath,
-                                "-jar",
-                                "${File(Environment.besJar.parentFile, Environment.besJar.name).canonicalPath}",
-                                "-c=${File(Environment.besJar.parentFile, argsFile.name).canonicalPath}"))
-                            .directory(File("${File(Environment.samplesDirectory, scenario).canonicalPath}")))
+            val besCmdArgs = mutableListOf<String>(
+                    Environment.javaExecutable.canonicalPath,
+                    "-jar",
+                    File(Environment.besJar.parentFile, Environment.besJar.name).canonicalPath,
+                    "-c=${File(Environment.besJar.parentFile, argsFile.name).canonicalPath}")
+
+            besCmdArgs.addAll(besArgs)
+            return runProcess(ProcessBuilder(besCmdArgs).directory(File(File(Environment.samplesDirectory, scenario).canonicalPath)))
         }
 
         private fun runProcess(processBuilder: ProcessBuilder): RunResult {
-            var runningCmd = processBuilder.command().joinToString(" ") { "\"${it}\"" }
+            val runningCmd = processBuilder.command().joinToString(" ") { "\"$it\"" }
 
             val process =
                     processBuilder
@@ -134,7 +144,7 @@ public class BazelSteps {
                 }.use { }
             }
 
-            Assert.assertTrue(process.waitFor(2, TimeUnit.MINUTES), "Timeout while waiting the process ${runningCmd} in the directory \"${processBuilder.directory()}\".")
+            Assert.assertTrue(process.waitFor(2, TimeUnit.MINUTES), "Timeout while waiting the process $runningCmd in the directory \"${processBuilder.directory()}\".")
 
             return RunResult(
                     process.exitValue(),

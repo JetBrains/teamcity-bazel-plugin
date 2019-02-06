@@ -28,7 +28,7 @@ class TestResultHandler : EventHandler {
                                     .toString()))
                 }
 
-                val hasNextAttempt = event.children.size > 0
+                val hasNextAttempt = event.children.isNotEmpty()
                 for (test in event.testActionOutput) {
                     val file = File(URI(test.uri))
                     if (ctx.verbosity.atLeast(Verbosity.Verbose)) {
