@@ -82,7 +82,7 @@ class BazelToolProvider(
                     .map { Pair(it.first, it.second!!) }
 
 
-    private fun tryParseVersion(text: String): Version? =
+    public fun tryParseVersion(text: String): Version? =
             try {
                 Version.valueOf(VERSION_PATTERN.find(text)?.destructured?.component1() ?: text)
             } catch (e: Throwable) {
@@ -92,7 +92,7 @@ class BazelToolProvider(
 
     companion object {
         private val LOG = Logger.getInstance(BazelToolProvider::class.java.name)
-        private val VERSION_PATTERN = Regex("Build label:\\s([^\\s]+)", RegexOption.IGNORE_CASE)
+        private val VERSION_PATTERN = Regex("^Build label:\\s*([\\d\\.]+).*$", RegexOption.IGNORE_CASE)
         private val PATH_PATTERN = Regex("^.*${BazelConstants.EXECUTABLE}(\\.(exe))?$", RegexOption.IGNORE_CASE)
         private const val unableToLocateToolErrorMessage = "Unable to locate tool ${BazelConstants.EXECUTABLE} in system. Please make sure to add it in the PATH variable."
     }
