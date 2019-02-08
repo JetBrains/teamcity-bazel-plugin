@@ -18,7 +18,7 @@ hs_err_pid*
 *.iml
 
 ## Directory-based project format:
-/.idea
+/.idea/
 
 ## File-based project format:
 *.ipr
@@ -49,6 +49,7 @@ fabric.properties
 # gradle-teamcity-plugin
 data/
 servers/
-plugin-bazel-inegration-tests/samples/**/.idea
 plugin-bazel-inegration-tests/samples/**/bazel-*
 plugin-bazel-inegration-tests/samples/FlakyTests/.idea/
+plugin-bazel-inegration-tests/samples/**/.idea
+
