@@ -7,15 +7,17 @@ import jetbrains.buildServer.agent.runner.ProgramCommandLine
 import java.io.File
 
 class CommandLineExecutorImpl : CommandLineExecutor {
-    override fun tryExecute(commandLine: ProgramCommandLine, executionTimeoutSeconds: Int): CommandLineResult {
+    override fun tryExecute(commandLine: ProgramCommandLine?, executionTimeoutSeconds: Int): CommandLineResult {
         val cmd = GeneralCommandLine()
-        cmd.exePath = commandLine.executablePath
-        cmd.setWorkingDirectory(File(commandLine.workingDirectory))
-        cmd.addParameters(commandLine.arguments)
+        if(commandLine != null) {
+            cmd.exePath = commandLine.executablePath
+            cmd.setWorkingDirectory(File(commandLine.workingDirectory))
+            cmd.addParameters(commandLine.arguments)
 
-        val currentEnvironment = commandLine.environment
-        currentEnvironment.getOrPut("HOME") { System.getProperty("user.home") }
-        cmd.envParams = currentEnvironment
+            val currentEnvironment = commandLine.environment
+            currentEnvironment.getOrPut("HOME") { System.getProperty("user.home") }
+            cmd.envParams = currentEnvironment
+        }
 
         LOG.info("Execute command line: \"${cmd.commandLineString}\" in the working directory \"${cmd.workDirectory}\"")
         val executor = jetbrains.buildServer.CommandLineExecutor(cmd)

@@ -26,7 +26,7 @@ class BazelToolProvider(
         private val _commandLineExecutor: CommandLineExecutor)
     : AgentLifeCycleAdapter(), ToolProvider {
 
-    private var _lastVersion: Pair<String, Version>? = null
+    private var _lastVersion: Pair<File, Version>? = null
 
     init {
         toolsRegistry.registerToolProvider(this)
@@ -35,12 +35,12 @@ class BazelToolProvider(
 
     override fun beforeAgentConfigurationLoaded(agent: BuildAgent) {
         LOG.info("Locating ${BazelConstants.BAZEL_CONFIG_NAME} tool")
-        _lastVersion = findVersions().sortedByDescending { it.second }.firstOrNull()
+        _lastVersion = findVersions().sortedByDescending { it.second.buildMetadata }.firstOrNull()
         if (_lastVersion != null) {
             val version = _lastVersion!!
             LOG.info("Found ${BazelConstants.BAZEL_CONFIG_NAME} at ${version.first}")
             agent.configuration.apply {
-                addConfigurationParameter(BazelConstants.BAZEL_CONFIG_PATH, version.first)
+                addConfigurationParameter(BazelConstants.BAZEL_CONFIG_PATH, version.first.canonicalPath)
                 addConfigurationParameter(BazelConstants.BAZEL_CONFIG_NAME, version.second.toString())
             }
         } else {
@@ -52,37 +52,28 @@ class BazelToolProvider(
 
     override fun getPath(toolName: String): String {
         if (!supports(toolName)) throw ToolCannotBeFoundException("Unsupported tool $toolName")
-        return _lastVersion?.first ?: throw ToolCannotBeFoundException(unableToLocateToolErrorMessage)
+        return _lastVersion?.first?.canonicalPath ?: throw ToolCannotBeFoundException(unableToLocateToolErrorMessage)
     }
 
     override fun getPath(toolName: String, build: AgentRunningBuild, runner: BuildRunnerContext): String =
             if (runner.isVirtualContext) BazelConstants.EXECUTABLE else build.agentConfiguration.configurationParameters[BazelConstants.BAZEL_CONFIG_PATH] ?: getPath(toolName)
 
-    private fun findVersions(): Sequence<Pair<String, Version>> =
+    fun findVersions(): Sequence<Pair<File, Version>> =
             StringUtil.splitHonorQuotes(_environment.tryGetEnvironmentVariable("PATH") ?: "", File.pathSeparatorChar)
                     .asSequence()
                     .filter { it.isNotBlank() }
-                    .flatMap { _fileSystemService.list(File(it)) }
-                    .map { it.absolutePath }
-                    .filter { PATH_PATTERN.matches(it) }
-                    .map {
-                        val result = _commandLineExecutor.tryExecute(SimpleProgramCommandLine(_environment.EnvironmentVariables.toMutableMap(), ".", it, listOf("version")))
-                        var version: Version? = null
-                        if (result.exitCode == 0 && result.stdOut.isNotBlank()) {
-                            version = tryParseVersion(result.stdOut)
-                        }
-
-                        if (version == null) {
-                            LOG.warn(result.stdErr)
-                        }
-
-                        Pair(it, version)
-                    }
+                    .map { File(it) }
+                    .filter { _fileSystemService.isDirectory(it) }
+                    .flatMap { _fileSystemService.list(it) }
+                    .filter { !_fileSystemService.isDirectory(it) && PATH_PATTERN.matches(it.name) }
+                    .map { Pair(it, _commandLineExecutor.tryExecute(SimpleProgramCommandLine(_environment.EnvironmentVariables.toMutableMap(), ".", it.canonicalPath, listOf("version")))) }
+                    .filter { it.second.exitCode == 0 && it.second.stdOut.isNotBlank() }
+                    .map { result -> Pair(result.first, result.second.stdOut.lines().map { tryParseVersion(it) }.firstOrNull { it != null }) }
                     .filter { it.second != null }
                     .map { Pair(it.first, it.second!!) }
 
 
-    public fun tryParseVersion(text: String): Version? =
+    fun tryParseVersion(text: String): Version? =
             try {
                 Version.valueOf(VERSION_PATTERN.find(text)?.destructured?.component1() ?: text)
             } catch (e: Throwable) {
@@ -92,7 +83,7 @@ class BazelToolProvider(
 
     companion object {
         private val LOG = Logger.getInstance(BazelToolProvider::class.java.name)
-        private val VERSION_PATTERN = Regex("^Build label:\\s*([\\d\\.]+).*$", RegexOption.IGNORE_CASE)
+        private val VERSION_PATTERN = Regex("^Build label:\\s*(\\d+\\.\\d+\\.\\d).*$", RegexOption.IGNORE_CASE)
         private val PATH_PATTERN = Regex("^.*${BazelConstants.EXECUTABLE}(\\.(exe))?$", RegexOption.IGNORE_CASE)
         private const val unableToLocateToolErrorMessage = "Unable to locate tool ${BazelConstants.EXECUTABLE} in system. Please make sure to add it in the PATH variable."
     }
