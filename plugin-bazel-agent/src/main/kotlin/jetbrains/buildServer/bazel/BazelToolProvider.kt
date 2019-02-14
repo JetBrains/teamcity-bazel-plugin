@@ -74,11 +74,13 @@ class BazelToolProvider(
 
 
     fun tryParseVersion(text: String): Version? =
-            try {
-                Version.valueOf(VERSION_PATTERN.find(text)?.destructured?.component1() ?: text)
-            } catch (e: Throwable) {
-                LOG.warnAndDebugDetails("Failed to parse ${BazelConstants.BAZEL_CONFIG_NAME} version: ${e.message}", e)
-                null
+            VERSION_PATTERN.find(text)?.groupValues?.get(1)?.let {
+                try {
+                    Version.valueOf(it)
+                } catch (e: Throwable) {
+                    LOG.warnAndDebugDetails("Failed to parse ${BazelConstants.BAZEL_CONFIG_NAME} version from line \"$it\": ${e.message}", e)
+                    null
+                }
             }
 
     companion object {
