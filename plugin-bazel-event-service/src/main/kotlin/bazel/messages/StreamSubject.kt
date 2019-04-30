@@ -1,8 +1,6 @@
 package bazel.messages
 
-import bazel.Event
-import bazel.Verbosity
-import bazel.atLeast
+import bazel.*
 import bazel.bazel.events.BazelEvent
 import bazel.events.OrderedBuildEvent
 import bazel.messages.handlers.*
@@ -98,7 +96,7 @@ class StreamSubject(
                 TargetCompletedHandler(),
 
                 //TestResult test_result = 10;
-                TestResultHandler(),
+                TestResultHandler(FileSystemImpl()),
 
                 //TestSummary test_summary = 9;
                 TestSummaryHandler(),

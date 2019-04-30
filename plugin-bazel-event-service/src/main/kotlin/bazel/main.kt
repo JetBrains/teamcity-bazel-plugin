@@ -41,7 +41,7 @@ fun main(args: Array<String>) {
     }
 
     val messageFactory = MessageFactoryImpl()
-    var besIsActive: Boolean = false
+    var besIsActive = false
     try {
         BesServer(
                 gRpcServer,
@@ -70,7 +70,7 @@ fun main(args: Array<String>) {
                             System.exit(result.exitCode)
                         } catch (ex: Exception) {
                             gRpcServer.shutdown()
-                            throw ex;
+                            throw ex
                         }
                     }
                 }
