@@ -3,6 +3,7 @@ package jetbrains.buildServer.bazel
 import jetbrains.buildServer.RunBuildException
 import jetbrains.buildServer.agent.runner.*
 import jetbrains.buildServer.runner.JavaRunnerConstants
+import jetbrains.buildServer.util.StringUtil
 import java.io.File
 import kotlin.coroutines.experimental.buildSequence
 
@@ -16,7 +17,7 @@ class BesCommandLineBuilder(
         val sb = StringBuilder()
         sb.appendln(_pathsService.getToolPath(BazelConstants.BAZEL_CONFIG_NAME))
         for (arg in _argumentsConverter.convert(getArgs(command))) {
-            sb.appendln(arg)
+            sb.appendln(StringUtil.unquoteString(arg))
         }
 
         val bazelCommandFile = File(_pathsService.getPath(PathType.BuildTemp), _pathsService.uniqueName)
