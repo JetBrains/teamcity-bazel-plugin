@@ -14,7 +14,9 @@ import bazel.messages.ServiceMessageContext
 import bazel.messages.handlers.EventHandler
 import bazel.messages.handlers.TestResultHandler
 import devteam.rx.*
+import io.mockk.MockKAnnotations
 import io.mockk.every
+import io.mockk.impl.annotations.MockK
 import io.mockk.mockk
 import jetbrains.buildServer.messages.serviceMessages.Message
 import jetbrains.buildServer.messages.serviceMessages.ServiceMessage
@@ -29,21 +31,17 @@ class TestResultHandlerTest {
     private lateinit var _subject: Subject<ServiceMessage>
     private lateinit var _actualNotifications: MutableList<Notification<ServiceMessage>>
     private lateinit var _subscription: Disposable
-    private lateinit var _iterator: Iterator<EventHandler>
-    private lateinit var _messageFactory: MessageFactory
-    private lateinit var _hierarchy: Hierarchy
-    private lateinit var _fileSystem: FileSystem
+    @MockK private lateinit var _iterator: Iterator<EventHandler>
+    @MockK private lateinit var _messageFactory: MessageFactory
+    @MockK private lateinit var _hierarchy: Hierarchy
+    @MockK private lateinit var _fileSystem: FileSystem
 
     @BeforeMethod
     fun setUp() {
+        MockKAnnotations.init(this)
         _subject = subjectOf<ServiceMessage>()
         _actualNotifications = mutableListOf<Notification<ServiceMessage>>()
         _subscription = _subject.materialize().subscribe { _actualNotifications.add(it) }
-
-        _iterator = mockk<Iterator<EventHandler>>()
-        _messageFactory = mockk<MessageFactory>()
-        _hierarchy = mockk<Hierarchy>()
-        _fileSystem = mockk<FileSystem>()
     }
 
     @AfterMethod
@@ -79,10 +77,10 @@ class TestResultHandlerTest {
                         true,
                         1,
                         1,
-                        listOf(File("tests.log", "file:///C:/abc/test.log")),
+                        listOf(File("tests.log", "file:///abc/test.log")),
                         emptyList()))
 
-        val testLogFile = java.io.File("c:" + java.io.File.separator + "abc" + java.io.File.separator + "test.log")
+        val testLogFile = java.io.File(java.io.File.separator + "abc" + java.io.File.separator + "test.log")
         val message1 = Message("line 1", "Normal", null)
         val message2 = Message("##teamcity[line 2]", "Normal", null)
         val message = Message("message", "Normal", null)
