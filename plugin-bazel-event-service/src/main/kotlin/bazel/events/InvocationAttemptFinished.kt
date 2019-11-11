@@ -6,7 +6,5 @@ data class InvocationAttemptFinished(
         override val sequenceNumber: Long,
         override val eventTime: Timestamp,
         // Final status of the invocation.
-        val invocationResult: Result,
-        // The exit code of the build tool.
-        val exitCode: Int)
+        val invocationResult: Result)
     : OrderedBuildEvent

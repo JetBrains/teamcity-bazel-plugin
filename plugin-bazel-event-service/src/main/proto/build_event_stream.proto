@@ -16,11 +16,11 @@ syntax = "proto3";
 
 package build_event_stream;
 
+import "command_line.proto";
+import "invocation_policy.proto";
+
 option java_package = "com.google.devtools.build.lib.buildeventstream";
 option java_outer_classname = "BuildEventStreamProtos";
-
-import "bazel/invocation_policy.proto";
-import "bazel/command_line.proto";
 
 // Identifier for a build event. It is deliberately structured to also provide
 // information about which build target etc the event is related to.
@@ -49,13 +49,11 @@ message BuildEventId {
 
   // Identifier of an event indicating the beginning of a build; this will
   // normally be the first event.
-  message BuildStartedId {
-  }
+  message BuildStartedId {}
 
   // Identifier on an event indicating the original commandline received by
   // the bazel server.
-  message UnstructuredCommandLineId {
-  }
+  message UnstructuredCommandLineId {}
 
   // Identifier on an event describing the commandline received by Bazel.
   message StructuredCommandLineId {
@@ -67,13 +65,11 @@ message BuildEventId {
   }
 
   // Identifier of an event indicating the workspace status.
-  message WorkspaceStatusId {
-  }
+  message WorkspaceStatusId {}
 
   // Identifier on an event reporting on the options included in the command
   // line, both explicitly and implicitly.
-  message OptionsParsedId {
-  }
+  message OptionsParsedId {}
 
   // Identifier of an event reporting that an external resource was fetched
   // from.
@@ -91,6 +87,10 @@ message BuildEventId {
   message PatternExpandedId {
     repeated string pattern = 1;
   }
+
+  message WorkspaceConfigId {}
+
+  message BuildMetadataId {}
 
   // Identifier of an event indicating that a target has been expanded by
   // identifying for which configurations it should be build.
@@ -180,18 +180,15 @@ message BuildEventId {
   }
 
   // Identifier of the BuildFinished event, indicating the end of a build.
-  message BuildFinishedId {
-  }
+  message BuildFinishedId {}
 
   // Identifier of an event providing additional logs/statistics after
   // completion of the build.
-  message BuildToolLogsId {
-  }
+  message BuildToolLogsId {}
 
   // Identifier of an event providing build metrics after completion
   // of the build.
-  message BuildMetricsId {
-  }
+  message BuildMetricsId {}
 
   oneof id {
     UnknownBuildEventId unknown = 1;
@@ -216,6 +213,8 @@ message BuildEventId {
     BuildFinishedId build_finished = 9;
     BuildToolLogsId build_tool_logs = 20;
     BuildMetricsId build_metrics = 22;
+    WorkspaceConfigId workspace = 23;
+    BuildMetadataId build_metadata = 24;
   }
 }
 
@@ -266,6 +265,10 @@ message Aborted {
 
     // Target build was skipped (e.g. due to incompatible CPU constraints).
     SKIPPED = 7;
+
+    // Build incomplete due to an earlier build failure (e.g. --keep_going was
+    // set to false causing the build be ended upon failure).
+    INCOMPLETE = 10;
   }
   AbortReason reason = 1;
 
@@ -301,6 +304,16 @@ message BuildStarted {
 
   // The directory of the workspace.
   string workspace_directory = 7;
+
+  // The process ID of the Bazel server.
+  int64 server_pid = 8;
+}
+
+// Configuration related to the blaze workspace and output tree.
+message WorkspaceConfig {
+  // The root of the local blaze exec root. All output files live underneath
+  // this at "blaze-out/".
+  string local_exec_root = 1;
 }
 
 // Payload of an event reporting the command-line of the invocation as
@@ -342,6 +355,13 @@ message WorkspaceStatus {
   repeated Item item = 1;
 }
 
+// Payload of an event reporting custom key-value metadata associated with the
+// build.
+message BuildMetadata {
+  // Custom metadata for the build.
+  map<string, string> metadata = 1;
+}
+
 // Payload of an event reporting details of a given configuration.
 message Configuration {
   string mnemonic = 1;
@@ -354,8 +374,7 @@ message Configuration {
 // The main information is in the chaining part: the id will contain the
 // target pattern that was expanded and the children id will contain the
 // target or target pattern it was expanded to.
-message PatternExpanded {
-}
+message PatternExpanded {}
 
 // Enumeration type characterizing the size of a test, as specified by the
 // test rule.
@@ -385,6 +404,13 @@ message TargetConfigured {
 }
 
 message File {
+  // A sequence of prefixes to apply to the file name to construct a full path.
+  // In most but not all cases, there will be 3 entries:
+  //  1. A root output directory, eg "bazel-out"
+  //  2. A configuration mnemonic, eg "k8-fastbuild"
+  //  3. An output category, eg "genfiles"
+  repeated string path_prefix = 4;
+
   // identifier indicating the nature of the file (e.g., "stdout", "stderr")
   string name = 1;
 
@@ -440,6 +466,9 @@ message ActionExecuted {
 
   // The command-line of the action, if the action is a command.
   repeated string command_line = 9;
+
+  // List of paths to log files
+  repeated File action_metadata_logs = 10;
 }
 
 // Collection of all output files belonging to that output group.
@@ -496,7 +525,7 @@ enum TestStatus {
   REMOTE_FAILURE = 6;
   FAILED_TO_BUILD = 7;
   TOOL_HALTED_BEFORE_TESTING = 8;
-};
+}
 
 // Payload on events reporting about individual test action.
 message TestResult {
@@ -568,8 +597,6 @@ message TestResult {
 }
 
 // Payload of the event summarizing a test.
-// TODO(aehlig): extend event with additional information as soon as we known
-// which additional information we need for test summaries.
 message TestSummary {
   // Wrapper around BlazeTestStatus to support importing that enum to proto3.
   // Overall status of test, accumulated over all runs, shards, and attempts.
@@ -586,6 +613,15 @@ message TestSummary {
 
   // Total number of cached test actions
   int32 total_num_cached = 6;
+
+  // When the test first started running.
+  int64 first_start_time_millis = 7;
+
+  // When the last test action completed.
+  int64 last_stop_time_millis = 8;
+
+  // The total runtime of the test.
+  int64 total_run_duration_millis = 9;
 }
 
 // Event indicating the end of a build.
@@ -604,6 +640,15 @@ message BuildFinished {
     int32 code = 2;
   }
 
+  // Things that happened during the build that could be of interest.
+  message AnomalyReport {
+    // Was the build suspended at any time during the build.
+    // Examples of suspensions are SIGSTOP, or the hardware being put to sleep.
+    // If was_suspended is true, then most of the timings for this build are
+    // suspect.
+    bool was_suspended = 1;
+  }
+
   // If the build succeeded or failed.
   bool overall_success = 1 [deprecated = true];
 
@@ -615,6 +660,8 @@ message BuildFinished {
   // TODO(buchgr): Use google.protobuf.Timestamp once bazel's protoc supports
   // it.
   int64 finish_time_millis = 2;
+
+  AnomalyReport anomaly_report = 4;
 }
 
 message BuildMetrics {
@@ -623,6 +670,11 @@ message BuildMetrics {
     // This includes unused actions that were constructed but
     // not executed during this build.
     int64 actions_created = 1;
+
+    // The total number of actions executed during the build.
+    // This includes any remote cache hits, but excludes
+    // local action cache hits.
+    int64 actions_executed = 2;
   }
   ActionSummary action_summary = 1;
 
@@ -633,6 +685,23 @@ message BuildMetrics {
     int64 used_heap_size_post_build = 1;
   }
   MemoryMetrics memory_metrics = 2;
+
+  message TargetMetrics {
+    // Number of targets loaded during this build.
+    int64 targets_loaded = 1;
+
+    // Number of targets configured during this build. This can
+    // be greater than targets_loaded if the same target is configured
+    // multiple times.
+    int64 targets_configured = 2;
+  }
+  TargetMetrics target_metrics = 3;
+
+  message PackageMetrics {
+    // Number of BUILD files (aka packages) loaded during this build.
+    int64 packages_loaded = 1;
+  }
+  PackageMetrics package_metrics = 4;
 }
 
 // Event providing additional statistics/logs after completion of the build.
@@ -670,5 +739,7 @@ message BuildEvent {
     BuildFinished finished = 14;
     BuildToolLogs build_tool_logs = 23;
     BuildMetrics build_metrics = 24;
-  };
+    WorkspaceConfig workspace_info = 25;
+    BuildMetadata build_metadata = 26;
+  }
 }

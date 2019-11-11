@@ -35,11 +35,6 @@ fun main(args: Array<String>) {
 
     val gRpcServer = GRpcServer(port)
 
-    // when has no bazel command and port is Auto
-    if (bazelCommandlineFile == null && port == 0) {
-        println("BES Port: ${gRpcServer.port}")
-    }
-
     val messageFactory = MessageFactoryImpl()
     var besIsActive = false
     try {
@@ -54,6 +49,11 @@ fun main(args: Array<String>) {
                     println(it)
                 }
                 .use {
+                    // when has no bazel command and port is Auto
+                    if (bazelCommandlineFile == null && port == 0) {
+                        println("BES Port: ${gRpcServer.port}")
+                    }
+
                     if (bazelCommandlineFile != null) {
                         try {
                             val bazelRunner = BazelRunner(verbosity, bazelCommandlineFile, gRpcServer.port)

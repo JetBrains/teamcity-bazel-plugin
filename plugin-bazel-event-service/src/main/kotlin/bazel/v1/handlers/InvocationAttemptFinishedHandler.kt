@@ -18,7 +18,6 @@ class InvocationAttemptFinishedHandler(
                         ctx.streamId,
                         ctx.sequenceNumber,
                         ctx.eventTime,
-                        if (ctx.event.invocationAttemptFinished.hasInvocationStatus()) _buildStatusConverter.convert(ctx.event.invocationAttemptFinished.invocationStatus) else Result.default,
-                        if (ctx.event.invocationAttemptFinished.hasExitCode()) ctx.event.invocationAttemptFinished.exitCode.value else 0)
+                        if (ctx.event.invocationAttemptFinished.hasInvocationStatus()) _buildStatusConverter.convert(ctx.event.invocationAttemptFinished.invocationStatus) else Result.default)
             } else ctx.handlerIterator.next().handle(ctx)
 }

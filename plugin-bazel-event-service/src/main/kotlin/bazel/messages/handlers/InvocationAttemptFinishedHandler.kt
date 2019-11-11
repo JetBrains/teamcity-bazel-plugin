@@ -22,7 +22,6 @@ class InvocationAttemptFinishedHandler : EventHandler {
                         ctx.onNext(ctx.messageFactory.createMessage(
                                 ctx.buildMessage()
                                         .append("Invocation attempt completed".apply(Color.Success))
-                                        .append(", exit code: ${ctx.event.payload.exitCode}", Verbosity.Verbose)
                                         .toString()))
                     }
                 } else {
@@ -30,7 +29,6 @@ class InvocationAttemptFinishedHandler : EventHandler {
                             ctx.buildMessage(false)
                                     .append("Invocation attempt failed")
                                     .append(": \"${ctx.event.payload.invocationResult.status.description}\"", Verbosity.Detailed)
-                                    .append(", exit code: ${ctx.event.payload.exitCode}", Verbosity.Verbose)
                                     .toString()))
                 }
 
