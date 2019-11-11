@@ -20,7 +20,7 @@ class BesCommandLineBuilder(
             sb.appendln(StringUtil.unquoteString(arg))
         }
 
-        val bazelCommandFile = File(_pathsService.getPath(PathType.BuildTemp), _pathsService.uniqueName)
+        val bazelCommandFile = File(_pathsService.getPath(PathType.AgentTemp), _pathsService.uniqueName)
         bazelCommandFile.writeText(sb.toString())
 
         // get java executable
