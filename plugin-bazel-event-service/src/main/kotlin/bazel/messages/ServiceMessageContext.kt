@@ -18,5 +18,5 @@ class ServiceMessageContext(
 
     override fun onError(error: Exception) = _observer.onError(error)
 
-    override fun onCompleted() = _observer.onCompleted()
+    override fun onComplete() = _observer.onComplete()
 }

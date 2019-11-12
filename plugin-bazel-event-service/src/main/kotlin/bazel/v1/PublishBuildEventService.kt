@@ -75,7 +75,7 @@ internal class PublishBuildEventService
             if (value.orderedBuildEvent.event.hasComponentStreamFinished()) {
                 // send onCompleted
                 logger.log(Level.FINE, "The ComponentStreamFinished event was received.")
-                _responseObserver.onCompleted()
+                _responseObserver.onComplete()
             }
         }
 
@@ -84,9 +84,9 @@ internal class PublishBuildEventService
             _eventObserver.onError(error)
         }
 
-        override fun onCompleted() {
-            logger.log(Level.FINE, "onCompleted")
-            _eventObserver.onCompleted()
+        override fun onComplete() {
+            logger.log(Level.FINE, "onComplete")
+            _eventObserver.onComplete()
         }
 
         companion object {

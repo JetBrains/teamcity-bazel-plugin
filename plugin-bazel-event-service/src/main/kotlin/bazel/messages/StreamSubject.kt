@@ -36,7 +36,7 @@ class StreamSubject(
 
     override fun onError(error: Exception) = _messageSubject.onError(error)
 
-    override fun onCompleted() = _messageSubject.onCompleted()
+    override fun onComplete() = _messageSubject.onComplete()
 
     override fun subscribe(observer: Observer<ServiceMessage>): Disposable = _messageSubject.subscribe(observer)
 

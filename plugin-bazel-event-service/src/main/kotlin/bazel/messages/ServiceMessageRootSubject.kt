@@ -12,13 +12,13 @@ class ServiceMessageRootSubject(private val _streamsSubject: ServiceMessageSubje
         _streamsSubject.onNext(value)
 
         if (value.payload is BuildFinished) {
-            onCompleted()
+            onComplete()
         }
     }
 
     override fun onError(error: Exception) = _streamsSubject.onError(error)
 
-    override fun onCompleted() = _streamsSubject.onCompleted()
+    override fun onComplete() = _streamsSubject.onComplete()
 
     override fun subscribe(observer: Observer<ServiceMessage>): Disposable = _streamsSubject.subscribe(observer)
 
