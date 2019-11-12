@@ -24,7 +24,6 @@ allprojects {
 subprojects {
     apply plugin: "kotlin"
 
-    kotlin { experimental { coroutines 'enable' } }
     compileKotlin { kotlinOptions.jvmTarget = "1.6" }
     compileTestKotlin { kotlinOptions.jvmTarget = "1.6" }
 

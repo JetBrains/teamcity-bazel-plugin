@@ -5,9 +5,7 @@ import bazel.Verbosity
 import bazel.atLeast
 import bazel.bazel.events.BazelEvent
 import bazel.bazel.events.BuildFinished
-import bazel.messages.Color
 import bazel.messages.ServiceMessageContext
-import bazel.messages.apply
 
 class BuildCompletedHandler : EventHandler {
     override val priority: HandlerPriority

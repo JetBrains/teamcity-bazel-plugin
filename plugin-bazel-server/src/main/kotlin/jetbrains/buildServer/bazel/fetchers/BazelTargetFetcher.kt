@@ -32,10 +32,10 @@ class BazelTargetFetcher : ProjectDataFetcher {
         }.toMutableList()
     }
 
-    private fun processDirectory(directory: Element, workingDir: String): Sequence<String> = buildSequence {
+    private fun processDirectory(directory: Element, workingDir: String): Sequence<String> = sequence {
         val targetPath = normalizePath(directory.fullName.substring(workingDir.length))
         if (targetPath.split('/').size > analysisDepth) {
-            return@buildSequence
+            return@sequence
         }
 
         directory.children?.forEach { element ->

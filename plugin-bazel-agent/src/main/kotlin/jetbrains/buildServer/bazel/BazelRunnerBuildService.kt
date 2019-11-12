@@ -8,7 +8,9 @@
 package jetbrains.buildServer.bazel
 
 import jetbrains.buildServer.RunBuildException
-import jetbrains.buildServer.agent.runner.*
+import jetbrains.buildServer.agent.runner.BuildServiceAdapter
+import jetbrains.buildServer.agent.runner.BuildStepContext
+import jetbrains.buildServer.agent.runner.ProgramCommandLine
 
 /**
  * Bazel runner service.

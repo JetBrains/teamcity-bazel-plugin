@@ -1,20 +1,18 @@
 package bazel
 
 import bazel.messages.Color
-import bazel.messages.MessageFactory
 import bazel.messages.apply
 import devteam.rx.Disposable
 import devteam.rx.use
 import java.io.BufferedReader
 import java.io.File
-import kotlin.coroutines.experimental.buildSequence
 
 class BazelRunner(
         private val _verbosity: Verbosity,
         bazelCommandlineFile: File,
         besPort: Int) {
 
-    val args: List<String> = buildSequence {
+    val args: List<String> = sequence {
         var hasBesBackendArg = false
         val besBackendArgVal = "${besBackendArg}grpc://localhost:$besPort"
         for (arg in bazelCommandlineFile.readLines()) {

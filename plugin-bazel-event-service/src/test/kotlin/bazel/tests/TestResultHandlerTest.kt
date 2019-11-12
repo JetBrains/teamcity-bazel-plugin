@@ -17,7 +17,6 @@ import devteam.rx.*
 import io.mockk.MockKAnnotations
 import io.mockk.every
 import io.mockk.impl.annotations.MockK
-import io.mockk.mockk
 import jetbrains.buildServer.messages.serviceMessages.Message
 import jetbrains.buildServer.messages.serviceMessages.ServiceMessage
 import org.testng.Assert

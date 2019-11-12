@@ -5,7 +5,6 @@ import jetbrains.buildServer.agent.runner.*
 import jetbrains.buildServer.runner.JavaRunnerConstants
 import jetbrains.buildServer.util.StringUtil
 import java.io.File
-import kotlin.coroutines.experimental.buildSequence
 
 class BesCommandLineBuilder(
         private val _pathsService: PathsService,
@@ -53,7 +52,7 @@ class BesCommandLineBuilder(
                 besArgs)
     }
 
-    private fun getArgs(command: BazelCommand): Sequence<CommandArgument> = buildSequence {
+    private fun getArgs(command: BazelCommand): Sequence<CommandArgument> = sequence {
         yieldAll(command.arguments)
         _parametersService.tryGetParameter(ParameterType.System, "teamcity.buildType.id")?.let {
             if (!it.isBlank()) {

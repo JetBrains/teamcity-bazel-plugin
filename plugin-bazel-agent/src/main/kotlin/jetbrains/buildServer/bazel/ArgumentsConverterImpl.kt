@@ -1,11 +1,10 @@
 package jetbrains.buildServer.bazel
 
 import jetbrains.buildServer.RunBuildException
-import kotlin.coroutines.experimental.buildSequence
 
 class ArgumentsConverterImpl : ArgumentsConverter {
     override fun convert(arguments: Sequence<CommandArgument>): Sequence<String> =
-            buildSequence {
+            sequence {
                 val commands = mutableListOf<String>()
                 val args = mutableListOf<String>()
                 val targets = mutableListOf<String>()

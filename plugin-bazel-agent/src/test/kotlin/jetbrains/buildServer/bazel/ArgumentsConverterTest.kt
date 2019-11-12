@@ -4,7 +4,6 @@ import jetbrains.buildServer.RunBuildException
 import org.testng.Assert
 import org.testng.annotations.DataProvider
 import org.testng.annotations.Test
-import java.io.File
 
 class ArgumentsConverterTest {
     @DataProvider

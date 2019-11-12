@@ -2,14 +2,13 @@ package jetbrains.bazel.integration
 
 import io.cucumber.datatable.DataTable
 import org.testng.Assert
-import kotlin.coroutines.experimental.buildSequence
 
 class ServiceMessages {
     companion object {
         private val serviceMessageRegex = "^\\s*##teamcity\\[(\\w+)\\s(.+)\\]\\s*$".toRegex()
         private val serviceMessageContentRegex = "\\s*(\\w+)\\s*=\\s*'(.+?)'\\s*".toRegex()
 
-        public fun convert(table: DataTable): Sequence<ServiceMessage> = buildSequence {
+        public fun convert(table: DataTable): Sequence<ServiceMessage> = sequence {
             val headers = table.row(0)
             var nameIndex = -1
 
@@ -47,7 +46,7 @@ class ServiceMessages {
                 }
 
         private fun parseAttributes(content: String): Sequence<ServiceMessageAttribute> =
-                buildSequence {
+                sequence {
                     var res: MatchResult? = serviceMessageContentRegex.find(content)
                     while (res != null) {
                         yield(ServiceMessageAttribute(res.groupValues[1], unescape(res.groupValues[2])))

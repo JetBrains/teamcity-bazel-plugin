@@ -1,12 +1,8 @@
 package jetbrains.bazel.integration
 
 import cucumber.api.java.Before
-import cucumber.api.java.en.When
 import org.testng.Assert
-import java.io.*
-import java.net.URL
-import java.util.zip.ZipEntry
-import java.util.zip.ZipInputStream
+import java.io.File
 
 public class EnvironmentSteps {
     private var _sandboxDirectory: File = File(".")

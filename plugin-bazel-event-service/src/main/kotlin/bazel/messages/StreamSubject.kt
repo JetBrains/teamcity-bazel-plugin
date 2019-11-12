@@ -1,6 +1,9 @@
 package bazel.messages
 
-import bazel.*
+import bazel.Event
+import bazel.FileSystemImpl
+import bazel.Verbosity
+import bazel.atLeast
 import bazel.bazel.events.BazelEvent
 import bazel.events.OrderedBuildEvent
 import bazel.messages.handlers.*

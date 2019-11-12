@@ -8,7 +8,6 @@
 package jetbrains.buildServer.bazel.commands
 
 import jetbrains.buildServer.bazel.*
-import kotlin.coroutines.experimental.buildSequence
 
 /**
  * Provides arguments to bazel clean command.
@@ -21,7 +20,7 @@ class CleanCommand(
     override val command: String = BazelConstants.COMMAND_CLEAN
 
     override val arguments: Sequence<CommandArgument>
-        get() = buildSequence {
+        get() = sequence {
             yield(CommandArgument(CommandArgumentType.Command, command))
             yieldAll(_commonArgumentsProvider.getArguments(this@CleanCommand))
         }

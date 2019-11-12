@@ -11,7 +11,7 @@ import kotlin.coroutines.experimental.buildSequence
 
 object BazelFileParser {
 
-    fun readTargets(inputStream: InputStream) = buildSequence {
+    fun readTargets(inputStream: InputStream) = sequence {
         inputStream.bufferedReader().use {
             try {
                 val buildFileLexer = BazelBuildFileLexer(CharStreams.fromReader(it))

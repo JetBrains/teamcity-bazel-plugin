@@ -26,6 +26,7 @@ class BazelOptions(args: Array<String>) {
 
     companion object {
         private val options = createOptions()
+        @Suppress("DEPRECATION")
         private val parser: CommandLineParser = GnuParser()
 
         private fun createOptions(): Options {

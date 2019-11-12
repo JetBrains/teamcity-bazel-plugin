@@ -29,7 +29,7 @@ class BazelBuildFeature(
         }
     }
 
-    private fun getOptions(params: MutableMap<String, String>): Sequence<String> = buildSequence {
+    private fun getOptions(params: MutableMap<String, String>): Sequence<String> = sequence {
         params[BazelConstants.PARAM_STARTUP_OPTIONS]?.let { startupOptions ->
             if (startupOptions.isNotBlank()) {
                 yield("Startup options: $startupOptions")

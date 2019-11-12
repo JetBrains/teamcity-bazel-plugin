@@ -7,10 +7,8 @@
 
 package jetbrains.buildServer.bazel.commands
 
-import jetbrains.buildServer.agent.runner.ParameterType
 import jetbrains.buildServer.agent.runner.ParametersService
 import jetbrains.buildServer.bazel.*
-import kotlin.coroutines.experimental.buildSequence
 
 /**
  * Provides arguments to bazel test command.
@@ -25,7 +23,7 @@ class TestCommand(
     override val command: String = BazelConstants.COMMAND_TEST
 
     override val arguments: Sequence<CommandArgument>
-        get() = buildSequence {
+        get() = sequence {
             yield(CommandArgument(CommandArgumentType.Command, command))
             yieldAll(_buildArgumentsProvider.getArguments(this@TestCommand))
         }

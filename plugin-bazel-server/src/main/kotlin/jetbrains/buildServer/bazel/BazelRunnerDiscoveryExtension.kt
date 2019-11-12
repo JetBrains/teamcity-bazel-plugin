@@ -25,10 +25,9 @@ class BazelRunnerDiscoveryExtension : BuildRunnerDiscoveryExtension {
         return discoverRunners(browser.root, 0, null).toMutableList()
     }
 
-    private fun discoverRunners(currentElement: Element, currentElementDepth: Int, workspaceDir: String?)
-            : Sequence<DiscoveredObject> = buildSequence {
+    private fun discoverRunners(currentElement: Element, currentElementDepth: Int, workspaceDir: String?): Sequence<DiscoveredObject> = sequence {
         if (currentElementDepth > depthLimit || currentElement.name.contains("rule")) {
-            return@buildSequence
+            return@sequence
         }
 
         val children = (currentElement.children ?: emptyList())

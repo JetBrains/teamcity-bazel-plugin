@@ -3,9 +3,6 @@ package jetbrains.buildServer.bazel
 import com.intellij.openapi.diagnostic.Logger
 import jetbrains.buildServer.agent.*
 import jetbrains.buildServer.agent.runner.MultiCommandBuildSessionFactory
-import jetbrains.buildServer.agent.runner.ParametersService
-import jetbrains.buildServer.agent.runner.ProgramCommandLine
-import jetbrains.buildServer.agent.runner.SimpleProgramCommandLine
 import java.util.*
 
 /**

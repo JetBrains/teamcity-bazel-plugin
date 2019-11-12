@@ -5,7 +5,6 @@ import bazel.atLeast
 import bazel.messages.Color
 import bazel.messages.ServiceMessageContext
 import bazel.messages.apply
-import com.intellij.openapi.util.ArrayTailCondition
 
 class MessageBuilder(
         private val _serviceMessageContext: ServiceMessageContext,

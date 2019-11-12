@@ -2,7 +2,7 @@ package jetbrains.buildServer.bazel
 
 import devteam.rx.subjectOf
 import jetbrains.buildServer.agent.*
-import jetbrains.buildServer.agent.runner.*
+import jetbrains.buildServer.agent.runner.ProgramCommandLine
 import org.jmock.Expectations
 import org.jmock.Mockery
 import org.testng.annotations.BeforeMethod
