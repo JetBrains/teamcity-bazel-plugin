@@ -19,8 +19,9 @@ dependencies {
   compile project(':plugin-bazel-common')
   compile project(':rx')
   compile "org.jetbrains.kotlin:kotlin-stdlib"
+  compile "org.jetbrains.kotlin:kotlin-reflect"
   compile "com.github.zafarkhaja:java-semver:0.9.0"
-  compile "com.fasterxml.jackson.module:jackson-module-kotlin:2.6.7"
+  compile "com.fasterxml.jackson.module:jackson-module-kotlin:2.10.0"
   provided "org.jetbrains.teamcity.internal:agent:${teamcityVersion}"
   provided "org.jetbrains.teamcity:common-api:${teamcityVersion}"
   implementation project(':plugin-bazel-event-service')
