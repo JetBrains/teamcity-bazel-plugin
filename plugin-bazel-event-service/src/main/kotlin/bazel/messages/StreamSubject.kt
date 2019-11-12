@@ -113,6 +113,12 @@ class StreamSubject(
                 //BuildMetrics build_metrics = 24;
                 BuildMetricsHandler(),
 
+                // WorkspaceConfig workspace_info = 25;
+                WorkspaceConfigHandler(),
+
+                // BuildMetadata build_metadata = 26;
+                BuildMetadataHandler(),
+
                 // Unknown
                 UnknownEventHandler()
         ).sortedBy { it.priority }.toList()

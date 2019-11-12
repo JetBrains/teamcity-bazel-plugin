@@ -92,6 +92,12 @@ class BazelEventConverter : Converter<Any, BazelContent> {
                 // BuildMetrics build_metrics = 24;
                 BuildMetricsHandler(),
 
+                // WorkspaceConfig workspace_info = 25;
+                WorkspaceConfigHandler(),
+
+                // BuildMetadata build_metadata = 26;
+                BuildMetadataHandler(),
+
                 // Unknown content.
                 UnknownContentHandler()
         ).sortedBy { it.priority }.toList()
