@@ -16,7 +16,7 @@ class BazelRunner(
 
     val args: List<String> = buildSequence {
         var hasBesBackendArg = false
-        val besBackendArgVal = "${besBackendArg}localhost:$besPort"
+        val besBackendArgVal = "${besBackendArg}grpc://localhost:$besPort"
         for (arg in bazelCommandlineFile.readLines()) {
             // remove existing bes_backend arg
             if (arg.startsWith(besBackendArg, true)) {
