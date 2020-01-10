@@ -102,6 +102,19 @@
 </tr>
 
 <tr class="advancedSetting">
+    <th><label for="${params.toolPathKey}">Path to bazel executable tool:</label></th>
+    <td>
+        <props:textProperty name="${params.toolPathKey}" className="longField">
+            <jsp:attribute name="afterTextField">
+                <bs:vcsTree fieldId="${params.toolPathKey}"/>
+            </jsp:attribute>
+        </props:textProperty>
+        <span class="error" id="error_${params.toolPathKey}"></span>
+        <span class="smallNote">Optional, set if a custom bazel tool is required. Paths relative to the checkout directory are supported.</span>
+    </td>
+</tr>
+
+<tr class="advancedSetting">
     <th><label for="${params.argumentsKey}">Command arguments:</label></th>
     <td>
         <props:textProperty name="${params.argumentsKey}" className="longField" expandable="true"/>

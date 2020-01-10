@@ -14,7 +14,7 @@ class BesCommandLineBuilder(
     : CommandLineBuilder {
     override fun build(command: BazelCommand): ProgramCommandLine {
         val sb = StringBuilder()
-        sb.appendln(_pathsService.getToolPath(BazelConstants.BAZEL_CONFIG_NAME))
+        sb.appendln(_pathsService.toolPath)
         for (arg in _argumentsConverter.convert(getArgs(command))) {
             sb.appendln(StringUtil.unquoteString(arg))
         }

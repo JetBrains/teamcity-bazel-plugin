@@ -21,6 +21,9 @@ class BazelParametersProvider {
     val targetsKey: String
         get() = BazelConstants.PARAM_TARGETS
 
+    val toolPathKey: String
+        get() = BazelConstants.TOOL_PATH
+
     val argumentsKey: String
         get() = BazelConstants.PARAM_ARGUMENTS
 

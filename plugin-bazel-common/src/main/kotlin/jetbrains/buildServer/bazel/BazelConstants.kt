@@ -30,6 +30,7 @@ object BazelConstants {
     const val COMMAND_TEST = "test"
     const val COMMAND_SHUTDOWN = "shutdown"
 
+    const val TOOL_PATH = "toolPath"
     const val PARAM_ARGUMENTS = "arguments"
     const val PARAM_STARTUP_OPTIONS = "startupOptions"
     const val PARAM_COMMAND = "command"

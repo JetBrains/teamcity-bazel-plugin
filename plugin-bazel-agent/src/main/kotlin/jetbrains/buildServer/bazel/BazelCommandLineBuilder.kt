@@ -16,7 +16,7 @@ class BazelCommandLineBuilder(
         return SimpleProgramCommandLine(
                 environmentVariables,
                 _workingDirectoryProvider.workingDirectory.absolutePath,
-                _pathsService.getToolPath(BazelConstants.BAZEL_CONFIG_NAME).absolutePath,
+                _pathsService.toolPath.absolutePath,
                 _argumentsConverter.convert(command.arguments).toList())
     }
 }

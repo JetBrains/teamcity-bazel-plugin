@@ -22,3 +22,9 @@
     </div>
 </c:if>
 
+<c:if test="${not empty propertiesBean.properties[params.toolPathKey]}">
+    <div class="parameter">
+        Path to bazel executable tool: <props:displayValue name="${params.toolPathKey}"/>
+    </div>
+</c:if>
+

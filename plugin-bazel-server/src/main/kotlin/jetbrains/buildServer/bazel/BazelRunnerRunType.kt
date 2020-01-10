@@ -82,6 +82,10 @@ class BazelRunnerRunType(private val myPluginDescriptor: PluginDescriptor,
     }
 
     override fun getRunnerSpecificRequirements(parameters: Map<String, String>): List<Requirement> {
+        if (parameters[BazelConstants.TOOL_PATH] != null) {
+            return emptyList()
+        }
+
         return listOf(Requirement(BazelConstants.BAZEL_CONFIG_PATH, null, RequirementType.EXISTS))
     }
 }

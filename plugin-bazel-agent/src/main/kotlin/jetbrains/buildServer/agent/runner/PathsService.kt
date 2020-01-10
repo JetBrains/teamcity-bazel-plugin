@@ -5,7 +5,7 @@ import java.io.File
 interface PathsService {
     val uniqueName: String
 
-    fun getPath(pathType: PathType): File
+    val toolPath: File
 
-    fun getToolPath(toolName: String): File
+    fun getPath(pathType: PathType): File
 }
