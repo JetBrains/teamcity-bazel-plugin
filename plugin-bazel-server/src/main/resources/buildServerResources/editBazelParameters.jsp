@@ -41,10 +41,9 @@
         },
         updateElements: function () {
             var commandName = $j(commandId).val().trim().replace(" ", "-");
-
             $j("tr.bazel").each(function(id, element) {
                 var $row = $j(element);
-                if (!$row.hasClass(commandName)) {
+                if (!$row.hasClass(commandName) && !commandName.includes("%")) {
                     $row.hide();
                     BS.BazelParametersForm.clearInputValues($row);
                 } else {
@@ -131,6 +130,19 @@
         <props:textProperty name="${params.startupOptionsKey}" className="longField" expandable="true"/>
         <span class="error" id="error_${params.startupOptionsKey}"></span>
         <span class="smallNote">Enter Bazel startup options.</span>
+    </td>
+</tr>
+
+<tr class="advancedSetting">
+    <th><label for="${params.integrationModeKey}">Integration mode:</label></th>
+    <td>
+        <props:selectProperty name="${params.integrationModeKey}" enableFilter="true" className="mediumField">
+            <props:option value="">&lt;Default&gt;</props:option>
+            <c:forEach var="item" items="${params.integrationModes}">
+                <props:option value="${item.id}"><c:out value="${item.description}"/></props:option>
+            </c:forEach>
+        </props:selectProperty>
+        <span class="error" id="error_${params.integrationModeKey}"></span>
     </td>
 </tr>
 

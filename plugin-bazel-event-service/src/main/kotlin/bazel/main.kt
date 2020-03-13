@@ -1,5 +1,6 @@
 package bazel
 
+import bazel.bazel.converters.BazelEventConverter
 import bazel.messages.MessageFactoryImpl
 import bazel.v1.BuildEventConverter
 import bazel.v1.PublishBuildEventService
@@ -19,11 +20,13 @@ fun main(args: Array<String>) {
 
     val logger = Logger.getLogger("main")
     val port: Int
+    val eventFile: File?
     val verbosity: Verbosity
     val bazelCommandlineFile: File?
     try {
         val bazelOptions = BazelOptions(args)
         port = bazelOptions.port
+        eventFile = bazelOptions.eventFile
         verbosity = bazelOptions.verbosity
         bazelCommandlineFile = bazelOptions.bazelCommandlineFile
     } catch (ex: Exception) {
@@ -33,9 +36,31 @@ fun main(args: Array<String>) {
         return
     }
 
-    val gRpcServer = GRpcServer(port)
-
     val messageFactory = MessageFactoryImpl()
+
+    if (eventFile != null && bazelCommandlineFile != null) {
+        val bazelRunner = BazelRunner(verbosity, bazelCommandlineFile, 0, eventFile)
+        val commandLine = bazelRunner.args.joinToString(" ") { if (it.contains(' ')) "\"$it\"" else it }
+        println("Starting: $commandLine")
+        println("in directory: ${bazelRunner.workingDirectory}")
+        val result = bazelRunner.run()
+        for (error in result.errors) {
+            bazel.println(messageFactory.createErrorMessage(error).asString())
+        }
+
+        BinaryFile(
+                eventFile,
+                verbosity,
+                BazelEventConverter(),
+                messageFactory)
+                .subscribe {
+                    println(it)
+                }
+
+        System.exit(result.exitCode)
+    }
+
+    val gRpcServer = GRpcServer(port)
     var besIsActive = false
     try {
         BesServer(

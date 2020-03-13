@@ -37,6 +37,7 @@ object BazelConstants {
     const val PARAM_TARGETS = "targets"
     const val PARAM_WORKING_DIR = AgentRuntimeProperties.BUILD_WORKING_DIR
     const val PARAM_VERBOSITY = "verbosity"
+    const val PARAM_INTEGRATION_MODE = "integration"
 
     // build feature
     const val PARAM_REMOTE_CACHE = "remoteHttpCache"

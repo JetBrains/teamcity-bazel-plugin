@@ -1,7 +1,9 @@
 package jetbrains.buildServer.bazel
 
 import jetbrains.buildServer.RunBuildException
+import jetbrains.buildServer.agent.FileSystemService
 import jetbrains.buildServer.agent.runner.*
+import jetbrains.buildServer.bazel.BazelConstants.PARAM_INTEGRATION_MODE
 import jetbrains.buildServer.runner.JavaRunnerConstants
 import jetbrains.buildServer.util.StringUtil
 import java.io.File
@@ -39,9 +41,21 @@ class BesCommandLineBuilder(
         val jarFile = File(File(pluginDir, "tools"), "plugin-bazel-event-service.jar")
 
         val besArgs = mutableListOf<String>("-jar", jarFile.absolutePath, "-c=${bazelCommandFile.absolutePath}")
+
         _parametersService.tryGetParameter(ParameterType.Runner, BazelConstants.PARAM_VERBOSITY)?.trim()?.let {
             Verbosity.tryParse(it)?.let {
                 besArgs.add("-l=${it.id}")
+            }
+        }
+
+        _parametersService.tryGetParameter(ParameterType.Runner, PARAM_INTEGRATION_MODE)?.let {
+            IntegrationMode.tryParse(it)?.let {
+                when(it) {
+                    IntegrationMode.BinaryFile -> {
+                        besArgs.add("-f=${File(_pathsService.getPath(PathType.AgentTemp), _pathsService.uniqueName).absolutePath}")
+                    }
+                    else -> Unit
+                }
             }
         }
 

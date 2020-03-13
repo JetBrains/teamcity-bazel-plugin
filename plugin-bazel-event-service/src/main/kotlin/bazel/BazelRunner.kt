@@ -9,35 +9,54 @@ import java.io.File
 
 class BazelRunner(
         private val _verbosity: Verbosity,
-        bazelCommandlineFile: File,
-        besPort: Int) {
+        private val _bazelCommandlineFile: File,
+        private val _besPort: Int,
+        private val _eventFile: File? = null) {
 
-    val args: List<String> = sequence {
-        var hasBesBackendArg = false
-        val besBackendArgVal = "${besBackendArg}grpc://localhost:$besPort"
-        for (arg in bazelCommandlineFile.readLines()) {
-            // remove existing bes_backend arg
-            if (arg.startsWith(besBackendArg, true)) {
-                continue
+    val args: Sequence<String>
+        get() = sequence {
+            var hasSpecialArgs = false
+            for (arg in _bazelCommandlineFile.readLines()) {
+                val normalizedArg = arg.replace(" ", "").replace("\"", "").replace("'", "")
+
+                // remove existing bes_backend arg if port != 0
+                if (_besPort != 0 && normalizedArg.startsWith(besBackendArg, true)) {
+                    continue
+                }
+
+                // remove existing bes_backend arg if eventFile was specified
+                if (_eventFile != null && normalizedArg.startsWith(eventBinaryFileArg, true)) {
+                    continue
+                }
+
+                if (arg.trim() == "--") {
+                    yieldAll(specialArgs)
+                    hasSpecialArgs = true
+                }
+
+                yield(arg)
             }
 
-            if (arg.trim() == "--") {
-                yield(besBackendArgVal)
-                hasBesBackendArg = true
+            if (!hasSpecialArgs) {
+                yieldAll(specialArgs)
+            }
+        }
+
+    private val specialArgs: Sequence<String>
+        get() = sequence {
+            if (_besPort != 0) {
+                yield("${besBackendArg}grpc://localhost:$_besPort")
             }
 
-            yield(arg)
+            if (_eventFile != null) {
+                yield("\"${eventBinaryFileArg}${_eventFile.absolutePath}\"")
+            }
         }
-
-        if (!hasBesBackendArg) {
-            yield(besBackendArgVal)
-        }
-    }.toList()
 
     val workingDirectory: File = File(".").absoluteFile
 
     fun run(): Result {
-        val process = ProcessBuilder(args)
+        val process = ProcessBuilder(args.toList())
                 .directory(workingDirectory)
                 .start()
 
@@ -66,6 +85,7 @@ class BazelRunner(
 
     companion object {
         private const val besBackendArg = "--bes_backend="
+        private const val eventBinaryFileArg = "--build_event_binary_file="
     }
 
     private class ActiveReader(reader: BufferedReader, action: (line: String) -> Unit) : Disposable {

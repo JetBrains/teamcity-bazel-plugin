@@ -36,6 +36,12 @@ class BazelParametersProvider {
     val verbosityValues: List<Verbosity>
         get() = Verbosity.values().toList()
 
+    val integrationModeKey: String
+        get() = BazelConstants.PARAM_INTEGRATION_MODE
+
+    val integrationModes: List<IntegrationMode>
+        get() = IntegrationMode.values().toList()
+
     // Build feature
     val remoteCacheKey: String
         get() = BazelConstants.PARAM_REMOTE_CACHE

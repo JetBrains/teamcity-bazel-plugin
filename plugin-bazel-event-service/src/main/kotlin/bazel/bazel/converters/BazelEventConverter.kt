@@ -10,26 +10,16 @@ import com.google.protobuf.Any
 import java.util.logging.Level
 import java.util.logging.Logger
 
-class BazelEventConverter : Converter<Any, BazelContent> {
-    override fun convert(source: com.google.protobuf.Any): BazelContent {
-        return when (source.typeUrl) {
-            "type.googleapis.com/build_event_stream.BuildEvent" -> {
-                val event = source.unpack(BuildEventStreamProtos.BuildEvent::class.java)
-                val id = if (event.hasId()) Id(event.id) else Id.default
-                val children = mutableListOf<Id>()
-                for (i in 0 until event.childrenCount) {
-                    children.add(Id(event.getChildren(i)))
-                }
-
-                val iterator = handlers.iterator()
-                return iterator.next().handle(HandlerContext(iterator, id, children, event))
-            }
-
-            else -> {
-                logger.log(Level.SEVERE, "Unknown bazel event: ${source.typeUrl}")
-                BazelUnknownContent.default
-            }
+class BazelEventConverter : Converter<BuildEventStreamProtos.BuildEvent, BazelContent> {
+    override fun convert(event: BuildEventStreamProtos.BuildEvent): BazelContent {
+        val id = if (event.hasId()) Id(event.id) else Id.default
+        val children = mutableListOf<Id>()
+        for (i in 0 until event.childrenCount) {
+            children.add(Id(event.getChildren(i)))
         }
+
+        val iterator = handlers.iterator()
+        return iterator.next().handle(HandlerContext(iterator, id, children, event))
     }
 
     companion object {
