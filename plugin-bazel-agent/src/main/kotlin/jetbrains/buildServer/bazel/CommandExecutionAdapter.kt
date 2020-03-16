@@ -47,7 +47,14 @@ class CommandExecutionAdapter(
             it.processFinished(exitCode)
         }
 
-        result = _bazelRunnerBuildService.getRunResult(exitCode)
+        if (exitCode == 3) {
+            _processListeners.forEach { it.onStandardOutput("Process finished with exit code $exitCode (some tests have failed). Reporting step success as all the tests have run.") }
+            result = BuildFinishedStatus.FINISHED_SUCCESS
+        }
+        else {
+            result = _bazelRunnerBuildService.getRunResult(exitCode)
+        }
+
         if (result == BuildFinishedStatus.FINISHED_SUCCESS) {
             _bazelRunnerBuildService.afterProcessSuccessfullyFinished()
         }

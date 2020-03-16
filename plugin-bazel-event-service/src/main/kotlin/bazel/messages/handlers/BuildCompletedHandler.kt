@@ -5,7 +5,9 @@ import bazel.Verbosity
 import bazel.atLeast
 import bazel.bazel.events.BazelEvent
 import bazel.bazel.events.BuildFinished
+import bazel.messages.Color
 import bazel.messages.ServiceMessageContext
+import bazel.messages.apply
 
 class BuildCompletedHandler : EventHandler {
     override val priority: HandlerPriority
@@ -18,20 +20,29 @@ class BuildCompletedHandler : EventHandler {
                     if (ctx.verbosity.atLeast(Verbosity.Detailed)) {
                         ctx.onNext(ctx.messageFactory.createMessage(
                                 ctx.buildMessage()
-                                        .append("Build finished")
-                                        .append(" with exit code ${event.exitCode}")
-                                        .append("(${event.exitCodeName})", Verbosity.Verbose)
+                                        .append("Build completed")
+                                        .append(", exit code ${event.exitCode}")
                                         .toString()))
                     }
                 } else {
-                    ctx.onNext(ctx.messageFactory.createBuildProblem(
-                            ctx.buildMessage(false)
-                                    .append("Build failed")
-                                    .append(" with exit code ${event.exitCode}", Verbosity.Detailed)
-                                    .append(" (${event.exitCodeName})", Verbosity.Verbose)
-                                    .toString(),
-                            ctx.event.projectId,
-                            event.id.toString()))
+                    when (event.exitCode) {
+                        3 -> {
+                            ctx.onNext(ctx.messageFactory.createMessage(
+                                    ctx.buildMessage()
+                                            .append("Build completed with failed test(s)")
+                                            .append(", exit code ${event.exitCode}")
+                                            .toString()))
+                        }
+                        else -> {
+                            ctx.onNext(ctx.messageFactory.createBuildProblem(
+                                    ctx.buildMessage(false)
+                                            .append("Build failed: ${event.exitCodeName}")
+                                            .append(", exit code ${event.exitCode}", Verbosity.Detailed)
+                                            .toString(),
+                                    ctx.event.projectId,
+                                    event.exitCodeName))
+                        }
+                    }
                 }
 
                 true
