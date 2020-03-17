@@ -1,18 +1,21 @@
 package bazel.messages.handlers
 
-import bazel.FileSystem
+import bazel.FileSystemService
 import bazel.HandlerPriority
 import bazel.Verbosity
 import bazel.atLeast
 import bazel.bazel.events.BazelEvent
 import bazel.bazel.events.TestResult
+import bazel.bazel.events.readLines
 import bazel.messages.Color
 import bazel.messages.ServiceMessageContext
 import bazel.messages.apply
 import java.io.File
+import java.io.FileWriter
+import java.io.OutputStreamWriter
 
 class TestResultHandler(
-        private val _fileSystem: FileSystem)
+        private val _fileSystemService: FileSystemService)
     : EventHandler {
     override val priority: HandlerPriority
         get() = HandlerPriority.High
@@ -32,40 +35,39 @@ class TestResultHandler(
 
                 val hasNextAttempt = event.children.isNotEmpty()
                 for (test in event.testActionOutput) {
-                    val path = test.path
-                    if (path == null) {
-                        ctx.onNext(ctx.messageFactory.createMessage("Invalid file \"${test.name}\": \"${test.uri}\"".apply(Color.Warning)))
-                        continue
-                    }
-
                     if (ctx.verbosity.atLeast(Verbosity.Verbose)) {
-                        ctx.onNext(ctx.messageFactory.createMessage("$path".apply(Color.Items)))
+                        ctx.onNext(ctx.messageFactory.createMessage("${test}".apply(Color.Items)))
                     }
 
-                    if (!_fileSystem.exists(path)) {
-                        if (ctx.verbosity.atLeast(Verbosity.Detailed)) {
-                            ctx.onNext(ctx.messageFactory.createMessage("File \"$path\" does not exist.".apply(Color.Warning)))
-                        }
+                    val content = test.readLines(ctx)
+                    traceFile(ctx, test, content)
 
+                    if (test.name.length < 3) {
                         continue
                     }
 
-                    when (path.extension.toLowerCase()) {
+                    when (test.name.toLowerCase().takeLast(3)) {
                         "xml" -> {
-                            traceFile(ctx, path)
-
                             // check that it is last attempt
                             if (!hasNextAttempt) {
                                 // import test results
-                                path.setLastModified(System.currentTimeMillis())
-                                ctx.onNext(ctx.messageFactory.createImportData("junit", path.absolutePath))
+                                val testTempFile = _fileSystemService.generateTempFile("tmp", test.name)
+                                _fileSystemService.write(testTempFile) {
+                                    OutputStreamWriter(it).use {
+                                        for (line in content) {
+                                            it.write(line)
+                                        }
+                                    }
+                                }
+
+                                ctx.onNext(ctx.messageFactory.createImportData("junit", testTempFile.absolutePath))
                             }
                         }
 
                         "log" ->
                             // check that it is last attempt
                             if (!hasNextAttempt) {
-                                for (line in _fileSystem.readFile(path)) {
+                                for (line in content) {
                                     val message = ctx.messageFactory.createMessage(line)
                                     // Allows to pass TeamCity services messages from tests` stdOut
                                     if (line.contains("##teamcity")) {
@@ -81,10 +83,10 @@ class TestResultHandler(
                 true
             } else ctx.handlerIterator.next().handle(ctx)
 
-    private fun traceFile(ctx: ServiceMessageContext, file: File) {
+    private fun traceFile(ctx: ServiceMessageContext, file: bazel.bazel.events.File, content: List<String>) {
         if (ctx.verbosity.atLeast(Verbosity.Diagnostic)) {
-            ctx.messageFactory.createTraceMessage("File \"${file.canonicalPath}\":")
-            for (line in _fileSystem.readFile(file)) {
+            ctx.messageFactory.createTraceMessage("File \"$file\":")
+            for (line in content) {
                 ctx.onNext(ctx.messageFactory.createTraceMessage("$\t$line"))
             }
         }

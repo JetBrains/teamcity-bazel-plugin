@@ -1,12 +1,9 @@
 package bazel.tests
 
 import bazel.Event
-import bazel.FileSystem
+import bazel.FileSystemService
 import bazel.Verbosity
-import bazel.bazel.events.File
-import bazel.bazel.events.Id
-import bazel.bazel.events.TestResult
-import bazel.bazel.events.TestStatus
+import bazel.bazel.events.*
 import bazel.events.OrderedBuildEvent
 import bazel.messages.Hierarchy
 import bazel.messages.MessageFactory
@@ -24,6 +21,7 @@ import org.testng.annotations.AfterMethod
 import org.testng.annotations.BeforeMethod
 import org.testng.annotations.DataProvider
 import org.testng.annotations.Test
+import java.io.ByteArrayInputStream
 
 @Suppress("UNCHECKED_CAST")
 class TestResultHandlerTest {
@@ -33,7 +31,8 @@ class TestResultHandlerTest {
     @MockK private lateinit var _iterator: Iterator<EventHandler>
     @MockK private lateinit var _messageFactory: MessageFactory
     @MockK private lateinit var _hierarchy: Hierarchy
-    @MockK private lateinit var _fileSystem: FileSystem
+    @MockK private lateinit var _fileSystemService: FileSystemService
+    @MockK private lateinit var _file: File
 
     @BeforeMethod
     fun setUp() {
@@ -54,13 +53,12 @@ class TestResultHandlerTest {
                 arrayOf(Verbosity.Quiet),
                 arrayOf(Verbosity.Normal),
                 arrayOf(Verbosity.Detailed),
-                arrayOf(Verbosity.Verbose),
-                arrayOf(Verbosity.Diagnostic))
+                arrayOf(Verbosity.Verbose))
 
     @Test(dataProvider = "verbosityLevels")
     fun shouldSendContentOfTestLogFileViaServiceMessages(verbosity: Verbosity) {
         // Given
-        val handler = TestResultHandler(_fileSystem)
+        val handler = TestResultHandler(_fileSystemService)
 
         // When
         val event: Event<OrderedBuildEvent> = createEvent(
@@ -76,21 +74,21 @@ class TestResultHandlerTest {
                         true,
                         1,
                         1,
-                        listOf(File("tests.log", "file:///abc/test.log")),
+                        listOf(_file),
                         emptyList()))
 
-        val testLogFile = java.io.File(java.io.File.separator + "abc" + java.io.File.separator + "test.log")
+        val ctx = createContext(event, verbosity)
         val message1 = Message("line 1", "Normal", null)
         val message2 = Message("##teamcity[line 2]", "Normal", null)
         val message = Message("message", "Normal", null)
 
-        every { _fileSystem.exists(testLogFile) } returns true
-        every { _fileSystem.readFile(testLogFile) } returns sequenceOf("line 1", "##teamcity[line 2]")
+        every { _file.name } returns "test.log"
+        every { _file.createStream() } returns listOf("line 1", "##teamcity[line 2]").joinToString(System.lineSeparator()).byteInputStream()
         every { _messageFactory.createMessage(any()) } returns message
         every { _messageFactory.createMessage("line 1") } returns message1
         every { _messageFactory.createMessage("##teamcity[line 2]") } returns message2
 
-        handler.handle(createContext(event, verbosity))
+        handler.handle(ctx)
 
         // Then
         Assert.assertTrue(_actualNotifications.containsAll(listOf(NotificationNext<ServiceMessage>(message1), NotificationNext<ServiceMessage>(message2))))

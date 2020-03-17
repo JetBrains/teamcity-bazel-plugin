@@ -1,6 +1,7 @@
 package bazel
 
 import bazel.bazel.converters.BazelEventConverter
+import bazel.messages.CustomURLStreamHandlerFactory
 import bazel.messages.MessageFactoryImpl
 import bazel.v1.BuildEventConverter
 import bazel.v1.PublishBuildEventService
@@ -11,7 +12,9 @@ import devteam.rx.use
 import org.apache.log4j.Level
 import java.io.File
 import java.io.IOException
+import java.net.URL
 import java.util.logging.Logger
+
 
 @Throws(IOException::class, InterruptedException::class)
 fun main(args: Array<String>) {
@@ -36,6 +39,7 @@ fun main(args: Array<String>) {
         return
     }
 
+    URL.setURLStreamHandlerFactory(CustomURLStreamHandlerFactory())
     val messageFactory = MessageFactoryImpl()
 
     if (eventFile != null && bazelCommandlineFile != null) {

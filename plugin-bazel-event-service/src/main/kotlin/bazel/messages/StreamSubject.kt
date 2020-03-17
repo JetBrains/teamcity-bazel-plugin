@@ -1,7 +1,7 @@
 package bazel.messages
 
 import bazel.Event
-import bazel.FileSystemImpl
+import bazel.FileSystemServiceImpl
 import bazel.Verbosity
 import bazel.atLeast
 import bazel.bazel.events.BazelEvent
@@ -99,7 +99,7 @@ class StreamSubject(
                 TargetCompletedHandler(),
 
                 //TestResult test_result = 10;
-                TestResultHandler(FileSystemImpl()),
+                TestResultHandler(FileSystemServiceImpl()),
 
                 //TestSummary test_summary = 9;
                 TestSummaryHandler(),

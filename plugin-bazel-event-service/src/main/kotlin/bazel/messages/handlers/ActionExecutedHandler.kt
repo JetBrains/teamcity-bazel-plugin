@@ -6,12 +6,12 @@ import bazel.atLeast
 import bazel.bazel.events.ActionExecuted
 import bazel.bazel.events.BazelEvent
 import bazel.bazel.events.File
+import bazel.bazel.events.read
 import bazel.messages.Color
 import bazel.messages.ServiceMessageContext
 import bazel.messages.apply
 import bazel.messages.logError
-import com.intellij.openapi.util.SystemInfo
-import java.net.URI
+import java.io.InputStreamReader
 
 class ActionExecutedHandler : EventHandler {
     override val priority: HandlerPriority
@@ -26,17 +26,17 @@ class ActionExecutedHandler : EventHandler {
                 val details = StringBuilder()
                 details.appendln(event.cmdLines.joinToStringEscaped().trim())
 
-                var content = readFromFile(event.primaryOutput, ctx)
+                var content = event.primaryOutput.read(ctx)
                 if (content.isNotBlank()) {
                     details.appendln(content)
                 }
 
-                content = readFromFile(event.stdout, ctx)
+                content = event.stdout.read(ctx)
                 if (content.isNotBlank()) {
                     details.appendln(content)
                 }
 
-                content = readFromFile(event.stderr, ctx)
+                content = event.stderr.read(ctx)
                 if (content.isNotBlank()) {
                     details.appendln(content.apply(Color.Error))
                 }
@@ -76,38 +76,4 @@ class ActionExecutedHandler : EventHandler {
                 true
             } else ctx.handlerIterator.next().handle(ctx)
 
-    companion object {
-        private val FILE_SCHEMA = Regex("(file\\:\\/\\/)([a-z]+\\:\\/.*)", RegexOption.IGNORE_CASE)
-
-        private fun normalizeURI(uri: String): String {
-            if (!SystemInfo.isWindows) return uri
-            return FILE_SCHEMA.matchEntire(uri)?.let {
-                val (_, path) = it.destructured
-                return "file:////$path"
-            } ?: uri
-        }
-
-        private fun getFile(uri: String): java.io.File {
-            return java.io.File(URI(normalizeURI(uri)))
-        }
-
-        private fun readFromFile(file: File, ctx: ServiceMessageContext): String {
-            if (file.uri.isBlank()) {
-                return ""
-            }
-
-            return try {
-                val progressFile = getFile(file.uri)
-                try {
-                    progressFile.readText().trim()
-                } catch (ex: Exception) {
-                    ctx.logError("Cannot read text from file \"$progressFile\"", ex)
-                    ""
-                }
-            } catch (ex: Exception) {
-                ctx.logError("Cannot parse file name from uri \"${file.uri}\"", ex)
-                ""
-            }
-        }
-    }
 }
