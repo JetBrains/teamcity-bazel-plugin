@@ -38,16 +38,7 @@ class BazelBuildFeature(
 
         params[BazelConstants.PARAM_REMOTE_CACHE]?.let { remoteCache ->
             val description = StringBuilder()
-            val url = try {
-                URL(remoteCache.trim())
-            } catch (e: MalformedURLException) {
-                return@let
-            }
-            description.append("Remote cache server: ").append(url.protocol).append("://").append(url.host)
-            if (url.port != -1 && url.port != url.defaultPort) {
-                description.append(":").append(url.port)
-            }
-            description.append(url.path)
+            description.append("Remote cache server: ${remoteCache.trim()}")
             yield(description.toString())
         }
     }
@@ -57,7 +48,7 @@ class BazelBuildFeature(
             val result = mutableListOf<InvalidProperty>()
             properties?.get(BazelConstants.PARAM_REMOTE_CACHE)?.let { remoteCache ->
                 try {
-                    URL(remoteCache.trim())
+                    URL(remoteCache.trim().toLowerCase().replace("grpc:", "http:").replace("grpcs:", "http:"))
                 } catch (e: MalformedURLException) {
                     result.add(InvalidProperty(BazelConstants.PARAM_REMOTE_CACHE, "Invalid remote cache URL"))
                 }

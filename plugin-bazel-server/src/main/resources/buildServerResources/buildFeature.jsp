@@ -31,6 +31,6 @@
       <props:textProperty name="${params.remoteCacheKey}" className="longField"/>
     </div>
     <span class="error" id="error_${params.remoteCacheKey}"></span>
-    <span class="smallNote">Specify the URL of Bazel HTTP caching server.</span>
+    <span class="smallNote">Specify the URL of Bazel HTTP caching server. Besides http, the following protocols are also supported: https, grpc, grpcs.</span>
   </td>
 </tr>
