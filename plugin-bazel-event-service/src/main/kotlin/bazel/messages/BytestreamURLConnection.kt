@@ -2,6 +2,7 @@ package bazel.messages
 
 import com.google.bytestream.ByteStreamGrpc
 import com.google.bytestream.ByteStreamProto
+import io.grpc.ManagedChannel
 import io.grpc.ManagedChannelBuilder
 import java.io.InputStream
 import java.lang.IllegalStateException
@@ -9,30 +10,36 @@ import java.net.URL
 import java.net.URLConnection
 
 class BytestreamURLConnection(url: URL) : URLConnection(url) {
-    private var _blockingStub: ByteStreamGrpc.ByteStreamBlockingStub? = null
+    private var _channelBuilder: ManagedChannelBuilder<*>? = null
 
     override fun connect() {
-        val channelBuilder = ManagedChannelBuilder.forAddress(url.host, url.port).usePlaintext()
-        val channel = channelBuilder.build();
-        _blockingStub = ByteStreamGrpc.newBlockingStub(channel);
+        _channelBuilder = ManagedChannelBuilder.forAddress(url.host, url.port).usePlaintext()
     }
 
     override fun getInputStream(): InputStream {
-        val stub = _blockingStub
-        if (stub == null) {
+        val channelBuilder = _channelBuilder;
+        if (channelBuilder == null) {
             throw IllegalStateException("Not connected.")
         }
 
-        val readRequest =
-                ByteStreamProto.ReadRequest.newBuilder()
-                .setResourceName(url.toString())
-                .build();
-        val readResponse = stub.read(readRequest)
-        return DataStream(readResponse)
+        val channel = channelBuilder.build();
+        try {
+            val blockingStub = ByteStreamGrpc.newBlockingStub(channel);
+            val readRequest =
+                    ByteStreamProto.ReadRequest.newBuilder()
+                            .setResourceName(url.toString())
+                            .build();
+
+            val readResponse = blockingStub.read(readRequest)
+            return DataStream(channel, readResponse)
+        }
+        catch(ex: Exception) {
+            channel.shutdown()
+            throw ex;
+        }
     }
 
-    private class DataStream(
-            iterator: MutableIterator<ByteStreamProto.ReadResponse>): InputStream()
+    private class DataStream(private val _channel: ManagedChannel, iterator: MutableIterator<ByteStreamProto.ReadResponse>): InputStream()
     {
         private var _iterator: Iterator<Int>
 
@@ -46,6 +53,15 @@ class BytestreamURLConnection(url: URL) : URLConnection(url) {
             }
 
             return _iterator.next()
+        }
+
+        override fun close() {
+            try {
+                _channel.shutdown()
+            }
+            finally {
+                super.close()
+            }
         }
 
         private fun getBytest(iterator: MutableIterator<ByteStreamProto.ReadResponse>) = sequence<Int> {
