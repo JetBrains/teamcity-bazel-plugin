@@ -1,4 +1,4 @@
-package bazel.messages
+package bazel
 
 import com.google.bytestream.ByteStreamGrpc
 import com.google.bytestream.ByteStreamProto

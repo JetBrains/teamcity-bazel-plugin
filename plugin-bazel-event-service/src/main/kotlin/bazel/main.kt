@@ -1,7 +1,6 @@
 package bazel
 
 import bazel.bazel.converters.BazelEventConverter
-import bazel.messages.CustomURLStreamHandlerFactory
 import bazel.messages.MessageFactoryImpl
 import bazel.v1.BuildEventConverter
 import bazel.v1.PublishBuildEventService

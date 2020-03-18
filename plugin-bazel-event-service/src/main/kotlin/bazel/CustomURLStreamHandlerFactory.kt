@@ -1,4 +1,4 @@
-package bazel.messages
+package bazel
 
 import java.net.URLStreamHandler
 import java.net.URLStreamHandlerFactory
