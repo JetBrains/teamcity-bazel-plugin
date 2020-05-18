@@ -49,7 +49,7 @@ class BazelRunner(
             }
 
             if (_eventFile != null) {
-                yield("\"${eventBinaryFileArg}${_eventFile.absolutePath}\"")
+                yield("${eventBinaryFileArg}${_eventFile.absolutePath}")
             }
         }
 
