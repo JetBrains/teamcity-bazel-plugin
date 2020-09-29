@@ -1,11 +1,14 @@
 package bazel.messages
 
 import bazel.messages.handlers.clean
-import jetbrains.buildServer.messages.serviceMessages.*
+import jetbrains.buildServer.messages.serviceMessages.BlockClosed
+import jetbrains.buildServer.messages.serviceMessages.BlockOpened
+import jetbrains.buildServer.messages.serviceMessages.BuildStatus
+import jetbrains.buildServer.messages.serviceMessages.ServiceMessage
 
 class MessageFactoryImpl : MessageFactory {
     override fun createMessage(text: String) =
-            Message(text.clean(), Normal, null)
+            Message(text.clean(), Normal)
 
     override fun createTraceMessage(text: String) =
             Message("> ".apply(Color.Trace) + text.clean().replace("\n", "").replace("\r", ""), Normal, null)
