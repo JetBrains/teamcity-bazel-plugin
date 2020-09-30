@@ -2,24 +2,21 @@ package bazel.bazel.converters
 
 import bazel.Converter
 import bazel.bazel.events.BazelContent
-import bazel.bazel.events.BazelUnknownContent
 import bazel.bazel.events.Id
 import bazel.bazel.handlers.*
 import com.google.devtools.build.lib.buildeventstream.BuildEventStreamProtos
-import com.google.protobuf.Any
-import java.util.logging.Level
 import java.util.logging.Logger
 
 class BazelEventConverter : Converter<BuildEventStreamProtos.BuildEvent, BazelContent> {
-    override fun convert(event: BuildEventStreamProtos.BuildEvent): BazelContent {
-        val id = if (event.hasId()) Id(event.id) else Id.default
+    override fun convert(source: BuildEventStreamProtos.BuildEvent): BazelContent {
+        val id = if (source.hasId()) Id(source.id) else Id.default
         val children = mutableListOf<Id>()
-        for (i in 0 until event.childrenCount) {
-            children.add(Id(event.getChildren(i)))
+        for (i in 0 until source.childrenCount) {
+            children.add(Id(source.getChildren(i)))
         }
 
         val iterator = handlers.iterator()
-        return iterator.next().handle(HandlerContext(iterator, id, children, event))
+        return iterator.next().handle(HandlerContext(iterator, id, children, source))
     }
 
     companion object {

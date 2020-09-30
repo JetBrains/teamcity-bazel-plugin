@@ -83,7 +83,7 @@ class PathsServiceTest {
 
         // Then
         try {
-            var actaulToolPath = pathsService.toolPath
+            @Suppress("UNUSED_VARIABLE") var actaulToolPath = pathsService.toolPath
             Assert.fail("Exception was not thrown.")
         }
         catch (ex: RunBuildException) {
