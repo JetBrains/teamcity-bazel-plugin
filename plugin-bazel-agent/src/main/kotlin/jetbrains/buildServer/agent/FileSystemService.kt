@@ -17,8 +17,6 @@ interface FileSystemService {
 
     fun read(file: File, reader: (InputStream) -> Unit)
 
-    fun copy(source: File, destination: File)
-
     fun remove(file: File)
 
     fun list(file: File): Sequence<File>

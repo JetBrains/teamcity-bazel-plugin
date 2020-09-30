@@ -54,18 +54,6 @@ class VirtualFileSystemService : FileSystemService {
         return true
     }
 
-    override fun copy(source: File, destination: File) {
-        if (!isDirectory(source)) {
-            val sourceFile = _files[source]!!
-            addFile(destination, sourceFile.attributes)
-            _files[destination] = sourceFile
-        } else {
-            val sourceDir = _directories[source]!!
-            addDirectory(destination, sourceDir.attributes)
-            _directories[destination] = sourceDir
-        }
-    }
-
     override fun remove(file: File) {
         val fileInfo = _files[file]
         if (fileInfo != null) {

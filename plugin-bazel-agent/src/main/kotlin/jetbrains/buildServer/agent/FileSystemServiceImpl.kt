@@ -1,6 +1,5 @@
 package jetbrains.buildServer.agent
 
-import org.apache.commons.io.FileUtils
 import java.io.*
 
 class FileSystemServiceImpl : FileSystemService {
@@ -16,11 +15,9 @@ class FileSystemServiceImpl : FileSystemService {
 
     override fun read(file: File, reader: (InputStream) -> Unit) = FileInputStream(file).use(reader)
 
-    override fun copy(source: File, destination: File) = FileUtils.copyDirectory(source, destination)
-
     override fun remove(file: File) {
         if (isDirectory(file)) {
-            FileUtils.deleteDirectory(file)
+            file.deleteRecursively()
         } else {
             file.delete()
         }
