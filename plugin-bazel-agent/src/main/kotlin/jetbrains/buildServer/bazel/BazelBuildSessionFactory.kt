@@ -8,9 +8,7 @@
 package jetbrains.buildServer.bazel
 
 import jetbrains.buildServer.RunBuildException
-import jetbrains.buildServer.agent.AgentBuildRunnerInfo
-import jetbrains.buildServer.agent.BuildAgentConfiguration
-import jetbrains.buildServer.agent.BuildRunnerContext
+import jetbrains.buildServer.agent.*
 import jetbrains.buildServer.agent.runner.BuildStepContext
 import jetbrains.buildServer.agent.runner.MultiCommandBuildSession
 import jetbrains.buildServer.agent.runner.MultiCommandBuildSessionFactory
@@ -21,13 +19,22 @@ import org.springframework.beans.factory.BeanFactory
  */
 class BazelBuildSessionFactory(
         private val _beanFactory: BeanFactory)
-    : MultiCommandBuildSessionFactory, BuildStepContext {
+    : MultiCommandBuildSessionFactory, BuildStepContext, AgentLifeCycleAdapter() {
 
     private var _runnerContext: BuildRunnerContext? = null
 
     override fun createSession(runnerContext: BuildRunnerContext): MultiCommandBuildSession {
         _runnerContext = runnerContext
         return _beanFactory.getBean(BazelCommandBuildSession::class.java)
+    }
+
+    override fun beforeBuildFinish(build: AgentRunningBuild, buildStatus: BuildFinishedStatus) {
+        try {
+            super.beforeBuildFinish(build, buildStatus)
+        }
+        finally {
+            _runnerContext = null
+        }
     }
 
     override fun getBuildRunnerInfo(): AgentBuildRunnerInfo {
