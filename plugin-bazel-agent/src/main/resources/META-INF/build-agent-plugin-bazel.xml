@@ -19,6 +19,7 @@
   <bean class="jetbrains.buildServer.agent.FileSystemServiceImpl"/>
 
   <!--runner service-->
+  <bean class="jetbrains.buildServer.agent.runner.BuildStepContextImpl"/>
   <bean class="jetbrains.buildServer.agent.runner.ParametersServiceImpl"/>
   <bean class="jetbrains.buildServer.agent.runner.PathsServiceImpl"/>
 
