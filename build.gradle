@@ -24,13 +24,13 @@ allprojects {
 subprojects {
     apply plugin: "kotlin"
 
-    compileKotlin { kotlinOptions.jvmTarget = "1.6" }
-    compileTestKotlin { kotlinOptions.jvmTarget = "1.6" }
+    compileKotlin { kotlinOptions.jvmTarget = "1.8" }
+    compileTestKotlin { kotlinOptions.jvmTarget = "1.8" }
 
     test.useTestNG()
     jar.version = null
 
-    sourceCompatibility = "1.6"
-    targetCompatibility = "1.6"
+    sourceCompatibility = "1.8"
+    targetCompatibility = "1.8"
     def teamcityVersion = teamcityVersion
 }
