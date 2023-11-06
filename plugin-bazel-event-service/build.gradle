@@ -52,12 +52,15 @@ dependencies {
     compile "io.grpc:grpc-netty:${grpcVersion}"
     compile "io.grpc:grpc-protobuf:${grpcVersion}"
     compile "io.grpc:grpc-stub:${grpcVersion}"
-    compile "org.jetbrains.teamcity:common-api:${teamcityVersion}"
-    compile "org.jetbrains.teamcity:serviceMessages:${teamcityVersion}"
+    compileOnly "org.jetbrains.teamcity:common-api:${teamcityVersion}"
+    compileOnly "org.jetbrains.teamcity:serviceMessages:${teamcityVersion}"
+    testCompile "org.jetbrains.teamcity:common-api:${teamcityVersion}"
+    testCompile "org.jetbrains.teamcity:serviceMessages:${teamcityVersion}"
     testCompile "io.grpc:grpc-testing:${grpcVersion}" // gRCP testing utilities
     testCompile 'io.mockk:mockk:1.9.3'
     testCompile 'org.testng:testng:6.8'
     testCompile 'org.jmock:jmock:2.5.1'
+
 }
 
 sourceSets {

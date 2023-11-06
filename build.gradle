@@ -24,10 +24,6 @@ ext {
     projectIds = ['group': 'teamcity-bazel-plugin', 'version': versionNumber]
     teamcityVersion = project.hasProperty('teamcityVersion') ? property('teamcityVersion') : '2022.04'
 }
-
-repositories {
-    mavenCentral()
-} 
     
 group = projectIds.group
 version = projectIds.version
@@ -35,6 +31,10 @@ version = projectIds.version
 allprojects {
     group = projectIds.group
     version = projectIds.version
+
+    repositories {
+        mavenCentral()
+    }
 }
 
 subprojects {
