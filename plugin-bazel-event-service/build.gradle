@@ -52,10 +52,9 @@ dependencies {
     compile "io.grpc:grpc-netty:${grpcVersion}"
     compile "io.grpc:grpc-protobuf:${grpcVersion}"
     compile "io.grpc:grpc-stub:${grpcVersion}"
-    compileOnly "org.jetbrains.teamcity:common-api:${teamcityVersion}"
-    compileOnly "org.jetbrains.teamcity:serviceMessages:${teamcityVersion}"
-    testCompile "org.jetbrains.teamcity:common-api:${teamcityVersion}"
-    testCompile "org.jetbrains.teamcity:serviceMessages:${teamcityVersion}"
+    compile "org.jetbrains.teamcity:serviceMessages:${teamcityVersion}"
+    compile "org.apache.logging.log4j:log4j-1.2-api:2.17.2"
+    compile "org.apache.logging.log4j:log4j-core:2.17.2"
     testCompile "io.grpc:grpc-testing:${grpcVersion}" // gRCP testing utilities
     testCompile 'io.mockk:mockk:1.9.3'
     testCompile 'org.testng:testng:6.8'

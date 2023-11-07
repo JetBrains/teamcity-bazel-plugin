@@ -16,7 +16,6 @@
 
 package bazel
 
-import jetbrains.buildServer.util.FileUtil
 import java.io.File
 import java.io.FileOutputStream
 import java.io.OutputStream
