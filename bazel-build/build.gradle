@@ -23,7 +23,7 @@ repositories {
 
 dependencies {
     antlr "org.antlr:antlr4:4.7.2"
-    testCompile 'junit:junit:4.12'
+    testImplementation 'junit:junit:4.12'
 }
 
 // generate java from the ANTLR g4 files

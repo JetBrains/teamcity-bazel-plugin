@@ -32,18 +32,18 @@ teamcity {
 }
 
 dependencies {
-  compile project(':plugin-bazel-common')
-  compile project(':rx')
-  compile "org.jetbrains.kotlin:kotlin-stdlib"
-  compile "org.jetbrains.kotlin:kotlin-reflect"
-  compile "com.github.zafarkhaja:java-semver:0.9.0"
-  compile "com.fasterxml.jackson.module:jackson-module-kotlin:2.10.0"
+  implementation project(':plugin-bazel-common')
+  implementation project(':rx')
+  implementation "org.jetbrains.kotlin:kotlin-stdlib"
+  implementation "org.jetbrains.kotlin:kotlin-reflect"
+  implementation "com.github.zafarkhaja:java-semver:0.9.0"
+  implementation "com.fasterxml.jackson.module:jackson-module-kotlin:2.10.0"
   provided "org.jetbrains.teamcity.internal:agent:${teamcityVersion}"
   provided "org.jetbrains.teamcity:common-api:${teamcityVersion}"
   implementation project(':plugin-bazel-event-service')
-  testCompile 'org.testng:testng:6.8'
-  testCompile 'org.jmock:jmock:2.5.1'
-  testCompile 'io.mockk:mockk:1.9.3'
+  testImplementation 'org.testng:testng:6.8'
+  testImplementation 'org.jmock:jmock:2.5.1'
+  testImplementation 'io.mockk:mockk:1.9.3'
 }
 
 agentPlugin.version = null
