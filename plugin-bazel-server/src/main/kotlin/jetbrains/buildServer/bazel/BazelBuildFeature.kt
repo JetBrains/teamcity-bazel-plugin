@@ -20,7 +20,6 @@ import jetbrains.buildServer.serverSide.BuildFeature
 import jetbrains.buildServer.serverSide.InvalidProperty
 import jetbrains.buildServer.serverSide.PropertiesProcessor
 import jetbrains.buildServer.web.openapi.PluginDescriptor
-import kotlin.coroutines.experimental.buildSequence
 import java.net.MalformedURLException
 import java.net.URL
 

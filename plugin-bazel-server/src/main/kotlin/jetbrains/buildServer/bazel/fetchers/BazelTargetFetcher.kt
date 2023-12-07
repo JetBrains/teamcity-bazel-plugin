@@ -21,7 +21,6 @@ import jetbrains.buildServer.serverSide.DataItem
 import jetbrains.buildServer.serverSide.ProjectDataFetcher
 import jetbrains.buildServer.util.browser.Browser
 import jetbrains.buildServer.util.browser.Element
-import kotlin.coroutines.experimental.buildSequence
 
 /**
  * Provides the list of targets in directory.
