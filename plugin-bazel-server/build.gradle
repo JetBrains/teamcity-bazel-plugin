@@ -15,7 +15,7 @@
  */
 
 plugins {
-    id 'com.github.rodm.teamcity-server' version "1.0"
+    id 'com.github.rodm.teamcity-server' version '1.4.1'
 }
 
 teamcity {
@@ -23,6 +23,7 @@ teamcity {
 
     server {
         descriptor = project.file('teamcity-plugin.xml')
+        archiveName = 'teamcity-bazel-plugin'
         tokens = [Plugin_Version: project.version]
         files {
             into('kotlin-dsl') {
