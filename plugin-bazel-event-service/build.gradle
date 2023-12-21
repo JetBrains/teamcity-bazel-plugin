@@ -57,7 +57,7 @@ dependencies {
     compile "org.apache.logging.log4j:log4j-1.2-api:2.17.2"
     compile "org.apache.logging.log4j:log4j-core:2.17.2"
     testCompile "io.grpc:grpc-testing:${grpcVersion}" // gRCP testing utilities
-    testCompile 'io.mockk:mockk:1.9.3'
+    testCompile 'io.mockk:mockk:1.11.0'
     testCompile 'org.testng:testng:6.8'
     testCompile 'org.jmock:jmock:2.5.1'
 
