@@ -43,7 +43,7 @@ dependencies {
   implementation project(':plugin-bazel-event-service')
   testCompile 'org.testng:testng:6.8'
   testCompile 'org.jmock:jmock:2.5.1'
-  testCompile 'io.mockk:mockk:1.9.3'
+  testCompile 'io.mockk:mockk:1.11.0'
 }
 
 agentPlugin.version = null
