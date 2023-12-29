@@ -29,6 +29,7 @@ import java.io.File
 import java.io.IOException
 import java.net.URL
 import java.util.logging.Logger
+import kotlin.system.exitProcess
 
 
 @Throws(IOException::class, InterruptedException::class)
@@ -50,8 +51,7 @@ fun main(args: Array<String>) {
     } catch (ex: Exception) {
         logger.severe(ex.message)
         BazelOptions.printHelp()
-        System.exit(1)
-        return
+        exit(1)
     }
 
     URL.setURLStreamHandlerFactory(CustomURLStreamHandlerFactory())
@@ -74,13 +74,14 @@ fun main(args: Array<String>) {
                 messageFactory)
                 .subscribe {
                     println(it)
-                }
+                }.dispose()
 
-        System.exit(result.exitCode)
+        exit(result.exitCode)
     }
 
     val gRpcServer = GRpcServer(port)
     var besIsActive = false
+
     try {
         BesServer(
                 gRpcServer,
@@ -111,7 +112,7 @@ fun main(args: Array<String>) {
                                 }
                             }
 
-                            System.exit(result.exitCode)
+                            exit(result.exitCode)
                         } catch (ex: Exception) {
                             gRpcServer.shutdown()
                             throw ex
@@ -120,9 +121,12 @@ fun main(args: Array<String>) {
                 }
     } catch (ex: Exception) {
         bazel.println(messageFactory.createErrorMessage(ex.message ?: ex.toString()).asString())
-        System.exit(1)
-        return
+        exit(1)
     }
+}
+
+fun exit(status: Int) : Nothing {
+    exitProcess(status)
 }
 
 private fun println(line: String) {
