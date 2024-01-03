@@ -61,10 +61,10 @@ class PathsServiceTest {
             every { getToolPath(BazelConstants.BAZEL_CONFIG_NAME) } returns "default_bazel"
         }
 
-        var actaulToolPath = pathsService.toolPath
+        val actualToolPath = pathsService.toolPath
 
         // Then
-        Assert.assertEquals(actaulToolPath, File("default_bazel"))
+        Assert.assertEquals(actualToolPath, File("default_bazel"))
     }
 
     @Test
@@ -79,14 +79,14 @@ class PathsServiceTest {
         every { _fileSystemService.isDirectory(path) } returns false
         every { _fileSystemService.isExists(path) } returns true
 
-        var actaulToolPath = pathsService.toolPath
+        val actualToolPath = pathsService.toolPath
 
         // Then
-        Assert.assertEquals(actaulToolPath, path)
+        Assert.assertEquals(actualToolPath, path)
     }
 
     @Test
-    fun shouldThrowExceptionWhenExecutableIsNotExiat() {
+    fun shouldThrowExceptionWhenExecutableDoesNotExist() {
         // Given
         val pathsService = createInstance()
         val path = File("custom_bazel")
@@ -99,7 +99,7 @@ class PathsServiceTest {
 
         // Then
         try {
-            @Suppress("UNUSED_VARIABLE") var actaulToolPath = pathsService.toolPath
+            @Suppress("UNUSED_VARIABLE") var actualToolPath = pathsService.toolPath
             Assert.fail("Exception was not thrown.")
         }
         catch (ex: RunBuildException) {
@@ -117,18 +117,18 @@ class PathsServiceTest {
         // When
         every { _parametersService.tryGetParameter(ParameterType.Runner, BazelConstants.TOOL_PATH) } returns path.path
         every { _fileSystemService.isAbsolute(path) } returns false
-        every { _buildStepContext.runnerContext } returns mockk<BuildRunnerContext>() {
-            every { build } returns mockk<AgentRunningBuild>() {
+        every { _buildStepContext.runnerContext } returns mockk<BuildRunnerContext> {
+            every { build } returns mockk<AgentRunningBuild> {
                 every { checkoutDirectory } returns checkoutPath
             }
         }
         every { _fileSystemService.isDirectory(absolutePath) } returns false
         every { _fileSystemService.isExists(absolutePath) } returns true
 
-        var actaulToolPath = pathsService.toolPath
+        val actualToolPath = pathsService.toolPath
 
         // Then
-        Assert.assertEquals(actaulToolPath, absolutePath)
+        Assert.assertEquals(actualToolPath, absolutePath)
     }
 
     @Test
@@ -143,8 +143,8 @@ class PathsServiceTest {
         // When
         every { _parametersService.tryGetParameter(ParameterType.Runner, BazelConstants.TOOL_PATH) } returns path.path
         every { _fileSystemService.isAbsolute(path) } returns false
-        every { _buildStepContext.runnerContext } returns mockk<BuildRunnerContext>() {
-            every { build } returns mockk<AgentRunningBuild>() {
+        every { _buildStepContext.runnerContext } returns mockk<BuildRunnerContext> {
+            every { build } returns mockk<AgentRunningBuild> {
                 every { checkoutDirectory } returns checkoutPath
             }
         }
@@ -152,10 +152,10 @@ class PathsServiceTest {
         every { _environment.osType } returns OSType.WINDOWS
         every { _fileSystemService.isExists(absoluteExecutablePath) } returns true
 
-        var actaulToolPath = pathsService.toolPath
+        val actualToolPath = pathsService.toolPath
 
         // Then
-        Assert.assertEquals(actaulToolPath, absoluteExecutablePath)
+        Assert.assertEquals(actualToolPath, absoluteExecutablePath)
     }
 
     @Test
@@ -172,10 +172,10 @@ class PathsServiceTest {
         every { _environment.osType } returns OSType.WINDOWS
         every { _fileSystemService.isExists(executablePath) } returns true
 
-        var actaulToolPath = pathsService.toolPath
+        val actualToolPath = pathsService.toolPath
 
         // Then
-        Assert.assertEquals(actaulToolPath, executablePath)
+        Assert.assertEquals(actualToolPath, executablePath)
     }
 
     @Test
@@ -190,8 +190,8 @@ class PathsServiceTest {
         // When
         every { _parametersService.tryGetParameter(ParameterType.Runner, BazelConstants.TOOL_PATH) } returns path.path
         every { _fileSystemService.isAbsolute(path) } returns false
-        every { _buildStepContext.runnerContext } returns mockk<BuildRunnerContext>() {
-            every { build } returns mockk<AgentRunningBuild>() {
+        every { _buildStepContext.runnerContext } returns mockk<BuildRunnerContext> {
+            every { build } returns mockk<AgentRunningBuild> {
                 every { checkoutDirectory } returns checkoutPath
             }
         }
@@ -199,10 +199,10 @@ class PathsServiceTest {
         every { _environment.osType } returns OSType.UNIX
         every { _fileSystemService.isExists(absoluteExecutablePath) } returns true
 
-        var actaulToolPath = pathsService.toolPath
+        val actualToolPath = pathsService.toolPath
 
         // Then
-        Assert.assertEquals(actaulToolPath, absoluteExecutablePath)
+        Assert.assertEquals(actualToolPath, absoluteExecutablePath)
     }
 
     @Test
@@ -219,10 +219,21 @@ class PathsServiceTest {
         every { _environment.osType } returns OSType.MAC
         every { _fileSystemService.isExists(executablePath) } returns true
 
-        var actaulToolPath = pathsService.toolPath
+        val actualToolPath = pathsService.toolPath
 
         // Then
-        Assert.assertEquals(actaulToolPath, executablePath)
+        Assert.assertEquals(actualToolPath, executablePath)
+    }
+
+    @Test
+    fun shouldProvideDifferentUniqueNames(){
+        val pathsService = createInstance()
+
+        val uniqueName1 = pathsService.uniqueName
+        val uniqueName2 = pathsService.uniqueName
+
+        // Then
+        Assert.assertNotEquals(uniqueName1, uniqueName2)
     }
 
     private fun createInstance() = PathsServiceImpl(
