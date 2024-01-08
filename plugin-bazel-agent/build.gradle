@@ -15,7 +15,7 @@
  */
 
 plugins {
-  id 'com.github.rodm.teamcity-agent' version "1.0"
+  id 'com.github.rodm.teamcity-agent' version '1.4.1'
 }
 
 teamcity {
@@ -40,7 +40,7 @@ dependencies {
   compile "com.fasterxml.jackson.module:jackson-module-kotlin:2.10.0"
   provided "org.jetbrains.teamcity.internal:agent:${teamcityVersion}"
   provided "org.jetbrains.teamcity:common-api:${teamcityVersion}"
-  implementation project(':plugin-bazel-event-service')
+  compileOnly project(':plugin-bazel-event-service')
   testCompile 'org.testng:testng:6.8'
   testCompile 'org.jmock:jmock:2.5.1'
   testCompile 'io.mockk:mockk:1.11.0'

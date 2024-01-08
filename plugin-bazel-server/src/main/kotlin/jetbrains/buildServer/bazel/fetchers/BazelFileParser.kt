@@ -23,7 +23,6 @@ import org.antlr.v4.runtime.tree.ParseTreeWalker
 import org.jetbrains.bazel.BazelBuildFileLexer
 import org.jetbrains.bazel.BazelBuildFileParser
 import java.io.InputStream
-import kotlin.coroutines.experimental.buildSequence
 
 object BazelFileParser {
 

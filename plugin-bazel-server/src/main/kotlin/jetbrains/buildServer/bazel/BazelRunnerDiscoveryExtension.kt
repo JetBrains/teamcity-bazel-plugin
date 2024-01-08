@@ -21,7 +21,6 @@ import jetbrains.buildServer.serverSide.discovery.BuildRunnerDiscoveryExtension
 import jetbrains.buildServer.serverSide.discovery.DiscoveredObject
 import jetbrains.buildServer.util.browser.Browser
 import jetbrains.buildServer.util.browser.Element
-import kotlin.coroutines.experimental.buildSequence
 
 /**
  * Performs bazel build steps discovery.
