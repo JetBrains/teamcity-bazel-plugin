@@ -25,8 +25,7 @@ class MainKtTest {
 
         mockkConstructor(BazelRunner::class)
         every { anyConstructed<BazelRunner>().args } returns sequenceOf("foo", "bar")
-        every { anyConstructed<BazelRunner>().run() } returns
-                BazelRunner.Result(57, listOf("fake error 1", "fake error 2"))
+        every { anyConstructed<BazelRunner>().run() } returns BazelRunner.Result(57, emptyList())
     }
 
     @Test
