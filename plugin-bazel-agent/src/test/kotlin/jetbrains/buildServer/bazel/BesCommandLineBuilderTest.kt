@@ -56,6 +56,6 @@ class BesCommandLineBuilderTest {
                 "-f=${File(tempDir, "unique-name-2").absolutePath}"
         ))
         val bazelCommandLine = File(tempDir, "unique-name-1")
-        Assert.assertEquals(bazelCommandLine.readLines(), listOf("/fake/bazel", "bar", "baz"))
+        Assert.assertEquals(bazelCommandLine.readLines(), listOf(File("/fake/bazel").absolutePath, "bar", "baz"))
     }
 }
