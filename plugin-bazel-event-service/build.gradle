@@ -28,13 +28,13 @@ repositories {
 
 // Feel free to delete the comment at the next line. It is just for safely
 // updating the version in our release process.
-def grpcVersion = '1.18.0' // CURRENT_GRPC_VERSION
+def grpcVersion = '1.60.1' // CURRENT_GRPC_VERSION
 
 dependencies {
     compile project(':rx')
     compile "commons-cli:commons-cli:1.4"
     compile "org.jetbrains.kotlin:kotlin-stdlib"
-    compile "com.google.api.grpc:proto-google-common-protos:1.17.0"
+    compile "com.google.api.grpc:proto-google-common-protos:2.30.0"
     compile "io.grpc:grpc-netty:${grpcVersion}"
     compile "io.grpc:grpc-protobuf:${grpcVersion}"
     compile "io.grpc:grpc-stub:${grpcVersion}"
@@ -58,7 +58,7 @@ sourceSets {
 }
 
 protobuf {
-    protoc { artifact = 'com.google.protobuf:protoc:3.6.1' }
+    protoc { artifact = 'com.google.protobuf:protoc:3.25.2' }
     plugins {
         grpc { artifact = "io.grpc:protoc-gen-grpc-java:${grpcVersion}" }
     }
