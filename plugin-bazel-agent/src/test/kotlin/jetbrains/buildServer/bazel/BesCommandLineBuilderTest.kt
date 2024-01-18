@@ -47,11 +47,13 @@ class BesCommandLineBuilderTest {
                 _pathsService, _parametersService, _workingDirectoryProvider, _argumentsConverter
         )
         val besCommandLine = fixture.build(_bazelCommand)
+
+
         Assert.assertEquals(besCommandLine.arguments, listOf(
                 "-jar",
             File("/fake/plugindir/tools/plugin-bazel-event-service.jar").absolutePath,
-                "-c=${tempDir.absolutePath}/unique-name-1",
-                "-f=${tempDir.absolutePath}/unique-name-2"
+                "-c=${File(tempDir, "unique-name-1").absolutePath}",
+                "-f=${File(tempDir, "unique-name-2").absolutePath}"
         ))
         val bazelCommandLine = File(tempDir, "unique-name-1")
         Assert.assertEquals(bazelCommandLine.readLines(), listOf("/fake/bazel", "bar", "baz"))
