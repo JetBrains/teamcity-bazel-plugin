@@ -7,13 +7,10 @@ import bazel.Verbosity
 import bazel.atLeast
 import bazel.bazel.events.ActionExecuted
 import bazel.bazel.events.BazelEvent
-import bazel.bazel.events.File
 import bazel.bazel.events.read
 import bazel.messages.Color
 import bazel.messages.ServiceMessageContext
 import bazel.messages.apply
-import bazel.messages.logError
-import java.io.InputStreamReader
 
 class ActionExecutedHandler : EventHandler {
     override val priority: HandlerPriority
@@ -26,24 +23,24 @@ class ActionExecutedHandler : EventHandler {
                 ctx.hierarchy.createNode(event.id, event.children, actionName)
 
                 val details = StringBuilder()
-                details.appendln(event.cmdLines.joinToStringEscaped().trim())
+                details.appendLine(event.cmdLines.joinToStringEscaped().trim())
 
                 var content = event.primaryOutput.read(ctx)
                 if (content.isNotBlank()) {
-                    details.appendln(content)
+                    details.appendLine(content)
                 }
 
                 content = event.stdout.read(ctx)
                 if (content.isNotBlank()) {
-                    details.appendln(content)
+                    details.appendLine(content)
                 }
 
                 content = event.stderr.read(ctx)
                 if (content.isNotBlank()) {
-                    details.appendln(content.apply(Color.Error))
+                    details.appendLine(content.apply(Color.Error))
                 }
 
-                details.appendln("Exit code: ${event.exitCode}")
+                details.appendLine("Exit code: ${event.exitCode}")
 
                 if (event.success) {
                     if (ctx.verbosity.atLeast(Verbosity.Detailed)) {
