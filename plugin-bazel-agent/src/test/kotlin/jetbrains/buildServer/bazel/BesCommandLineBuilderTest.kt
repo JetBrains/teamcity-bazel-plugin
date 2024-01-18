@@ -37,7 +37,7 @@ class BesCommandLineBuilderTest {
         every { _pathsService.getPath(PathType.AgentTemp) } returns tempDir
         every { _pathsService.getPath(PathType.Checkout) } returns File("/fake/checkoutdir")
         every { _pathsService.getPath(PathType.Plugin) } returns File("/fake/plugindir")
-        every { _pathsService.uniqueName } returns "unique-name-1" andThen "unique-name-2"
+        every { _pathsService.uniqueName } returns "bazelCommandlineFile" andThen "eventFile"
         every { _bazelCommand.arguments } returns
                 sequenceOf(CommandArgument(CommandArgumentType.StartupOption, "foo"))
         every { _argumentsConverter.convert(any()) } returns sequenceOf("bar", "baz")
@@ -52,10 +52,11 @@ class BesCommandLineBuilderTest {
         Assert.assertEquals(besCommandLine.arguments, listOf(
                 "-jar",
             File("/fake/plugindir/tools/plugin-bazel-event-service.jar").absolutePath,
-                "-c=${File(tempDir, "unique-name-1").absolutePath}",
-                "-f=${File(tempDir, "unique-name-2").absolutePath}"
+                "-c=${File(tempDir, "bazelCommandlineFile").absolutePath}",
+                "-f=${File(tempDir, "eventFile").absolutePath}"
         ))
-        val bazelCommandLine = File(tempDir, "unique-name-1")
-        Assert.assertEquals(bazelCommandLine.readLines(), listOf(File("/fake/bazel").absolutePath, "bar", "baz"))
+        val bazelCommandLine = File(tempDir, "bazelCommandlineFile")
+        val bazelCommands = bazelCommandLine.readLines()
+        Assert.assertEquals(bazelCommands, listOf(File("/fake/bazel").toString(), "bar", "baz"))
     }
 }
