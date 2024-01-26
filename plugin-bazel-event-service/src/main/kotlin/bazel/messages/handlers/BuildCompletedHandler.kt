@@ -35,6 +35,13 @@ class BuildCompletedHandler : EventHandler {
                                             .append(", exit code ${event.exitCode}")
                                             .toString()))
                         }
+                        4 -> {
+                            ctx.onNext(ctx.messageFactory.createMessage(
+                                    ctx.buildMessage()
+                                            .append("No tests were found")
+                                            .append(", exit code ${event.exitCode}")
+                                            .toString()))
+                        }
                         else -> {
                             ctx.onNext(ctx.messageFactory.createBuildProblem(
                                     ctx.buildMessage(false)

@@ -68,6 +68,7 @@ class ProgressHandler : EventHandler {
 
     companion object {
         private val prefixColors = mapOf<Regex, State>(
+                "^(ERROR:) (No test targets were found, yet testing was requested)".toRegex() to State(Color.Error, false),
                 "^(ERROR:)\\s*(.+)".toRegex() to State(Color.Error, true),
                 "^(FAILED:)\\s*(.+)".toRegex() to State(Color.Error, true),
                 "^(FAIL:)\\s*(.+)".toRegex() to State(Color.Error),
