@@ -16,7 +16,6 @@ class BuildFinishedHandler : EventHandler {
     override fun handle(ctx: ServiceMessageContext) =
             if (ctx.event.payload is BuildFinished) {
                 val status = ctx.event.payload.result.status.description
-                @Suppress("NON_EXHAUSTIVE_WHEN")
                 when (ctx.event.payload.result.status) {
                     BuildStatus.CommandSucceeded -> {
                         ctx.onNext(ctx.messageFactory.createMessage(
@@ -34,6 +33,8 @@ class BuildFinishedHandler : EventHandler {
                     BuildStatus.RequestDeadlineExceeded -> {
                         ctx.onNext(ctx.messageFactory.createErrorMessage(status))
                     }
+
+                    else -> {}
                 }
                 true
             } else ctx.handlerIterator.next().handle(ctx)

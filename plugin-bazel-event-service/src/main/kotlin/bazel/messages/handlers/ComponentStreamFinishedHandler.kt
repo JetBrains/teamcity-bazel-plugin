@@ -17,7 +17,6 @@ class ComponentStreamFinishedHandler : EventHandler {
 
     override fun handle(ctx: ServiceMessageContext) =
             if (ctx.event.payload is ComponentStreamFinished) {
-                @Suppress("NON_EXHAUSTIVE_WHEN")
                 when (ctx.event.payload.finishType) {
                     FinishType.Finished ->
                         if (ctx.verbosity.atLeast(Verbosity.Verbose)) {
@@ -38,6 +37,8 @@ class ComponentStreamFinishedHandler : EventHandler {
                                             .append("(${FinishType.Expired.description}), invocation: \"${ctx.event.payload.streamId.invocationId}\", build: \"${ctx.event.payload.streamId.buildId}\"", Verbosity.Verbose)
                                             .toString()))
                         }
+
+                    else -> {}
                 }
 
                 true

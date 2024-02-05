@@ -5,10 +5,11 @@ apply plugin: 'kotlin'
 apply plugin: 'idea'
 
 dependencies {
-  compile "org.jetbrains.kotlin:kotlin-stdlib"
-  testCompile 'org.testng:testng:6.8'
-  testCompile 'io.cucumber:cucumber-java:4.2.0'
-  compile project(':plugin-bazel-event-service')
+    implementation "org.jetbrains.kotlin:kotlin-stdlib"
+    testImplementation 'org.testng:testng:6.8'
+    testImplementation 'io.cucumber:cucumber-java:4.2.0'
+    implementation project(':plugin-bazel-event-service')
+    implementation project(':rx')
 }
 
 repositories {
@@ -19,7 +20,7 @@ repositories {
 
 configurations {
     cucumberRuntime {
-        extendsFrom testRuntime
+        extendsFrom testRuntimeClasspath
     }
 }
 
