@@ -6,7 +6,7 @@ include 'plugin-bazel-agent'
 include 'plugin-bazel-common'
 include 'plugin-bazel-server'
 include 'plugin-bazel-event-service'
-include 'plugin-bazel-inegration-tests'
+include 'plugin-bazel-integration-tests'
 
 include 'rx'
 include 'bazel-build'

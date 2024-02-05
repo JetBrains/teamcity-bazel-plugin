@@ -12,7 +12,7 @@ public class EnvironmentSteps {
     @Before
     fun setup() {
         var projectDirectory = File(File(EnvironmentSteps::class.java.getProtectionDomain().getCodeSource().getLocation().toURI()).getPath(), "/../../../").canonicalFile
-        if (projectDirectory.name != "plugin-bazel-inegration-tests") {
+        if (projectDirectory.name != "plugin-bazel-integration-tests") {
             projectDirectory = projectDirectory.parentFile
         }
 
@@ -29,7 +29,7 @@ public class EnvironmentSteps {
         val solutionDirectory = File(projectDirectory, "/../").canonicalFile
         val libsDirectory = File(solutionDirectory, "/plugin-bazel-event-service/build/libs").canonicalFile
         val toolsDirectory = File(solutionDirectory, "/plugin-bazel-event-service/build/tools").canonicalFile
-        val samplesDirectory = File(solutionDirectory, "/plugin-bazel-inegration-tests/samples").canonicalFile
+        val samplesDirectory = File(solutionDirectory, "/plugin-bazel-integration-tests/samples").canonicalFile
 
         // prepare tool
         toolsDirectory.copyRecursively(_sandboxDirectory, true)

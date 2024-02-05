@@ -49,7 +49,7 @@ fabric.properties
 # gradle-teamcity-plugin
 data/
 servers/
-plugin-bazel-inegration-tests/samples/**/bazel-*
-plugin-bazel-inegration-tests/samples/FlakyTests/.idea/
-plugin-bazel-inegration-tests/samples/**/.idea
+plugin-bazel-integration-tests/samples/**/bazel-*
+plugin-bazel-integration-tests/samples/FlakyTests/.idea/
+plugin-bazel-integration-tests/samples/**/.idea
 
