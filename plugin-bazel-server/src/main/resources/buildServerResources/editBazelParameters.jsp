@@ -149,6 +149,15 @@
 </tr>
 
 <tr class="advancedSetting">
+    <th><label for="${params.successWhenNoTestsKey}">Report success if testing was requested but no tests were found</label></th>
+    <td>
+        <props:checkboxProperty name="${params.successWhenNoTestsKey}" checked="false" className="mediumField">
+        </props:checkboxProperty>
+        <span class="error" id="error_${params.successWhenNoTestsKey}"></span>
+    </td>
+</tr>
+
+<tr class="advancedSetting">
     <th><label for="${params.verbosityKey}">Logging verbosity:</label></th>
     <td>
         <props:selectProperty name="${params.verbosityKey}" enableFilter="true" className="mediumField">

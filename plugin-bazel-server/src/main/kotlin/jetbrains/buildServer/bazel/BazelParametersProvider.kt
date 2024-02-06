@@ -34,6 +34,9 @@ class BazelParametersProvider {
     val integrationModeKey: String
         get() = BazelConstants.PARAM_INTEGRATION_MODE
 
+    val successWhenNoTestsKey: String
+        get() = BazelConstants.PARAM_SUCCESS_WHEN_NO_TESTS
+
     val integrationModes: List<IntegrationMode>
         get() = IntegrationMode.values().toList()
 
