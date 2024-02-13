@@ -12,8 +12,6 @@ import bazel.bazel.events.readLines
 import bazel.messages.Color
 import bazel.messages.ServiceMessageContext
 import bazel.messages.apply
-import java.io.File
-import java.io.FileWriter
 import java.io.OutputStreamWriter
 
 class TestResultHandler(
@@ -48,16 +46,16 @@ class TestResultHandler(
                         continue
                     }
 
-                    when (test.name.toLowerCase().takeLast(3)) {
+                    when (test.name.lowercase().takeLast(3)) {
                         "xml" -> {
                             // check that it is last attempt
                             if (!hasNextAttempt) {
                                 // import test results
                                 val testTempFile = _fileSystemService.generateTempFile("tmp", test.name)
-                                _fileSystemService.write(testTempFile) {
-                                    OutputStreamWriter(it).use {
+                                _fileSystemService.write(testTempFile) { stream ->
+                                    OutputStreamWriter(stream).use { writer ->
                                         for (line in content) {
-                                            it.write(line)
+                                            writer.write(line)
                                         }
                                     }
                                 }

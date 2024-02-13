@@ -7,20 +7,19 @@ import java.io.File
 
 
 class BazelOptions(args: Array<String>) {
-    private var _line: CommandLine
-
-    init {
-        _line = parser.parse(options, args, true)
-    }
+    private val _line: CommandLine = parser.parse(options, args, true)
 
     val verbosity: Verbosity
-        get() = _line
-                .getOptionValue("l")
-                ?.let {
-                    val curVerbosity = it.toLowerCase()
-                    Verbosity.values().map { Pair(it, it.toString().toLowerCase()) }.firstOrNull { it.second == curVerbosity }?.first
+        get() {
+            val curVerbosity = _line.getOptionValue("l")?.lowercase()
+            curVerbosity?.let {
+                for (level in Verbosity.entries) {
+                    if (level.toString().lowercase() == it)
+                        return level
                 }
-                ?: Verbosity.Normal
+            }
+            return Verbosity.Normal
+        }
 
     val port: Int get() = _line.getOptionValue("p")?.toInt() ?: 0
 
