@@ -49,7 +49,7 @@ class BazelBuildFeature(
             val result = mutableListOf<InvalidProperty>()
             properties?.get(BazelConstants.PARAM_REMOTE_CACHE)?.let { remoteCache ->
                 try {
-                    URL(remoteCache.trim().toLowerCase().replace("grpc:", "http:").replace("grpcs:", "http:"))
+                    URL(remoteCache.trim().lowercase().replace("grpc:", "http:").replace("grpcs:", "http:"))
                 } catch (e: MalformedURLException) {
                     result.add(InvalidProperty(BazelConstants.PARAM_REMOTE_CACHE, "Invalid remote cache URL"))
                 }

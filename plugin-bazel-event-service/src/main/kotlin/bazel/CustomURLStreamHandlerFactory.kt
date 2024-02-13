@@ -7,7 +7,7 @@ import java.net.URLStreamHandlerFactory
 
 class CustomURLStreamHandlerFactory : URLStreamHandlerFactory {
     override fun createURLStreamHandler(protocol: String): URLStreamHandler? {
-        return when(protocol.toLowerCase()) {
+        return when(protocol.lowercase()) {
             "bytestream" -> BytestreamURLStreamHandler()
             else -> null
         }
