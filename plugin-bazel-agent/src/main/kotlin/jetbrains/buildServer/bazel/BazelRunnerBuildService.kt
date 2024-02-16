@@ -12,7 +12,6 @@ import jetbrains.buildServer.agent.runner.*
 class BazelRunnerBuildService(
         buildStepContext: BuildStepContext,
         private val _commandRegistry: CommandRegistry,
-        private val _parametersService: ParametersService,
         private val _commandFactory: BazelCommandFactory) : BuildServiceAdapter() {
 
     init {
