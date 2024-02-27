@@ -3,9 +3,8 @@
 package jetbrains.buildServer.bazel
 
 import jetbrains.buildServer.RunBuildException
-import jetbrains.buildServer.agent.runner.BuildServiceAdapter
-import jetbrains.buildServer.agent.runner.BuildStepContext
-import jetbrains.buildServer.agent.runner.ProgramCommandLine
+import jetbrains.buildServer.agent.BuildFinishedStatus
+import jetbrains.buildServer.agent.runner.*
 
 /**
  * Bazel runner service.
@@ -20,10 +19,8 @@ class BazelRunnerBuildService(
     }
 
     override fun makeProgramCommandLine(): ProgramCommandLine {
-        val parameters = runnerParameters
-
-        val commandName = parameters[BazelConstants.PARAM_COMMAND]?.trim()
-        if (commandName == null || commandName.isEmpty()) {
+        val commandName = getCommandName()
+        if (commandName.isNullOrEmpty()) {
             val buildException = RunBuildException("Bazel command name is empty")
             buildException.isLogStacktrace = false
             throw buildException
@@ -39,5 +36,22 @@ class BazelRunnerBuildService(
         return command.commandLineBuilder.build(command)
     }
 
+    override fun getRunResult(exitCode: Int): BuildFinishedStatus {
+        if (getCommandName() == "test") {
+            if (exitCode == 3) {
+                return BuildFinishedStatus.FINISHED_SUCCESS
+            } else if (exitCode == 4) {
+                val successWhenNoTests =
+                        runnerParameters[BazelConstants.PARAM_SUCCESS_WHEN_NO_TESTS]?.trim()?.toBoolean()
+                if (successWhenNoTests == true) {
+                    return BuildFinishedStatus.FINISHED_SUCCESS
+                }
+            }
+        }
+        return super.getRunResult(exitCode)
+    }
+
     override fun isCommandLineLoggingEnabled() = false
+
+    private fun getCommandName() = runnerParameters[BazelConstants.PARAM_COMMAND]?.trim()
 }

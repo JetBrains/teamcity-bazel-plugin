@@ -79,7 +79,7 @@
         Command:<bs:help urlPrefix="https://docs.bazel.build/versions/master/command-line-reference.html#commands" file=""/><l:star/>
     </label></th>
     <td>
-        <props:textProperty name="${params.commandKey}" className="longField"/>
+        <props:textProperty name="${params.commandKey}" className="longField" onchange="BS.toggleDependentElements('test', 'bazel');" onkeyup="BS.toggleDependentElements('test', 'bazel');"/>
         <bs:projectData type="BazelCommands" sourceFieldId="${params.workingDirKey}"
                         targetFieldId="${params.commandKey}" popupTitle="Select command"
                         selectionMode="single" />
@@ -145,6 +145,15 @@
             </c:forEach>
         </props:selectProperty>
         <span class="error" id="error_${params.integrationModeKey}"></span>
+    </td>
+</tr>
+
+<tr class="advancedSetting bazel test">
+    <th><label for="${params.successWhenNoTestsKey}">Report success if testing was requested but no tests were found</label></th>
+    <td>
+        <props:checkboxProperty name="${params.successWhenNoTestsKey}" checked="false" className="mediumField">
+        </props:checkboxProperty>
+        <span class="error" id="error_${params.successWhenNoTestsKey}"></span>
     </td>
 </tr>
 
