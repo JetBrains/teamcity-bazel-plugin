@@ -27,8 +27,10 @@ class MessageFactoryImpl : MessageFactory {
     override fun createBuildStatus(text: String, success: Boolean) =
             BuildStatus(text.clean(), if (success) Normal else Error)
 
-    override fun createBuildProblem(description: String, projectId: String, errorId: String) =
-            BuildProblem(description.clean(), "$projectId-$errorId".take(60))
+    override fun createBuildProblem(description: String, projectId: String, errorId: String): ServiceMessage {
+        val hash = Integer.toHexString(Pair(projectId, errorId).hashCode())
+        return BuildProblem(description.clean(), "$hash-$projectId-$errorId".take(60))
+    }
 
     override fun createBlockOpened(blockName: String, description: String): ServiceMessage =
             BlockOpened(blockName.clean(), description.clean())
