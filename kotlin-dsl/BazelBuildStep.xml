@@ -35,6 +35,18 @@
         <param name="startupOptions">
             <description>Enter additional options that appear before the bazel command.</description>
         </param>
+        <param name="toolPath">
+            <description>Enter the path to the Bazel tool.</description>
+        </param>
+        <param name="integration" type="Integration">
+            <description>
+                Specify the mode of integration between Bazel and the build agent.
+                @see Integration
+            </description>
+        </param>
+        <param name="successWhenNoTests" type="boolean">
+            <description>Report success if testing was requested but no tests were found</description>
+        </param>
         <param name="verbosity" dslName="logging" type="Verbosity">
             <description>
                 Specify logging verbosity
@@ -52,6 +64,13 @@
             <option name="Normal" value="Normal"/>
             <option name="Detailed" value="Detailed"/>
             <option name="Diagnostic" value="Diagnostic"/>
+        </enum>
+        <enum name="Integration">
+            <description>
+                Mode of integration between Bazel and the build agent
+            </description>
+            <option name="Binary file" value="BinaryFile"/>
+            <option name="Build Event Service" value="BES"/>
         </enum>
     </types>
 </dsl-extension>
