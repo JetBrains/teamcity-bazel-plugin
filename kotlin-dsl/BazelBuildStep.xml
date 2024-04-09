@@ -69,8 +69,8 @@
             <description>
                 Mode of integration between Bazel and the build agent
             </description>
-            <option name="Binary file" value="BinaryFile"/>
-            <option name="Build Event Service" value="BES"/>
+            <option name="BinaryFile" value="BinaryFile"/>
+            <option name="BuildEventService" value="BES"/>
         </enum>
     </types>
 </dsl-extension>
