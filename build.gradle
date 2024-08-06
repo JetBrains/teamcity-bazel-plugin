@@ -35,10 +35,16 @@ subprojects {
         kotlinOptions.jvmTarget = "1.8"
     }
 
-    test.useTestNG()
-    jar.archiveVersion = null
+    tasks.withType(Test) {
+        useTestNG()
+    }
 
-    sourceCompatibility = "1.8"
-    targetCompatibility = "1.8"
-    def teamcityVersion = teamcityVersion
+    tasks.jar {
+        archiveVersion = null
+    }
+
+    java {
+        sourceCompatibility = "1.8"
+        targetCompatibility = "1.8"
+    }
 }

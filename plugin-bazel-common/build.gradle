@@ -1,15 +1,5 @@
-buildscript {
-    ext.kotlin_version = '1.9.22'
-
-    repositories {
-        mavenCentral()
-    }
-    dependencies {
-        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
-    }
-}
-
 plugins {
+    id 'org.jetbrains.kotlin.jvm' version '1.9.22'
     alias libs.plugins.teamcity.common
 }
 

@@ -1,21 +1,9 @@
-
-
-buildscript {
-    ext.kotlin_version = '1.9.22'
-
-    repositories {
-        mavenCentral()
-        mavenLocal()
-    }
-    dependencies {
-        classpath 'com.google.protobuf:protobuf-gradle-plugin:0.8.19'
-        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
-    }
+plugins {
+    id 'java'
+    id 'idea'
+    id 'com.google.protobuf' version '0.8.19'
+    id 'org.jetbrains.kotlin.jvm' version '1.9.22'
 }
-
-apply plugin: 'com.google.protobuf'
-apply plugin: 'java'
-apply plugin: 'idea'
 
 repositories {
     mavenCentral()
