@@ -29,6 +29,7 @@ constraint-transitive-icu4j = { module = "com.ibm.icu:icu4j", version = { requir
 
 
 [plugins]
+kotlin = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 teamcity-server = { id = "io.github.rodm.teamcity-server", version.ref = "rodm" }
 teamcity-agent = { id = "io.github.rodm.teamcity-agent", version.ref = "rodm" }
 teamcity-common = { id = "io.github.rodm.teamcity-common", version.ref = "rodm" }

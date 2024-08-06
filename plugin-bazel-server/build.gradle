@@ -37,14 +37,3 @@ dependencies {
     compileOnly "org.jetbrains.teamcity.internal:server:$teamcityVersion"
     agent project(path: ':plugin-bazel-agent', configuration: 'plugin')
 }
-
-serverPlugin.archiveVersion = null
-
-compileKotlin {
-    sourceCompatibility = JavaVersion.VERSION_1_8
-    targetCompatibility = JavaVersion.VERSION_1_8
-
-    kotlinOptions {
-        jvmTarget = '1.8'
-    }
-}
