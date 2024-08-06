@@ -24,7 +24,7 @@ repositories {
 }
 
 dependencies {
-    implementation project(':rx')
+    implementation project(':plugin-bazel-common')
     implementation libs.commons.cli
     implementation libs.kotlin.stdlib
     implementation libs.grpc.proto

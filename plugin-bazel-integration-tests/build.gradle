@@ -9,7 +9,7 @@ dependencies {
     testImplementation libs.testng
     testImplementation libs.cucumber
     implementation project(':plugin-bazel-event-service')
-    implementation project(':rx')
+    implementation project(':plugin-bazel-common')
 }
 
 repositories {

@@ -21,7 +21,6 @@ teamcity {
 
 dependencies {
   implementation project(':plugin-bazel-common')
-  implementation project(':rx')
   implementation libs.kotlin.stdlib
   implementation libs.kotlin.reflect
   implementation libs.java.semver
