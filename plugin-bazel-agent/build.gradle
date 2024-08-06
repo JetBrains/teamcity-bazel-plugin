@@ -34,7 +34,7 @@ dependencies {
   testImplementation 'io.mockk:mockk:1.11.0'
 }
 
-agentPlugin.version = null
-agentPlugin.baseName = 'teamcity-bazel-agent'
+agentPlugin.archiveVersion = null
+agentPlugin.archiveBaseName = 'teamcity-bazel-agent'
 
 agentPlugin.dependsOn(project(':plugin-bazel-event-service').tasks.build)

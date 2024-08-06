@@ -36,7 +36,7 @@ subprojects {
     }
 
     test.useTestNG()
-    jar.version = null
+    jar.archiveVersion = null
 
     sourceCompatibility = "1.8"
     targetCompatibility = "1.8"

@@ -30,7 +30,7 @@ dependencies {
     agent project(path: ':plugin-bazel-agent', configuration: 'plugin')
 }
 
-serverPlugin.version = null
+serverPlugin.archiveVersion = null
 
 compileKotlin {
     sourceCompatibility = JavaVersion.VERSION_1_8
