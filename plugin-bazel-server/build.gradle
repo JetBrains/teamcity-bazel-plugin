@@ -3,7 +3,7 @@ plugins {
 }
 
 teamcity {
-    version = teamcityVersion
+    version = libs.versions.teamcity.get()
 
     server {
         descriptor {
@@ -34,6 +34,12 @@ dependencies {
     }
     implementation libs.kotlin.stdlibjdk8
     compileOnly libs.jstl
-    compileOnly "org.jetbrains.teamcity.internal:server:$teamcityVersion"
+    compileOnly libs.teamcity.internal.server
     agent project(path: ':plugin-bazel-agent', configuration: 'plugin')
+
+    constraints {
+        implementation(libs.constraint.transitive.icu4j) {
+            because 'previous versions have faulty jar files which cause problems during incremental compilation (which is enabled by default since Kotlin 1.8.20)'
+        }
+    }
 }

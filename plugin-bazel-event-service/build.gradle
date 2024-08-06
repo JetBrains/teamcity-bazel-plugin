@@ -19,7 +19,7 @@ dependencies {
     implementation libs.grpc.protobuf
     implementation libs.grpc.stub
     implementation libs.javax.annotation.api
-    implementation "org.jetbrains.teamcity:serviceMessages:${teamcityVersion}"
+    implementation libs.teamcity.service.messages
     implementation libs.log4j.api
     implementation libs.log4j.core
     testImplementation libs.grpc.testing

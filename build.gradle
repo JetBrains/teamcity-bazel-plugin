@@ -5,16 +5,11 @@ plugins {
 ext {
     def correctVersion = project.hasProperty('versionNumber') && property('versionNumber') ==~ /\d+\.\d+\.\d+.*/
     versionNumber = correctVersion ? property('versionNumber') : 'SNAPSHOT-' + new Date().format('yyyyMMddHHmmss')
-    projectIds = ['group': 'teamcity-bazel-plugin', 'version': versionNumber]
-    teamcityVersion = project.hasProperty('teamcityVersion') ? property('teamcityVersion') : '2022.04'
 }
-    
-group = projectIds.group
-version = projectIds.version
 
 allprojects {
-    group = projectIds.group
-    version = projectIds.version
+    group = "teamcity-bazel-plugin'"
+    version = versionNumber
 
     repositories {
         mavenCentral()

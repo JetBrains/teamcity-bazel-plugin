@@ -3,7 +3,7 @@ plugins {
 }
 
 teamcity {
-  version = teamcityVersion
+  version = libs.versions.teamcity.get()
   agent {
     descriptor {
       pluginDeployment {
@@ -20,19 +20,26 @@ teamcity {
 }
 
 dependencies {
-  implementation project(':plugin-bazel-common')
   implementation libs.kotlin.stdlib
   implementation libs.kotlin.reflect
   implementation libs.java.semver
   implementation libs.jackson.module.kotlin
-  compileOnly "org.jetbrains.teamcity.internal:agent:${teamcityVersion}"
-  compileOnly "org.jetbrains.teamcity:common-api:${teamcityVersion}"
-  testImplementation "org.jetbrains.teamcity.internal:agent:${teamcityVersion}"
-  testImplementation "org.jetbrains.teamcity:common-api:${teamcityVersion}"
-  testImplementation project(':plugin-bazel-event-service')
+  compileOnly libs.teamcity.common.api
+  compileOnly libs.teamcity.internal.agent
+  testImplementation libs.teamcity.common.api
+  testImplementation libs.teamcity.internal.agent
   testImplementation libs.testng
   testImplementation libs.jmock
   testImplementation libs.mockk
+
+  implementation project(':plugin-bazel-common')
+  testImplementation project(':plugin-bazel-event-service')
+
+  constraints {
+    implementation(libs.constraint.transitive.icu4j) {
+      because 'previous versions have faulty jar files which cause problems during incremental compilation (which is enabled by default since Kotlin 1.8.20)'
+    }
+  }
 }
 
 agentPlugin.archiveBaseName = 'teamcity-bazel-agent'

@@ -8,6 +8,13 @@ repositories {
 
 dependencies {
     implementation libs.kotlin.stdlib
+
+    constraints {
+        implementation(libs.constraint.transitive.icu4j) {
+            because 'previous versions have faulty jar files which cause problems during incremental compilation (which is enabled by default since Kotlin 1.8.20)'
+        }
+    }
+
     testImplementation libs.testng
     testImplementation libs.jmock
     testImplementation libs.hamcrest
@@ -15,5 +22,5 @@ dependencies {
 }
 
 teamcity {
-    version = teamcityVersion
+    version = libs.versions.teamcity.get()
 }

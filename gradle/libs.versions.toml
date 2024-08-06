@@ -3,6 +3,7 @@ rodm = "1.5.3"
 kotlin = "1.9.22"
 log4j = "2.17.2"
 grpc = "1.60.1"
+teamcity = "2024.07"
 
 [libraries]
 kotlin-stdlib = { module = "org.jetbrains.kotlin:kotlin-stdlib", version.ref = "kotlin" }
@@ -26,7 +27,10 @@ testng = { module = "org.testng:testng", version = "7.5.1" }
 cucumber = { module = "io.cucumber:cucumber-java", version = "4.2.0" }
 commons-cli = { module = "commons-cli:commons-cli", version = "1.4" }
 constraint-transitive-icu4j = { module = "com.ibm.icu:icu4j", version = { require = "3.4.4" } }
-
+teamcity-service-messages = { module = "org.jetbrains.teamcity:serviceMessages", version.ref = "teamcity" }
+teamcity-internal-agent = { module = "org.jetbrains.teamcity.internal:agent", version.ref = "teamcity" }
+teamcity-internal-server = { module = "org.jetbrains.teamcity.internal:server", version.ref = "teamcity" }
+teamcity-common-api = { module = "org.jetbrains.teamcity:common-api", version.ref = "teamcity" }
 
 [plugins]
 kotlin = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
