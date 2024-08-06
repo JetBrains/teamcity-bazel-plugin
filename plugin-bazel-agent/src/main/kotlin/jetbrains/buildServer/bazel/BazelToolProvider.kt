@@ -30,7 +30,7 @@ class BazelToolProvider(
 
     override fun beforeAgentConfigurationLoaded(agent: BuildAgent) {
         LOG.info("Locating ${BazelConstants.BAZEL_CONFIG_NAME} tool")
-        _lastVersion = findVersions().sortedByDescending { it.second.buildMetadata }.firstOrNull()
+        _lastVersion = findVersions().sortedByDescending { it.second.buildMetadata().orElse("") }.firstOrNull()
         if (_lastVersion != null) {
             val version = _lastVersion!!
             LOG.info("Found ${BazelConstants.BAZEL_CONFIG_NAME} at ${version.first}")
@@ -71,7 +71,7 @@ class BazelToolProvider(
     fun tryParseVersion(text: String): Version? =
             VERSION_PATTERN.find(text)?.groupValues?.get(1)?.let {
                 try {
-                    Version.valueOf(it)
+                    Version.parse(it)
                 } catch (e: Throwable) {
                     LOG.warnAndDebugDetails("Failed to parse ${BazelConstants.BAZEL_CONFIG_NAME} version from line \"$it\": ${e.message}", e)
                     null
