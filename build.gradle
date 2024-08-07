@@ -8,7 +8,7 @@ ext {
 }
 
 allprojects {
-    group = "teamcity-bazel-plugin'"
+    group = "teamcity-bazel-plugin"
     version = versionNumber
 
     repositories {
@@ -30,10 +30,6 @@ subprojects {
 
     tasks.withType(Test) {
         useTestNG()
-    }
-
-    tasks.jar {
-        archiveVersion = null
     }
 
     java {

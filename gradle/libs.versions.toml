@@ -14,6 +14,8 @@ grpc-protobuf = { module = "io.grpc:grpc-protobuf", version.ref = "grpc" }
 grpc-stub = { module = "io.grpc:grpc-stub", version.ref = "grpc" }
 grpc-testing = { module = "io.grpc:grpc-testing", version.ref = "grpc" }
 grpc-proto = { module = "com.google.api.grpc:proto-google-common-protos", version = "2.30.0" }
+protobuf-protoc = { module = "com.google.protobuf:protoc", version = "3.25.4" }
+grpc-protoc-gen-java = { module = "io.grpc:protoc-gen-grpc-java", version = "1.65.1" }
 java-semver = { module = "com.github.zafarkhaja:java-semver", version = "0.10.2" }
 hamcrest = { module = "org.hamcrest:hamcrest", version = "2.2" }
 javax-annotation-api = { module = "javax.annotation:javax.annotation-api", version = "1.3.2" }
@@ -32,8 +34,11 @@ teamcity-internal-agent = { module = "org.jetbrains.teamcity.internal:agent", ve
 teamcity-internal-server = { module = "org.jetbrains.teamcity.internal:server", version.ref = "teamcity" }
 teamcity-common-api = { module = "org.jetbrains.teamcity:common-api", version.ref = "teamcity" }
 
+
+
 [plugins]
 kotlin = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 teamcity-server = { id = "io.github.rodm.teamcity-server", version.ref = "rodm" }
 teamcity-agent = { id = "io.github.rodm.teamcity-agent", version.ref = "rodm" }
 teamcity-common = { id = "io.github.rodm.teamcity-common", version.ref = "rodm" }
+protobuf = { id = "com.google.protobuf", version = "0.8.19" }

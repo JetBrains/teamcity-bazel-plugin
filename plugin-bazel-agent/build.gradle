@@ -5,6 +5,7 @@ plugins {
 teamcity {
   version = libs.versions.teamcity.get()
   agent {
+    archiveName = "teamcity-bazel-agent"
     descriptor {
       pluginDeployment {
         useSeparateClassloader = true
@@ -42,6 +43,9 @@ dependencies {
   }
 }
 
-agentPlugin.archiveBaseName = 'teamcity-bazel-agent'
+jar {
+  // don't include jar version into the name
+  archiveFileName = "teamcity-bazel-agent.jar"
+}
 
 agentPlugin.dependsOn(project(':plugin-bazel-event-service').tasks.build)

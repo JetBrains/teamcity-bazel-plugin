@@ -1,7 +1,7 @@
 plugins {
     id 'java'
     id 'idea'
-    id 'com.google.protobuf' version '0.8.19'
+    alias libs.plugins.protobuf
 }
 
 repositories {
@@ -38,21 +38,19 @@ sourceSets {
 }
 
 protobuf {
-    protoc { artifact = 'com.google.protobuf:protoc:3.25.2' }
-    plugins {
-        grpc { artifact = "io.grpc:protoc-gen-grpc-java:1.60.1" }
-    }
-    generateProtoTasks {
-        all()*.plugins { grpc {} }
-    }
+    protoc { artifact = libs.protobuf.protoc.get().toString() }
+    plugins { grpc { artifact = libs.grpc.protoc.gen.java.get().toString() } }
+    generateProtoTasks { all()*.plugins { grpc {} } }
 }
 
 jar {
+    // don't include jar version into the name
+    archiveFileName = "plugin-bazel-event-service.jar"
     exclude 'META-INF/*.SF', 'META-INF/*.DSA', 'META-INF/*.RSA', 'META-INF/*.MF'
 
     manifest {
         attributes 'Main-Class': 'bazel.MainKt',
-        'Class-Path': configurations.runtimeClasspath.files.collect{ it.name }.join(' ')
+                'Class-Path': configurations.runtimeClasspath.files.collect { it.name }.join(' ')
     }
 }
 
