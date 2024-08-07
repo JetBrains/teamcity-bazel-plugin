@@ -23,6 +23,15 @@ You can [download the plugin](https://plugins.jetbrains.com/plugin/11248-bazel-b
 
 The plugin is compatible with [TeamCity](https://www.jetbrains.com/teamcity/download/) 2018.1.x and greater.
 
+# Known issues
+If IDEA can't resolve proto classes, like `BuildEventStreamProtos`.
+Here is how to resolve this: 
+1. click Help 
+2. Edit custom properties... 
+3. and property idea.max.intellisense.filesize=999999 
+
+It increases max file size for coding assistance and design-time code inspection. You can find more information about these properties here: https://www.jetbrains.com/help/objc/configuring-file-size-limit.html
+
 # Configuration
 
 The plugin relies on `PATH` environment variable to detect installed `bazel` tool version.

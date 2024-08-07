@@ -8,6 +8,8 @@ import bazel.bazel.events.File
 import bazel.bazel.events.TestResult
 import bazel.bazel.events.TestStatus
 import com.google.devtools.build.lib.buildeventstream.BuildEventStreamProtos
+import java.time.Duration
+import java.time.Instant
 
 class TestResultHandler(
         private val _fileConverter: Converter<BuildEventStreamProtos.File, File>,
@@ -27,6 +29,12 @@ class TestResultHandler(
                 for (i in 0 until content.warningCount) {
                     warnings.add(content.getWarning(i))
                 }
+                val testAttemptDurationMillis = content.testAttemptDuration
+                    .let { Duration.ofSeconds(it.seconds, it.nanos.toLong()) }
+                    .toMillis()
+                val testAttemptStartMillisEpoch = content.testAttemptStart
+                    .let { Instant.ofEpochSecond(it.seconds, it.nanos.toLong()) }
+                    .toEpochMilli()
 
                 TestResult(
                         ctx.id,
@@ -38,8 +46,8 @@ class TestResultHandler(
                         _testStatusConverter.convert(content.status),
                         content.statusDetails,
                         content.cachedLocally,
-                        content.testAttemptStartMillisEpoch,
-                        content.testAttemptDurationMillis,
+                        testAttemptStartMillisEpoch,
+                        testAttemptDurationMillis,
                         testActionOutput,
                         warnings)
             } else ctx.handlerIterator.next().handle(ctx)

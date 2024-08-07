@@ -22,6 +22,6 @@ class TargetCompleteHandler : BazelHandler {
                         ctx.event.id.targetCompleted.label,
                         content.success,
                         tags,
-                        content.testTimeoutSeconds)
+                        content.testTimeout.seconds)
             } else ctx.handlerIterator.next().handle(ctx)
 }
