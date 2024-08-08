@@ -9,7 +9,7 @@ class Environment {
     companion object {
         public var sandboxDirectory: File = File(".")
         public var samplesDirectory: File = File(".")
-        public var bazelExecutable: File = if(isWindows) File("C:/Program Files/bazel/bazel.exe") else File("/usr/local/bin/bazel")
+        public var bazelExecutable: File = if(isWindows) File("C:/Program Files/bazel/bazel.exe") else File("/opt/homebrew/bin/bazelisk")
         public var javaExecutable: File = if(isWindows) File(File(System.getProperty("java.home")), File("bin", "java.exe").path) else File("/usr/bin/java")
         public var besJar: File = File(".")
 

@@ -32,6 +32,13 @@ Here is how to resolve this:
 
 It increases max file size for coding assistance and design-time code inspection. You can find more information about these properties here: https://www.jetbrains.com/help/objc/configuring-file-size-limit.html
 
+# Run/debug integration tests locally
+1. Install [bazelisk](https://github.com/bazelbuild/bazelisk) macOS: `brew install bazelisk`, Windows: `choco install bazelisk`
+2. Verify that `plugin-bazel-integration-tests/src/test/kotlin/jetbrains/bazel/integration/Environment.kt` has right path to the bazelisk
+3. OPTIONAL: to debug BES server 
+   1. Uncomment `"-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=*:5005",` in `plugin-bazel-integration-tests/src/test/kotlin/jetbrains/bazel/integration/BazelSteps.kt`
+   2. IntelliJ IDEA: Go to Run > Edit Configurations.  Click the + button and select Remote JVM Debug. Set the port to 5005. Click OK. Attach to BES server for each integration test
+4. Run tests with `./gradlew integration` or with [IntelliJ IDEA Cucumber for Java Plugin](https://plugins.jetbrains.com/plugin/7212-cucumber-for-java)
 # Configuration
 
 The plugin relies on `PATH` environment variable to detect installed `bazel` tool version.
