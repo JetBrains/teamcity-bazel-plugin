@@ -33,7 +33,7 @@ teamcity {
 
         publish {
             token = project.findProperty("jetbrains.marketplace.token")
-            notes = changelog.renderItem(changelog.getLatest(), Changelog.OutputType.HTML)
+            notes = changelog.renderItem(changelog.getLatest(), org.jetbrains.changelog.Changelog.OutputType.HTML)
         }
 
         archiveName = 'teamcity-bazel-plugin'
