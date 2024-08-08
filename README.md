@@ -49,4 +49,11 @@ This project uses gradle as the build system. You can easily open it in [Intelli
 
 # Contributions
 
-We appreciate all kinds of feedback, so please feel free to send a PR or submit an issue.
+We appreciate all kinds of feedback, so please feel free to send a PR or [submit an issue][youtrack].
+
+## Additional Resources
+
+- [Changelog](CHANGELOG.md)
+- [Maintainership](MAINTAINERSHIP.md)
+
+[youtrack]: https://youtrack.jetbrains.com/newIssue?project=TW&c=Team%20Build%20Tools%20Integrations&c=tag%20tc-bazel
