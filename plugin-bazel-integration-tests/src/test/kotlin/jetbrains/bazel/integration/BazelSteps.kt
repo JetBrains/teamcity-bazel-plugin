@@ -42,7 +42,7 @@ public class BazelSteps {
     fun runStep(scenario: String) {
         try {
             val cleanResult = run(scenario, emptyList(), emptyList(), "clean", emptyList(), emptyList())
-            Assert.assertEquals(cleanResult.exitCode, 0, cleanResult.stdErr.plus(cleanResult.stdOut).joinToString() )
+            Assert.assertEquals(cleanResult.exitCode, 0, cleanResult.toString() )
             _runResult = run(scenario, _besArgs, _options, _command, _args, _targets)
         }
         finally {
