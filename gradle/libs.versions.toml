@@ -37,6 +37,7 @@ teamcity-common-api = { module = "org.jetbrains.teamcity:common-api", version.re
 
 
 [plugins]
+changelog = { id = "org.jetbrains.changelog", version = "2.2.0" }
 kotlin = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 teamcity-server = { id = "io.github.rodm.teamcity-server", version.ref = "rodm" }
 teamcity-agent = { id = "io.github.rodm.teamcity-agent", version.ref = "rodm" }
