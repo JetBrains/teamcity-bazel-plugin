@@ -34,3 +34,5 @@ This project uses gradle as the build system. You can easily open it in [Intelli
 # Contributions
 
 We appreciate all kinds of feedback, so please feel free to send a PR or submit an issue.
+
+Test
