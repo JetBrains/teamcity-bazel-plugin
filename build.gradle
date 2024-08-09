@@ -1,22 +1,15 @@
-
-
 plugins {
-    id "org.jetbrains.kotlin.jvm" version "1.9.22"
+    alias libs.plugins.kotlin
 }
 
 ext {
-    def correctVersion = project.hasProperty('versionNumber') && property('versionNumber') ==~ /\d+\.\d+\.\d+.*/
-    versionNumber = correctVersion ? property('versionNumber') : 'SNAPSHOT-' + new Date().format('yyyyMMddHHmmss')
-    projectIds = ['group': 'teamcity-bazel-plugin', 'version': versionNumber]
-    teamcityVersion = project.hasProperty('teamcityVersion') ? property('teamcityVersion') : '2022.04'
+    def correctVersion = project.hasProperty('version') && property('version') ==~ /\d+\.\d+\.\d+.*/
+    versionNumber = correctVersion ? property('version') : 'SNAPSHOT-' + new Date().format('yyyyMMddHHmmss')
 }
-    
-group = projectIds.group
-version = projectIds.version
 
 allprojects {
-    group = projectIds.group
-    version = projectIds.version
+    group = "teamcity-bazel-plugin"
+    version = versionNumber
 
     repositories {
         mavenCentral()
@@ -35,10 +28,12 @@ subprojects {
         kotlinOptions.jvmTarget = "1.8"
     }
 
-    test.useTestNG()
-    jar.version = null
+    tasks.withType(Test) {
+        useTestNG()
+    }
 
-    sourceCompatibility = "1.8"
-    targetCompatibility = "1.8"
-    def teamcityVersion = teamcityVersion
+    java {
+        sourceCompatibility = "1.8"
+        targetCompatibility = "1.8"
+    }
 }

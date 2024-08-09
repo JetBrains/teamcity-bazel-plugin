@@ -50,6 +50,7 @@ class BesCommandLineBuilderTest {
 
 
         Assert.assertEquals(besCommandLine.arguments, listOf(
+                "-Djava.io.tmpdir=${tempDir.absolutePath}",
                 "-jar",
             File("/fake/plugindir/tools/plugin-bazel-event-service.jar").absolutePath,
                 "-c=${File(tempDir, "bazelCommandlineFile").absolutePath}",

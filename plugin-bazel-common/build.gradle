@@ -1,34 +1,31 @@
+plugins {
+    alias libs.plugins.teamcity.common
+}
 
-
-plugins{
-    id 'com.github.rodm.teamcity-common' version '1.4.1'
+repositories {
+    mavenCentral()
 }
 
 dependencies {
-    implementation "org.jetbrains.kotlin:kotlin-stdlib"
-    testImplementation 'org.testng:testng:7.0.0'
-    testImplementation 'org.jmock:jmock:2.12.0'
-    testImplementation 'org.hamcrest:hamcrest:2.2'
-    testImplementation 'io.mockk:mockk:1.13.9'
+    implementation libs.kotlin.stdlib
+
+    constraints {
+        implementation(libs.constraint.transitive.icu4j) {
+            because 'previous versions have faulty jar files which cause problems during incremental compilation (which is enabled by default since Kotlin 1.8.20)'
+        }
+    }
+
+    testImplementation libs.testng
+    testImplementation libs.jmock
+    testImplementation libs.hamcrest
+    testImplementation libs.mockk
+}
+
+jar {
+    // don't include jar version into the name
+    archiveFileName = "plugin-bazel-common.jar"
 }
 
 teamcity {
-    version = teamcityVersion
-}
-
-java {
-    sourceCompatibility = JavaVersion.VERSION_1_8
-    targetCompatibility = JavaVersion.VERSION_1_8
-}
-
-compileKotlin {
-    kotlinOptions.jvmTarget = "1.8"
-}
-
-compileTestKotlin {
-    kotlinOptions.jvmTarget = "1.8"
-}
-
-test {
-    useTestNG()
+    version = libs.versions.teamcity.get()
 }

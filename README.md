@@ -1,6 +1,6 @@
 # TeamCity Bazel build support
 [![official JetBrains project](http://jb.gg/badges/official.svg)](https://confluence.jetbrains.com/display/ALL/JetBrains+on+GitHub)
-<a href="https://teamcity.jetbrains.com/viewType.html?buildTypeId=TeamCityPluginsByJetBrains_TeamcityBazelPlugin_Build&guest=1"><img src="https://teamcity.jetbrains.com/app/rest/builds/buildType:(id:TeamCityPluginsByJetBrains_TeamcityBazelPlugin_Build)/statusIcon.svg" alt=""/></a>
+<a href="https://teamcity.jetbrains.com/viewType.html?buildTypeId=TeamCityPluginsByJetBrains_TeamcityBazelPlugin_TeamCityBazelPlugin_MasterBuild&guest=1"><img src="https://teamcity.jetbrains.com/app/rest/builds/buildType:(id:TeamCityPluginsByJetBrains_TeamcityBazelPlugin_TeamCityBazelPlugin_MasterBuild)/statusIcon.svg" alt=""/></a>
 
 TeamCity plugin to support projects based on [Bazel build](https://bazel.build/) system.
 
@@ -23,6 +23,22 @@ You can [download the plugin](https://plugins.jetbrains.com/plugin/11248-bazel-b
 
 The plugin is compatible with [TeamCity](https://www.jetbrains.com/teamcity/download/) 2018.1.x and greater.
 
+# Known issues
+If IDEA can't resolve proto classes, like `BuildEventStreamProtos`.
+Here is how to resolve this: 
+1. click Help 
+2. Edit custom properties... 
+3. and property idea.max.intellisense.filesize=999999 
+
+It increases max file size for coding assistance and design-time code inspection. You can find more information about these properties here: https://www.jetbrains.com/help/objc/configuring-file-size-limit.html
+
+# Run/debug integration tests locally
+1. Install [bazelisk](https://github.com/bazelbuild/bazelisk) macOS: `brew install bazelisk`, Windows: `choco install bazelisk`
+2. Verify that `plugin-bazel-integration-tests/src/test/kotlin/jetbrains/bazel/integration/Environment.kt` has right path to the bazelisk
+3. OPTIONAL: to debug BES server 
+   1. Uncomment `"-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=*:5005",` in `plugin-bazel-integration-tests/src/test/kotlin/jetbrains/bazel/integration/BazelSteps.kt`
+   2. IntelliJ IDEA: Go to Run > Edit Configurations.  Click the + button and select Remote JVM Debug. Set the port to 5005. Click OK. Attach to BES server for each integration test
+4. Run tests with `./gradlew integration` or with [IntelliJ IDEA Cucumber for Java Plugin](https://plugins.jetbrains.com/plugin/7212-cucumber-for-java)
 # Configuration
 
 The plugin relies on `PATH` environment variable to detect installed `bazel` tool version.
@@ -33,4 +49,11 @@ This project uses gradle as the build system. You can easily open it in [Intelli
 
 # Contributions
 
-We appreciate all kinds of feedback, so please feel free to send a PR or submit an issue.
+We appreciate all kinds of feedback, so please feel free to send a PR or [submit an issue][youtrack].
+
+## Additional Resources
+
+- [Changelog](CHANGELOG.md)
+- [Maintainership](MAINTAINERSHIP.md)
+
+[youtrack]: https://youtrack.jetbrains.com/newIssue?project=TW&c=Team%20Build%20Tools%20Integrations&c=tag%20tc-bazel

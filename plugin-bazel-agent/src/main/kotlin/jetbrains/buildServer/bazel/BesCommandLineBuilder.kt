@@ -41,7 +41,12 @@ class BesCommandLineBuilder(
         val pluginDir = _pathsService.getPath(PathType.Plugin)
         val jarFile = File(File(pluginDir, "tools"), "plugin-bazel-event-service.jar")
 
-        val besArgs = mutableListOf<String>("-jar", jarFile.absolutePath, "-c=${bazelCommandFile.absolutePath}")
+        val besArgs = mutableListOf<String>(
+            "-Djava.io.tmpdir=${_pathsService.getPath(PathType.AgentTemp).absolutePath}",
+            "-jar",
+            jarFile.absolutePath,
+            "-c=${bazelCommandFile.absolutePath}"
+        )
 
         _parametersService.tryGetParameter(ParameterType.Runner, BazelConstants.PARAM_VERBOSITY)?.trim()?.let {
             Verbosity.tryParse(it)?.let {
