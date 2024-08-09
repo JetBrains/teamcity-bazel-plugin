@@ -42,9 +42,8 @@ public class BazelSteps {
     fun runStep(scenario: String) {
         try {
             val cleanResult = run(scenario, emptyList(), emptyList(), "clean", emptyList(), emptyList())
-            Assert.assertEquals(cleanResult.exitCode, 0)
+            Assert.assertEquals(cleanResult.exitCode, 0, cleanResult.toString() )
             _runResult = run(scenario, _besArgs, _options, _command, _args, _targets)
-            // run(scenario, listOf("clean", "--expunge"), emptyList())
         }
         finally {
             _args.clear()
@@ -114,6 +113,7 @@ public class BazelSteps {
 
             val besCmdArgs = mutableListOf<String>(
                     Environment.javaExecutable.canonicalPath,
+                    //"-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=*:5005",
                     "-jar",
                     File(Environment.besJar.parentFile, Environment.besJar.name).canonicalPath,
                     "-c=${File(Environment.besJar.parentFile, argsFile.name).canonicalPath}")
