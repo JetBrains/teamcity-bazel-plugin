@@ -4,10 +4,8 @@ package jetbrains.buildServer.bazel
 
 import jetbrains.buildServer.requirements.Requirement
 import jetbrains.buildServer.requirements.RequirementType
-import jetbrains.buildServer.serverSide.InvalidProperty
-import jetbrains.buildServer.serverSide.PropertiesProcessor
-import jetbrains.buildServer.serverSide.RunType
-import jetbrains.buildServer.serverSide.RunTypeRegistry
+import jetbrains.buildServer.serverSide.*
+import jetbrains.buildServer.util.positioning.PositionAware
 import jetbrains.buildServer.web.openapi.PluginDescriptor
 
 /**
@@ -82,5 +80,10 @@ class BazelRunnerRunType(private val myPluginDescriptor: PluginDescriptor,
         }
 
         return listOf(Requirement(BazelConstants.BAZEL_CONFIG_PATH, null, RequirementType.EXISTS))
+    }
+
+    override fun supports(runTypeExtension: RunTypeExtension) = when {
+        runTypeExtension is PositionAware && runTypeExtension.orderId == "dockerWrapper" -> true
+        else -> super.supports(runTypeExtension)
     }
 }

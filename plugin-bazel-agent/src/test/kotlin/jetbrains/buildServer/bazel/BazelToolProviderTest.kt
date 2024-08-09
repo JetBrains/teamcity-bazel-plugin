@@ -52,11 +52,11 @@ class BazelToolProviderTest {
     @DataProvider
     fun testDataForVersions(): Array<Array<out Any?>> {
         return arrayOf(
-                arrayOf("Build label: 0.22.0", Version.valueOf("0.22.0")),
-                arrayOf("Build label: 0.22.0.33", Version.valueOf("0.22.0")),
+                arrayOf("Build label: 0.22.0", Version.parse("0.22.0")),
+                arrayOf("Build label: 0.22.0.33", Version.parse("0.22.0")),
                 arrayOf("Build label: 0.22", null),
                 arrayOf("Build label: 22", null),
-                arrayOf("Build label: 0.22.0- (@non-git)", Version.valueOf("0.22.0")),
+                arrayOf("Build label: 0.22.0- (@non-git)", Version.parse("0.22.0")),
                 arrayOf("Build label: 0.22- (@non-git)", null),
                 arrayOf("Build label: 0.22a.0", null),
                 arrayOf("Build label: abc", null),
@@ -101,7 +101,7 @@ class BazelToolProviderTest {
                                 "Build timestamp: 1548786165\n" +
                                 "Build timestamp as int: 1548786165",
                         ""),
-                        listOf(Version.valueOf("0.22.0"))),
+                        listOf(Version.parse("0.22.0"))),
                 arrayOf(CommandLineResult(
                         0,
                         "WARNING: --batch mode is deprecated. Please instead explicitly shut down your Bazel server using the command \"bazel shutdown\".\n" +
@@ -112,7 +112,7 @@ class BazelToolProviderTest {
                                 "Build timestamp: 1548786165\n" +
                                 "Build timestamp as int: 1548786165",
                         ""),
-                        listOf(Version.valueOf("0.22.0"))),
+                        listOf(Version.parse("0.22.0"))),
                 arrayOf(CommandLineResult(
                         0,
                         "abc",

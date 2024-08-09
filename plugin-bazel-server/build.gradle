@@ -1,21 +1,42 @@
-
-
 plugins {
-    id 'com.github.rodm.teamcity-server' version '1.4.1'
+    alias libs.plugins.teamcity.server
+    alias libs.plugins.changelog
+}
+
+changelog {
+    path = file("../CHANGELOG.md").canonicalPath
+    groups = ["Added", "Changed", "Fixed"]
 }
 
 teamcity {
-    version = teamcityVersion
+    version = libs.versions.teamcity.get()
 
     server {
-        descriptor = project.file('teamcity-plugin.xml')
-        archiveName = 'teamcity-bazel-plugin'
-        tokens = [Plugin_Version: project.version]
+        descriptor {
+            name = "bazel"
+            displayName = "Bazel build support"
+            description = "Provides build facilities for bazel projects"
+            downloadUrl = "https://github.com/JetBrains/teamcity-bazel-plugin"
+            version = project.version.toString()
+            vendorName = "JetBrains"
+            vendorUrl = "https://www.jetbrains.com/"
+            useSeparateClassloader = true
+            allowRuntimeReload = true
+            minimumBuild = "40000"
+        }
+
         files {
             into('kotlin-dsl') {
                 from("${rootProject.projectDir}/kotlin-dsl")
             }
         }
+
+        publish {
+            token = project.findProperty("jetbrains.marketplace.token")
+            notes = changelog.renderItem(changelog.getLatest(), org.jetbrains.changelog.Changelog.OutputType.HTML)
+        }
+
+        archiveName = 'teamcity-bazel-plugin'
     }
 }
 
@@ -24,19 +45,24 @@ dependencies {
     implementation (project(':bazel-build')) {
         exclude group: 'com.ibm.icu'
     }
-    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
-    compileOnly 'javax.servlet:jstl:1.1.2'
-    compileOnly "org.jetbrains.teamcity.internal:server:$teamcityVersion"
+    implementation libs.kotlin.stdlibjdk8
+    compileOnly libs.jstl
+    compileOnly libs.teamcity.internal.server
     agent project(path: ':plugin-bazel-agent', configuration: 'plugin')
-}
 
-serverPlugin.version = null
-
-compileKotlin {
-    sourceCompatibility = JavaVersion.VERSION_1_8
-    targetCompatibility = JavaVersion.VERSION_1_8
-
-    kotlinOptions {
-        jvmTarget = '1.8'
+    constraints {
+        implementation(libs.constraint.transitive.icu4j) {
+            because 'previous versions have faulty jar files which cause problems during incremental compilation (which is enabled by default since Kotlin 1.8.20)'
+        }
     }
 }
+
+jar {
+    // don't include jar version into the name
+    archiveFileName = "plugin-bazel-server.jar"
+}
+
+tasks.register("getLatestChangelogVersion") {
+    print(changelog.getLatest().version)
+}
+

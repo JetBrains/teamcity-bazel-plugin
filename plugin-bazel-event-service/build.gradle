@@ -1,21 +1,8 @@
-
-
-buildscript {
-    ext.kotlin_version = '1.9.22'
-
-    repositories {
-        mavenCentral()
-        mavenLocal()
-    }
-    dependencies {
-        classpath 'com.google.protobuf:protobuf-gradle-plugin:0.8.19'
-        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
-    }
+plugins {
+    id 'java'
+    id 'idea'
+    alias libs.plugins.protobuf
 }
-
-apply plugin: 'com.google.protobuf'
-apply plugin: 'java'
-apply plugin: 'idea'
 
 repositories {
     mavenCentral()
@@ -23,29 +10,22 @@ repositories {
     maven { url "https://download.jetbrains.com/teamcity-repository/" }
 }
 
-// IMPORTANT: You probably want the non-SNAPSHOT version of gRPC. Make sure you
-// are looking at a tagged version of the example and not "master"!
-
-// Feel free to delete the comment at the next line. It is just for safely
-// updating the version in our release process.
-def grpcVersion = '1.60.1' // CURRENT_GRPC_VERSION
-
 dependencies {
     implementation project(':plugin-bazel-common')
-    implementation "commons-cli:commons-cli:1.4"
-    implementation "org.jetbrains.kotlin:kotlin-stdlib"
-    implementation "com.google.api.grpc:proto-google-common-protos:2.30.0"
-    implementation "io.grpc:grpc-netty:${grpcVersion}"
-    implementation "io.grpc:grpc-protobuf:${grpcVersion}"
-    implementation "io.grpc:grpc-stub:${grpcVersion}"
-    implementation "javax.annotation:javax.annotation-api:1.3.2"
-    implementation "org.jetbrains.teamcity:serviceMessages:${teamcityVersion}"
-    implementation "org.apache.logging.log4j:log4j-1.2-api:2.17.2"
-    implementation "org.apache.logging.log4j:log4j-core:2.17.2"
-    testImplementation "io.grpc:grpc-testing:${grpcVersion}" // gRCP testing utilities
-    testImplementation 'io.mockk:mockk:1.11.0'
-    testImplementation 'org.testng:testng:6.8'
-    testImplementation 'org.jmock:jmock:2.5.1'
+    implementation libs.commons.cli
+    implementation libs.kotlin.stdlib
+    implementation libs.grpc.proto
+    implementation libs.grpc.netty
+    implementation libs.grpc.protobuf
+    implementation libs.grpc.stub
+    implementation libs.javax.annotation.api
+    implementation libs.teamcity.service.messages
+    implementation libs.log4j.api
+    implementation libs.log4j.core
+    testImplementation libs.grpc.testing
+    testImplementation libs.mockk
+    testImplementation libs.testng
+    testImplementation libs.jmock
 
 }
 
@@ -58,21 +38,19 @@ sourceSets {
 }
 
 protobuf {
-    protoc { artifact = 'com.google.protobuf:protoc:3.25.2' }
-    plugins {
-        grpc { artifact = "io.grpc:protoc-gen-grpc-java:${grpcVersion}" }
-    }
-    generateProtoTasks {
-        all()*.plugins { grpc {} }
-    }
+    protoc { artifact = libs.protobuf.protoc.get().toString() }
+    plugins { grpc { artifact = libs.grpc.protoc.gen.java.get().toString() } }
+    generateProtoTasks { all()*.plugins { grpc {} } }
 }
 
 jar {
+    // don't include jar version into the name
+    archiveFileName = "plugin-bazel-event-service.jar"
     exclude 'META-INF/*.SF', 'META-INF/*.DSA', 'META-INF/*.RSA', 'META-INF/*.MF'
 
     manifest {
         attributes 'Main-Class': 'bazel.MainKt',
-        'Class-Path': configurations.runtimeClasspath.files.collect{ it.name }.join(' ')
+                'Class-Path': configurations.runtimeClasspath.files.collect { it.name }.join(' ')
     }
 }
 
