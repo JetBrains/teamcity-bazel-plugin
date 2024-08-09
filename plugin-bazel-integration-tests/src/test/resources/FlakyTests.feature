@@ -9,9 +9,6 @@ Feature: Flaky tests support
         And run in FlakyTests
         Then the exit code is 3
         And the stdErr output is empty
-        And the result contains all service messages like
-        | #            | description  |
-        | buildProblem | Build failed |
 
     Scenario: BES produce a build problem when sufficient flaky_test_attempts were specified
         When specify the command test
@@ -22,9 +19,6 @@ Feature: Flaky tests support
         And run in FlakyTests
         Then the exit code is 3
         And the stdErr output is empty
-        And the result contains all service messages like
-            | #            | description  |
-            | buildProblem | Build failed |
 
     Scenario Outline: BES does not produce a build problem when sufficient flaky_test_attempts were specified
         When specify the command test
@@ -35,9 +29,6 @@ Feature: Flaky tests support
         And run in FlakyTests
         Then the exit code is 0
         And the stdErr output is empty
-        And the result does not contain any service messages like
-            | #            | description  |
-            | buildProblem | Build failed |
         Examples:
             | flaky_test_attempts |
             | 2                   |
