@@ -87,6 +87,18 @@ class BazelEventConverter : Converter<BuildEventStreamProtos.BuildEvent, BazelCo
                 // BuildMetadata build_metadata = 26;
                 BuildMetadataHandler(),
 
+                // ConvenienceSymlinksIdentified convenience_symlinks_identified = 27;
+                ConvenienceSymlinksIdentifiedHandler(ConvenienceSymlinkConverter()),
+
+                // TargetSummary target_summary = 28;
+                TargetSummaryHandler(TestStatusConverter()),
+
+                // ExecRequestConstructed exec_request = 29;
+                ExecRequestConstructedHandler(),
+
+                // TestProgress test_progress = 30;
+                TestProgressHandler(),
+
                 // Unknown content.
                 UnknownContentHandler()
         ).sortedBy { it.priority }.toList()
