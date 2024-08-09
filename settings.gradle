@@ -8,5 +8,4 @@ include 'plugin-bazel-server'
 include 'plugin-bazel-event-service'
 include 'plugin-bazel-integration-tests'
 
-include 'rx'
 include 'bazel-build'
