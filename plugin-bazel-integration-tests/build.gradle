@@ -9,7 +9,7 @@ dependencies {
     testImplementation 'org.testng:testng:6.8'
     testImplementation 'io.cucumber:cucumber-java:4.2.0'
     implementation project(':plugin-bazel-event-service')
-    implementation project(':rx')
+    implementation project(':plugin-bazel-common')
 }
 
 repositories {
