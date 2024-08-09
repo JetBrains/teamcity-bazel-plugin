@@ -33,7 +33,7 @@ To debug in IntelliJ Idea, open the 'Maven Projects' tool window (View
 'Debug' option is available in the context menu for the task.
 */
 
-version = "2022.10"
+version = "2024.03"
 
 project {
     vcsRoot(TagReleaseVcs)
@@ -62,8 +62,7 @@ object ReleaseBuildConfiguration : BuildType({
     name = "ReleaseBuild"
 
     params {
-        param("env.ORG_GRADLE_PROJECT_jetbrains.marketplace.token", "")
-        //password("env.ORG_GRADLE_PROJECT_jetbrains.marketplace.token", "credentialsJSON:1a57eff8-4658-4747-a7ff-e6cdbb3dbb6e", readOnly = true)
+        password("env.ORG_GRADLE_PROJECT_jetbrains.marketplace.token", "credentialsJSON:136993d7-7e35-4870-8f5c-6ec9d6564ad4", readOnly = true)
     }
 
     vcs {
@@ -111,8 +110,7 @@ object PullRequestBuildConfiguration : BuildType({
 
     val githubTokenParameter = "GITHUB_TOKEN"
     params {
-        param(githubTokenParameter, "")
-        //password(githubTokenParameter, "credentialsJSON:da577601-ec6c-4387-8996-e14771fe5ca2", readOnly = true)
+        password(githubTokenParameter, "credentialsJSON:12772a49-d676-43ec-a107-fad8a57cd852", readOnly = true)
     }
 
     vcs {
