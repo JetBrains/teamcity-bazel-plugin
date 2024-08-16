@@ -1,13 +1,16 @@
-
-
 plugins {
-  id 'com.github.rodm.teamcity-agent' version '1.4.1'
+  alias libs.plugins.teamcity.agent
 }
 
 teamcity {
-  version = teamcityVersion
+  version = libs.versions.teamcity.get()
   agent {
-    descriptor = project.file('teamcity-plugin.xml')
+    archiveName = "teamcity-bazel-agent"
+    descriptor {
+      pluginDeployment {
+        useSeparateClassloader = true
+      }
+    }
     files {
       into('tools') {
         from('./../plugin-bazel-event-service/build/libs')
@@ -18,22 +21,26 @@ teamcity {
 }
 
 dependencies {
-  implementation project(':plugin-bazel-common')
-  implementation "org.jetbrains.kotlin:kotlin-stdlib"
-  implementation "org.jetbrains.kotlin:kotlin-reflect"
-  implementation "com.github.zafarkhaja:java-semver:0.9.0"
-  implementation "com.fasterxml.jackson.module:jackson-module-kotlin:2.10.0"
-  compileOnly "org.jetbrains.teamcity.internal:agent:${teamcityVersion}"
-  compileOnly "org.jetbrains.teamcity:common-api:${teamcityVersion}"
-  testImplementation "org.jetbrains.teamcity.internal:agent:${teamcityVersion}"
-  testImplementation "org.jetbrains.teamcity:common-api:${teamcityVersion}"
-  testImplementation project(':plugin-bazel-event-service')
-  testImplementation 'org.testng:testng:6.8'
-  testImplementation 'org.jmock:jmock:2.5.1'
-  testImplementation 'io.mockk:mockk:1.11.0'
-}
+  implementation libs.kotlin.stdlib
+  implementation libs.kotlin.reflect
+  implementation libs.java.semver
+  implementation libs.jackson.module.kotlin
+  compileOnly libs.teamcity.common.api
+  compileOnly libs.teamcity.internal.agent
+  testImplementation libs.teamcity.common.api
+  testImplementation libs.teamcity.internal.agent
+  testImplementation libs.testng
+  testImplementation libs.jmock
+  testImplementation libs.mockk
 
-agentPlugin.version = null
-agentPlugin.baseName = 'teamcity-bazel-agent'
+  implementation project(':plugin-bazel-common')
+  testImplementation project(':plugin-bazel-event-service')
+
+  constraints {
+    implementation(libs.constraint.transitive.icu4j) {
+      because 'previous versions have faulty jar files which cause problems during incremental compilation (which is enabled by default since Kotlin 1.8.20)'
+    }
+  }
+}
 
 agentPlugin.dependsOn(project(':plugin-bazel-event-service').tasks.build)
