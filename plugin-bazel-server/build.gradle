@@ -58,11 +58,6 @@ dependencies {
     }
 }
 
-jar {
-    // don't include jar version into the name
-    archiveFileName = "plugin-bazel-server.jar"
-}
-
 tasks.register("getLatestChangelogVersion") {
     print(changelog.getLatest().version)
 }

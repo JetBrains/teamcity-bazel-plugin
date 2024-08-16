@@ -43,9 +43,4 @@ dependencies {
   }
 }
 
-jar {
-  // don't include jar version into the name
-  archiveFileName = "teamcity-bazel-agent.jar"
-}
-
 agentPlugin.dependsOn(project(':plugin-bazel-event-service').tasks.build)
