@@ -22,5 +22,5 @@ It will tag the current `HEAD` with latest version from the changelog, and push 
 The new version of the plugin will be published to [marketplace][marketplace.plugin-page] automatically.
 
 [semver]: https://semver.org/spec/v2.0.0.html
-[marketplace.plugin-page]: https://plugins.jetbrains.com/plugin/11453-unity-support
+[marketplace.plugin-page]: https://plugins.jetbrains.com/plugin/11248-bazel-build-support
 [gradle-changelog-plugin]: https://github.com/JetBrains/gradle-changelog-plugin

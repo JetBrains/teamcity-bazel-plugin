@@ -23,6 +23,7 @@ teamcity {
             useSeparateClassloader = true
             allowRuntimeReload = true
             minimumBuild = "40000"
+            nodeResponsibilitiesAware = true
         }
 
         files {

@@ -34,8 +34,6 @@ teamcity-internal-agent = { module = "org.jetbrains.teamcity.internal:agent", ve
 teamcity-internal-server = { module = "org.jetbrains.teamcity.internal:server", version.ref = "teamcity" }
 teamcity-common-api = { module = "org.jetbrains.teamcity:common-api", version.ref = "teamcity" }
 
-
-
 [plugins]
 changelog = { id = "org.jetbrains.changelog", version = "2.2.0" }
 kotlin = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
