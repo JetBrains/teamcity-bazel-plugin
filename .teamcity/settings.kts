@@ -36,65 +36,12 @@ To debug in IntelliJ Idea, open the 'Maven Projects' tool window (View
 version = "2024.03"
 
 project {
-    vcsRoot(TagReleaseVcs)
     vcsRoot(PullRequestVcs)
     vcsRoot(MasterVcs)
 
-    buildType(ReleaseBuildConfiguration)
     buildType(PullRequestBuildConfiguration)
     buildType(MasterBuildConfiguration)
 }
-
-object TagReleaseVcs : GitVcsRoot({
-    id("TeamCityBazelPlugin_TagReleaseVcs")
-    name = "TagReleaseVcs"
-    url = "https://github.com/JetBrains/teamcity-bazel-plugin.git"
-    branch = "master"
-    useTagsAsBranches = true
-    branchSpec = """
-        +:refs/(tags/*)
-        -:<default>
-    """.trimIndent()
-})
-
-object ReleaseBuildConfiguration : BuildType({
-    id("TeamCityBazelPlugin_ReleaseBuild")
-    name = "ReleaseBuild"
-
-    params {
-        password("env.ORG_GRADLE_PROJECT_jetbrains.marketplace.token", "credentialsJSON:136993d7-7e35-4870-8f5c-6ec9d6564ad4", readOnly = true)
-    }
-
-    vcs {
-        root(TagReleaseVcs)
-    }
-
-    steps {
-        kotlinFile {
-            name = "calculate version"
-            path = "./.teamcity/steps/calculateVersion.kts"
-            arguments = "%teamcity.build.branch%"
-        }
-        gradle {
-            name = "build"
-            tasks = "clean build serverPlugin"
-        }
-        gradle {
-            name = "publish to marketplace"
-            tasks = "publishPlugin"
-        }
-    }
-
-    artifactRules = "+:./plugin-bazel-server/build/distributions/teamcity-bazel-plugin.zip"
-
-
-    triggers {
-        vcs {
-            branchFilter = "+:tags/v*"
-        }
-    }
-})
-
 object PullRequestVcs : GitVcsRoot({
     id("TeamCityBazelPlugin_PullRequestVcs")
     name = "PullRequestVcs"
