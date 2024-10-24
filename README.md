@@ -1,4 +1,5 @@
 test hook
+test hook2
 # TeamCity Bazel build support
 [![official JetBrains project](http://jb.gg/badges/official.svg)](https://confluence.jetbrains.com/display/ALL/JetBrains+on+GitHub)
 <a href="https://teamcity.jetbrains.com/viewType.html?buildTypeId=TeamCityPluginsByJetBrains_TeamcityBazelPlugin_TeamCityBazelPlugin_MasterBuild&guest=1"><img src="https://teamcity.jetbrains.com/app/rest/builds/buildType:(id:TeamCityPluginsByJetBrains_TeamcityBazelPlugin_TeamCityBazelPlugin_MasterBuild)/statusIcon.svg" alt=""/></a>
