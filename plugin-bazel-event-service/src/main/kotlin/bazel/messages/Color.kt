@@ -3,14 +3,14 @@
 package bazel.messages
 
 enum class Color(val color: String) {
-    Default(""),
-    BuildStage("34"),
-    Success("32"),
-    Warning("33"),
-    Error("31"),
-    Details("36"),
-    Items("36"),
-    Trace("30;1")
+    Default(""),        // No color / system default
+    BuildStage("34"),   // Blue
+    Success("32"),      // Green
+    Warning("33"),      // Yellow
+    Error("31"),        // Red
+    Details("36"),      // Cyan
+    Items("36"),        // Cyan
+    Trace("30;1")       // Bold Black (usually dark gray on light backgrounds)
 }
 
 fun String.apply(color: Color): String {

@@ -13,7 +13,11 @@ class MessageFactoryImpl : MessageFactory {
             Message(text.clean(), Normal)
 
     override fun createTraceMessage(text: String) =
-            Message("> ".apply(Color.Trace) + text.clean().replace("\n", "").replace("\r", ""), Normal, null)
+            Message("> ".apply(Color.Trace) + text.clean().replace("\n", "").replace("\r", ""), Normal)
+                .also { it.tags.add("tc:internal") }
+
+    override fun createWarningMessage(text: String) =
+            Message(text.clean(), Warning)
 
     override fun createErrorMessage(error: String, errorDetails: String?) =
             Message(error.clean(), Error, errorDetails)
@@ -44,5 +48,6 @@ class MessageFactoryImpl : MessageFactory {
     companion object {
         private const val Normal = "NORMAL"
         private const val Error = "ERROR"
+        private const val Warning = "WARNING"
     }
 }

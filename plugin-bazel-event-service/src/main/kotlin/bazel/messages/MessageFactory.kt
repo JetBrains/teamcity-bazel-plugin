@@ -8,6 +8,7 @@ interface MessageFactory {
     fun createMessage(text: String): ServiceMessage
 
     fun createTraceMessage(text: String): ServiceMessage
+    fun createWarningMessage(text: String): ServiceMessage
 
     fun createErrorMessage(error: String, errorDetails: String? = null): ServiceMessage
 

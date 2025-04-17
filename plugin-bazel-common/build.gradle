@@ -21,6 +21,11 @@ dependencies {
     testImplementation libs.mockk
 }
 
+jar {
+    // don't include jar version into the name
+    archiveFileName = "plugin-bazel-common.jar"
+}
+
 teamcity {
     version = libs.versions.teamcity.get()
 }

@@ -5,7 +5,6 @@ import jetbrains.buildServer.configs.kotlin.buildFeatures.PullRequests
 import jetbrains.buildServer.configs.kotlin.buildFeatures.commitStatusPublisher
 import jetbrains.buildServer.configs.kotlin.buildFeatures.pullRequests
 import jetbrains.buildServer.configs.kotlin.buildSteps.gradle
-import jetbrains.buildServer.configs.kotlin.buildSteps.kotlinFile
 import jetbrains.buildServer.configs.kotlin.project
 import jetbrains.buildServer.configs.kotlin.triggers.vcs
 import jetbrains.buildServer.configs.kotlin.vcs.GitVcsRoot
@@ -47,7 +46,6 @@ object PullRequestVcs : GitVcsRoot({
     name = "PullRequestVcs"
     url = "https://github.com/JetBrains/teamcity-bazel-plugin.git"
     branchSpec = """
-        +:*
         -:<default>
     """.trimIndent()
 })
@@ -96,7 +94,9 @@ object PullRequestBuildConfiguration : BuildType({
     steps {
         gradle {
             name = "build"
-            tasks = "clean build test serverPlugin"
+            tasks = "clean build integration serverPlugin"
+            // TODO prepare our own image or install bazilisk with TC recipe
+            dockerImage = "registry.jetbrains.team/p/bazel/docker/hirschgarten-e2e:latest"
         }
     }
 })
@@ -127,7 +127,9 @@ object MasterBuildConfiguration : BuildType({
     steps {
         gradle {
             name = "build"
-            tasks = "clean build test serverPlugin"
+            tasks = "clean build integration serverPlugin"
+            // TODO prepare our own image or install bazilisk with TC recipe
+            dockerImage = "registry.jetbrains.team/p/bazel/docker/hirschgarten-e2e:latest"
         }
     }
 })

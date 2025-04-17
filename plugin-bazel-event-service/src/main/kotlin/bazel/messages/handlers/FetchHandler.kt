@@ -27,7 +27,7 @@ class FetchHandler : EventHandler {
                     }
                 } else {
                     if (ctx.verbosity.atLeast(Verbosity.Normal)) {
-                        ctx.onNext(ctx.messageFactory.createMessage(
+                        ctx.onNext(ctx.messageFactory.createWarningMessage(
                                 ctx.buildMessage()
                                         .append("Fetch \"${event.url}\" - unsuccessful".apply(Color.Error))
                                         .toString()))
