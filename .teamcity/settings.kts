@@ -47,6 +47,7 @@ object PullRequestVcs : GitVcsRoot({
     name = "PullRequestVcs"
     url = "https://github.com/JetBrains/teamcity-bazel-plugin.git"
     branchSpec = """
+        +:*
         -:<default>
     """.trimIndent()
 })
