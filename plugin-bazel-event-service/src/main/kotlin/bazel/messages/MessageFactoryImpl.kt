@@ -14,7 +14,7 @@ class MessageFactoryImpl : MessageFactory {
 
     override fun createTraceMessage(text: String) =
             Message("> ".apply(Color.Trace) + text.clean().replace("\n", "").replace("\r", ""), Normal)
-                .also { it.tags.add("tc:internal") }
+                .also { it.addTag("tc:internal") }
 
     override fun createWarningMessage(text: String) =
             Message(text.clean(), Warning)

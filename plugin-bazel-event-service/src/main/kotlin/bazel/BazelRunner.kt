@@ -2,18 +2,18 @@
 
 package bazel
 
-import bazel.messages.Color
-import bazel.messages.apply
+import bazel.messages.MessageFactory
 import devteam.rx.Disposable
 import devteam.rx.use
 import java.io.BufferedReader
 import java.io.File
 
 class BazelRunner(
-        private val _verbosity: Verbosity,
-        private val _bazelCommandlineFile: File,
-        private val _besPort: Int,
-        private val _eventFile: File? = null) {
+    private val _messageFactory: MessageFactory,
+    private val _verbosity: Verbosity,
+    private val _bazelCommandlineFile: File,
+    private val _besPort: Int,
+    private val _eventFile: File? = null) {
 
     val args: Sequence<String>
         get() = sequence {
@@ -66,7 +66,9 @@ class BazelRunner(
 
         ActiveReader(process.inputStream.bufferedReader()) { line ->
             if (_verbosity.atLeast(Verbosity.Diagnostic)) {
-                System.out.println("> ".apply(Color.Trace) + line)
+                // this message is printed by bazel itself, we will get the same message from BES/Binary log file
+                // logging it as trace to reduce noise in the build log
+                println(_messageFactory.createTraceMessage(line))
             }
         }.use {
             ActiveReader(process.errorStream.bufferedReader()) { line ->
@@ -75,7 +77,7 @@ class BazelRunner(
                 }
 
                 if (_verbosity.atLeast(Verbosity.Diagnostic)) {
-                    System.out.println("> ".apply(Color.Trace) + line)
+                    println(_messageFactory.createTraceMessage(line))
                 }
             }.use { }
         }

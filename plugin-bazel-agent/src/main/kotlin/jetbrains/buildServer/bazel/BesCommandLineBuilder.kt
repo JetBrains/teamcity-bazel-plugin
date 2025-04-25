@@ -76,7 +76,7 @@ class BesCommandLineBuilder(
         yieldAll(command.arguments)
         _parametersService.tryGetParameter(ParameterType.System, "teamcity.buildType.id")?.let {
             if (!it.isBlank()) {
-                yield(CommandArgument(CommandArgumentType.Argument, "--project_id=$it"))
+                yield(CommandArgument(CommandArgumentType.Argument, "--bes_instance_name=$it"))
             }
         }
     }

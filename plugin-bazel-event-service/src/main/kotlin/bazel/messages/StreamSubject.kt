@@ -121,6 +121,9 @@ class StreamSubject(
                 // BuildMetadata build_metadata = 26;
                 BuildMetadataHandler(),
 
+                // ConvenienceSymlinksIdentified convenience_symlinks_identified = 27;
+                ConvenienceSymlinkHandler(),
+
                 // Unknown
                 UnknownEventHandler()
         ).sortedBy { it.priority }.toList()

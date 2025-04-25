@@ -44,7 +44,7 @@ fun main(args: Array<String>) {
     val messageFactory = MessageFactoryImpl()
 
     if (eventFile != null && bazelCommandlineFile != null) {
-        val bazelRunner = BazelRunner(verbosity, bazelCommandlineFile, 0, eventFile)
+        val bazelRunner = BazelRunner(messageFactory, verbosity, bazelCommandlineFile, 0, eventFile)
         val commandLine = bazelRunner.args.joinToString(" ") { if (it.contains(' ')) "\"$it\"" else it }
         println("Starting: $commandLine")
         println("in directory: ${bazelRunner.workingDirectory}")
@@ -87,7 +87,7 @@ fun main(args: Array<String>) {
 
                     if (bazelCommandlineFile != null) {
                         try {
-                            val bazelRunner = BazelRunner(verbosity, bazelCommandlineFile, gRpcServer.port)
+                            val bazelRunner = BazelRunner(messageFactory, verbosity, bazelCommandlineFile, gRpcServer.port)
                             val commandLine = bazelRunner.args.joinToString(" ") { if (it.contains(' ')) "\"$it\"" else it }
                             println("Starting: $commandLine")
                             println("in directory: ${bazelRunner.workingDirectory}")
