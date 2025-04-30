@@ -13,7 +13,7 @@ import java.io.File
 import java.util.*
 import java.util.concurrent.TimeUnit
 
-public class BazelSteps {
+class BazelSteps {
     private val _options: MutableList<String> = mutableListOf()
     private var _command: String = ""
     private val _args: MutableList<String> = mutableListOf()
@@ -135,16 +135,17 @@ public class BazelSteps {
             val stdErr = mutableListOf<String>()
             val serviceMessages = mutableListOf<ServiceMessage>()
 
-            ActiveReader(process.inputStream.bufferedReader()) { line ->
+            val stdOutReader = ActiveReader(process.inputStream.bufferedReader()) { line ->
                 stdOut.add(line)
                 ServiceMessages.tryParseServiceMessage(line)?.let {
                     serviceMessages.add(it)
                 }
-            }.use {
-                ActiveReader(process.errorStream.bufferedReader()) { line ->
-                    stdErr.add(line)
-                }.use { }
             }
+            val stdErrReader =  ActiveReader(process.errorStream.bufferedReader()) { line ->
+                stdErr.add(line)
+            }
+
+            stdOutReader.use { stdErrReader.use {} }
 
             Assert.assertTrue(process.waitFor(2, TimeUnit.MINUTES), "Timeout while waiting the process $runningCmd in the directory \"${processBuilder.directory()}\".")
 

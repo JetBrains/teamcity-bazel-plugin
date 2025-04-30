@@ -31,7 +31,11 @@ class ControllerSubject(
         val handlerIterator = handlers.iterator()
         val subject = subjectOf<ServiceMessage>()
         val ctx = ServiceMessageContext(subject, handlerIterator, value, _messageFactory, _hierarchy, _verbosity)
-        subject.map { updateHeader(value.payload, it) }.subscribe(_controllerSubject).use {
+        subject.subscribe(observer(
+            onNext = { _controllerSubject.onNext(updateHeader(value.payload, it)) },
+            onError = { _controllerSubject.onError(it) },
+            onComplete = { _controllerSubject.onComplete() }
+        )).use {
             val processed = handlerIterator.next().handle(ctx)
 
             if (processed) {
@@ -40,7 +44,6 @@ class ControllerSubject(
                 }
 
                 if (value.payload is InvocationAttemptFinished) {
-                    // remove stream state
                     _streams.remove(invocationId)
                 }
 

@@ -17,14 +17,26 @@ class BesServer<TEvent>(
     override fun subscribe(observer: Observer<String>): Disposable {
         val serviceMessageSubject = ServiceMessageRootSubject(ControllerSubject(_verbosity, _messageFactory, HierarchyImpl()) { StreamSubject(_verbosity, _messageFactory, HierarchyImpl()) })
         val subscription = disposableOf(
-                // service messages subscription
-                serviceMessageSubject.map { it.asString() }.subscribe(observer),
+            // service messages subscription
+            serviceMessageSubject.subscribe(observer(
+                onNext = { observer.onNext(it.asString()) },
+                onError = { observer.onError(it) },
+                onComplete = { observer.onComplete() }
+            )),
 
-                // service control signals subscription
-                serviceMessageSubject.subscribe({ }, { _gRpcServer.shutdown() }, { _gRpcServer.shutdown() }),
+            // service control signals subscription
+            serviceMessageSubject.subscribe(observer(
+                onNext = { },
+                onError = { _ -> _gRpcServer.shutdown() },
+                onComplete = { _gRpcServer.shutdown() })
+            ),
 
-                // converting subscription
-                _bindableEventService.map { _buildEventConverter.convert(it) }.subscribe(serviceMessageSubject)
+            // converting subscription
+            _bindableEventService.subscribe(observer(
+                onNext = { serviceMessageSubject.onNext(_buildEventConverter.convert(it)) },
+                onError = { serviceMessageSubject.onError(it) },
+                onComplete = { serviceMessageSubject.onComplete() }
+            ))
         )
 
         // gRpc server token

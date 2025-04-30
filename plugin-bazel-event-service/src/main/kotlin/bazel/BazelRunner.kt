@@ -64,23 +64,23 @@ class BazelRunner(
 
         val errors = mutableListOf<String>()
 
-        ActiveReader(process.inputStream.bufferedReader()) { line ->
+        val stdOutReader = ActiveReader(process.inputStream.bufferedReader()) { line ->
             if (_verbosity.atLeast(Verbosity.Diagnostic)) {
                 // this message is printed by bazel itself, we will get the same message from BES/Binary log file
                 // logging it as trace to reduce noise in the build log
                 println(_messageFactory.createTraceMessage(line))
             }
-        }.use {
-            ActiveReader(process.errorStream.bufferedReader()) { line ->
-                if (line.startsWith("ERROR:") || line.startsWith("FATAL:")) {
-                    errors.add(line)
-                }
-
-                if (_verbosity.atLeast(Verbosity.Diagnostic)) {
-                    println(_messageFactory.createTraceMessage(line))
-                }
-            }.use { }
         }
+        val stdErrReader = ActiveReader(process.errorStream.bufferedReader()) { line ->
+            if (line.startsWith("ERROR:") || line.startsWith("FATAL:")) {
+                errors.add(line)
+            }
+
+            if (_verbosity.atLeast(Verbosity.Diagnostic)) {
+                println(_messageFactory.createTraceMessage(line))
+            }
+        }
+        stdOutReader.use { stdErrReader.use {} }
 
         process.waitFor()
         val exitCode = process.exitValue()

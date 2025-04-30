@@ -10,7 +10,7 @@ import com.google.devtools.build.v1.*
 import com.google.protobuf.Empty
 import devteam.rx.Disposable
 import devteam.rx.Observer
-import devteam.rx.emptyObserver
+import devteam.rx.observer
 import devteam.rx.subjectOf
 import io.grpc.stub.StreamObserver
 import java.util.concurrent.atomic.AtomicReference
@@ -44,7 +44,7 @@ internal class PublishBuildEventService
 
     override fun publishBuildToolEventStream(responseObserver: StreamObserver<PublishBuildToolEventStreamResponse>?): StreamObserver<PublishBuildToolEventStreamRequest> {
         logger.log(Level.FINE, "publishBuildToolEventStream: $responseObserver")
-        val responses = responseObserver?.toObserver() ?: emptyObserver()
+        val responses = responseObserver?.toObserver() ?: observer(onNext = {}, onError = {}, onComplete = {})
         return PublishEventObserver(_projectId.get(), responses, _eventSubject).toStreamObserver()
     }
 

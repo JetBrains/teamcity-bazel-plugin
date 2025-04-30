@@ -4,7 +4,7 @@ package jetbrains.buildServer.bazel
 
 import com.intellij.openapi.diagnostic.Logger
 import devteam.rx.Disposable
-import devteam.rx.subscribe
+import devteam.rx.observer
 import jetbrains.buildServer.agent.AgentLifeCycleEventSources
 import jetbrains.buildServer.agent.CommandLineExecutor
 import jetbrains.buildServer.agent.runner.ProgramCommandLine
@@ -22,17 +22,22 @@ class ShutdownMonitor(
     private var _shutdownCommands: MutableSet<ShutdownCommandLine> = mutableSetOf()
 
     init {
-        _subscriptionToken = agentLifeCycleEventSources.buildFinishedSource.subscribe {
-            if (_shutdownCommands.any()) {
-                try {
-                    for (shutdownCommand in _shutdownCommands) {
-                        commandLineExecutor.tryExecute(shutdownCommand.commandLine)
+        _subscriptionToken = agentLifeCycleEventSources.buildFinishedSource.subscribe(
+            observer(
+                onNext = { _ ->
+                    if (_shutdownCommands.any()) {
+                        try {
+                            for (shutdownCommand in _shutdownCommands) {
+                                commandLineExecutor.tryExecute(shutdownCommand.commandLine)
+                            }
+                        } finally {
+                            _shutdownCommands.clear()
+                        }
                     }
-                } finally {
-                    _shutdownCommands.clear()
-                }
-            }
-        }
+                },
+                onError = { },
+                onComplete = {})
+        )
     }
 
     override fun register(command: BazelCommand) {

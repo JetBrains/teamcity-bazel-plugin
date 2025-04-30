@@ -23,14 +23,17 @@ class StreamSubject(
         val handlerIterator = handlers.iterator()
         val subject = subjectOf<ServiceMessage>()
         val ctx = ServiceMessageContext(subject, handlerIterator, value, _messageFactory, _hierarchy, _verbosity)
-        subject.map { updateHeader(value.payload, it) }.subscribe(_messageSubject).use {
+        subject.subscribe(observer(
+            onNext = { _messageSubject.onNext(updateHeader(value.payload, it)) },
+            onError = { _messageSubject.onError(it) },
+            onComplete = { _messageSubject.onComplete() }
+        )).use {
             handlerIterator.next().handle(ctx)
 
             if (_verbosity.atLeast(Verbosity.Diagnostic)) {
                 subject.onNext(_messageFactory.createTraceMessage(value.payload.toString()))
             }
 
-            // Process end of block
             if (value.payload is BazelEvent) {
                 val event = value.payload.content
                 _hierarchy.createNode(event.id, event.children, "")

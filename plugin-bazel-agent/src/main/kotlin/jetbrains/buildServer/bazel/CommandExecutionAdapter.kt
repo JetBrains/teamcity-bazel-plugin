@@ -2,7 +2,6 @@
 
 package jetbrains.buildServer.bazel
 
-import com.intellij.openapi.diagnostic.Logger
 import jetbrains.buildServer.agent.BuildFinishedStatus
 import jetbrains.buildServer.agent.runner.CommandExecution
 import jetbrains.buildServer.agent.runner.ProgramCommandLine
@@ -47,9 +46,5 @@ class CommandExecutionAdapter(
         if (result == BuildFinishedStatus.FINISHED_SUCCESS) {
             _bazelRunnerBuildService.afterProcessSuccessfullyFinished()
         }
-    }
-
-    companion object {
-        private val LOG = Logger.getInstance(CommandExecutionAdapter::class.java.name)
     }
 }

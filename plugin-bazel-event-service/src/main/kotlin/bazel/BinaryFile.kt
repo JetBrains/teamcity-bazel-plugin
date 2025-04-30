@@ -22,10 +22,11 @@ class BinaryFile(
     : Observable<String> {
     override fun subscribe(observer: Observer<String>): Disposable {
         val serviceMessageSubject = ServiceMessageRootSubject(ControllerSubject(_verbosity, _messageFactory, HierarchyImpl()) { StreamSubject(_verbosity, _messageFactory, HierarchyImpl()) })
-        val subscription = disposableOf(
-                // service messages subscription
-                serviceMessageSubject.map { it.asString() }.subscribe(observer)
-        )
+        val subscription = serviceMessageSubject.subscribe(observer(
+            onNext = { observer.onNext(it.asString()) },
+            onError = { observer.onError(it) },
+            onComplete = { observer.onComplete() }
+        ))
 
         try {
             val stream = _eventFile.inputStream()

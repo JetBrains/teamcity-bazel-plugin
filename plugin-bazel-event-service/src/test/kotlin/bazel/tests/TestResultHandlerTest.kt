@@ -13,6 +13,7 @@ import bazel.messages.ServiceMessageContext
 import bazel.messages.handlers.EventHandler
 import bazel.messages.handlers.TestResultHandler
 import devteam.rx.*
+import devteam.rx.observer
 import io.mockk.MockKAnnotations
 import io.mockk.every
 import io.mockk.impl.annotations.MockK
@@ -23,7 +24,6 @@ import org.testng.annotations.AfterMethod
 import org.testng.annotations.BeforeMethod
 import org.testng.annotations.DataProvider
 import org.testng.annotations.Test
-import java.io.ByteArrayInputStream
 
 @Suppress("UNCHECKED_CAST")
 class TestResultHandlerTest {
@@ -41,7 +41,13 @@ class TestResultHandlerTest {
         MockKAnnotations.init(this)
         _subject = subjectOf<ServiceMessage>()
         _actualNotifications = mutableListOf<Notification<ServiceMessage>>()
-        _subscription = _subject.materialize().subscribe { _actualNotifications.add(it) }
+        _subscription = _subject.materialize()
+            .subscribe(
+                observer(
+                    onNext = { it -> _actualNotifications.add(it) },
+                    onError = { },
+                    onComplete = {})
+            )
     }
 
     @AfterMethod

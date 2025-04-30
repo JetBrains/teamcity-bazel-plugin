@@ -8,9 +8,8 @@ import bazel.v1.BuildEventConverter
 import bazel.v1.PublishBuildEventService
 import bazel.v1.converters.BuildComponentConverter
 import bazel.v1.converters.StreamIdConverter
-import devteam.rx.subscribe
+import devteam.rx.observer
 import devteam.rx.use
-import org.apache.log4j.Level
 import java.io.File
 import java.io.IOException
 import java.net.URL
@@ -21,7 +20,7 @@ import kotlin.system.exitProcess
 @Throws(IOException::class, InterruptedException::class)
 fun main(args: Array<String>) {
     org.apache.log4j.BasicConfigurator.configure()
-    org.apache.log4j.Logger.getRootLogger().level = Level.FATAL
+    org.apache.log4j.Logger.getRootLogger().level = org.apache.log4j.Level.FATAL
 
     val logger = Logger.getLogger("main")
     val port: Int
@@ -50,17 +49,16 @@ fun main(args: Array<String>) {
         println("in directory: ${bazelRunner.workingDirectory}")
         val result = bazelRunner.run()
         for (error in result.errors) {
-            bazel.println(messageFactory.createErrorMessage(error).asString())
+            println(messageFactory.createErrorMessage(error).asString())
         }
 
         BinaryFile(
-                eventFile,
-                verbosity,
-                BazelEventConverter(),
-                messageFactory)
-                .subscribe {
-                    println(it)
-                }.dispose()
+            eventFile,
+            verbosity,
+            BazelEventConverter(),
+            messageFactory)
+            .subscribe(observer(onNext = { it: String -> println(it) }, onError = { }, onComplete = {}))
+            .dispose()
 
         exit(result.exitCode)
     }
@@ -70,16 +68,20 @@ fun main(args: Array<String>) {
 
     try {
         BesServer(
-                gRpcServer,
-                verbosity,
-                PublishBuildEventService(),
-                BuildEventConverter(StreamIdConverter(BuildComponentConverter())),
-                messageFactory)
-                .subscribe {
-                    besIsActive = true
-                    println(it)
-                }
-                .use {
+            gRpcServer,
+            verbosity,
+            PublishBuildEventService(),
+            BuildEventConverter(StreamIdConverter(BuildComponentConverter())),
+            messageFactory)
+            .subscribe(
+                observer(
+                    onNext = { it ->
+                        besIsActive = true
+                        println(it)
+                    },
+                    onError = { },
+                    onComplete = {}
+                )).use {
                     // when has no bazel command and port is Auto
                     if (bazelCommandlineFile == null && port == 0) {
                         println("BES Port: ${gRpcServer.port}")
@@ -94,7 +96,7 @@ fun main(args: Array<String>) {
                             val result = bazelRunner.run()
                             if (!besIsActive) {
                                 for (error in result.errors) {
-                                    bazel.println(messageFactory.createErrorMessage(error).asString())
+                                    println(messageFactory.createErrorMessage(error).asString())
                                 }
                             }
 
@@ -106,7 +108,7 @@ fun main(args: Array<String>) {
                     }
                 }
     } catch (ex: Exception) {
-        bazel.println(messageFactory.createErrorMessage(ex.message ?: ex.toString()).asString())
+        println(messageFactory.createErrorMessage(ex.message ?: ex.toString()).asString())
         exit(1)
     }
 }

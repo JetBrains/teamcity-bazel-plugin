@@ -10,6 +10,7 @@ import bazel.messages.ServiceMessageContext
 import bazel.messages.handlers.EventHandler
 import bazel.messages.handlers.ProgressHandler
 import devteam.rx.*
+import devteam.rx.observer
 import io.mockk.MockKAnnotations
 import io.mockk.every
 import io.mockk.impl.annotations.MockK
@@ -40,7 +41,13 @@ class ProgressHandlerTest {
         MockKAnnotations.init(this)
         _subject = subjectOf()
         _actualNotifications = mutableListOf()
-        _subscription = _subject.materialize().subscribe { _actualNotifications.add(it) }
+        _subscription = _subject.materialize()
+            .subscribe(
+                observer(
+                    onNext = { it: Notification<ServiceMessage> -> _actualNotifications.add(it) },
+                    onError = { },
+                    onComplete = {})
+            )
     }
 
     @AfterMethod

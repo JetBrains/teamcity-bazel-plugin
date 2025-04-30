@@ -10,7 +10,7 @@ class ObserversTest {
         var value = 0
 
         // When
-        val observer = observer<Int> { v -> value = v }
+        val observer = observer({ v: Int -> value = v }, {}, {})
         observer.onNext(99)
 
         // Then
@@ -42,34 +42,5 @@ class ObserversTest {
 
         // Then
         Assert.assertEquals(completed, true)
-    }
-
-    @Test
-    fun shouldConvertCollectionToObserver() {
-        // Given
-        val values = mutableListOf<Int>()
-
-        // When
-        val observer = values.toObserver()
-        observer.onNext(1)
-        observer.onNext(2)
-        observer.onComplete()
-
-        // Then
-        Assert.assertEquals(values, listOf(1, 2))
-    }
-
-    @Test
-    fun shouldDematerialize() {
-        // Given
-        val values = mutableListOf<Notification<Int>>()
-
-        // When
-        val observer = values.toObserver().dematerialize()
-        observer.onNext(1)
-        observer.onNext(2)
-
-        // Then
-        Assert.assertEquals(values, listOf(NotificationNext(1), NotificationNext(2)))
     }
 }
