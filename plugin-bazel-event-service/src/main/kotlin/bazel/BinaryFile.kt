@@ -5,11 +5,9 @@ package bazel
 import bazel.bazel.events.BazelContent
 import bazel.bazel.events.BazelEvent
 import bazel.events.BuildComponent
-import bazel.events.OrderedBuildEvent
 import bazel.events.StreamId
 import bazel.events.Timestamp
 import bazel.messages.*
-import bazel.v1.handlers.HandlerContext
 import com.google.devtools.build.lib.buildeventstream.BuildEventStreamProtos
 import devteam.rx.*
 import java.io.File
@@ -21,8 +19,14 @@ class BinaryFile(
         private val _messageFactory: MessageFactory)
     : Observable<String> {
     override fun subscribe(observer: Observer<String>): Disposable {
-        val serviceMessageSubject = ServiceMessageRootSubject(ControllerSubject(_verbosity, _messageFactory, HierarchyImpl()) { StreamSubject(_verbosity, _messageFactory, HierarchyImpl()) })
-        val subscription = serviceMessageSubject.subscribe(observer(
+        val controllerSubject = ControllerSubject(_verbosity, _messageFactory, HierarchyImpl()) {
+            StreamSubject(
+                _verbosity,
+                _messageFactory,
+                HierarchyImpl()
+            )
+        }
+        val subscription = controllerSubject.subscribe(observer(
             onNext = { observer.onNext(it.asString()) },
             onError = { observer.onError(it) },
             onComplete = { observer.onComplete() }
@@ -41,7 +45,7 @@ class BinaryFile(
                             Timestamp.zero,
                             content)
 
-                    serviceMessageSubject.onNext(Event("", convertedPayload))
+                    controllerSubject.onNext(Event("", convertedPayload))
                 }
             }
         }

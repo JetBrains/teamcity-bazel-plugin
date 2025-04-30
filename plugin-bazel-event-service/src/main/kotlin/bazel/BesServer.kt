@@ -15,17 +15,23 @@ class BesServer<TEvent>(
     : Observable<String> {
 
     override fun subscribe(observer: Observer<String>): Disposable {
-        val serviceMessageSubject = ServiceMessageRootSubject(ControllerSubject(_verbosity, _messageFactory, HierarchyImpl()) { StreamSubject(_verbosity, _messageFactory, HierarchyImpl()) })
+        val controllerSubject = ControllerSubject(_verbosity, _messageFactory, HierarchyImpl()) {
+            StreamSubject(
+                _verbosity,
+                _messageFactory,
+                HierarchyImpl()
+            )
+        }
         val subscription = disposableOf(
             // service messages subscription
-            serviceMessageSubject.subscribe(observer(
+            controllerSubject.subscribe(observer(
                 onNext = { observer.onNext(it.asString()) },
                 onError = { observer.onError(it) },
                 onComplete = { observer.onComplete() }
             )),
 
             // service control signals subscription
-            serviceMessageSubject.subscribe(observer(
+            controllerSubject.subscribe(observer(
                 onNext = { },
                 onError = { _ -> _gRpcServer.shutdown() },
                 onComplete = { _gRpcServer.shutdown() })
@@ -33,9 +39,9 @@ class BesServer<TEvent>(
 
             // converting subscription
             _bindableEventService.subscribe(observer(
-                onNext = { serviceMessageSubject.onNext(_buildEventConverter.convert(it)) },
-                onError = { serviceMessageSubject.onError(it) },
-                onComplete = { serviceMessageSubject.onComplete() }
+                onNext = { controllerSubject.onNext(_buildEventConverter.convert(it)) },
+                onError = { controllerSubject.onError(it) },
+                onComplete = { controllerSubject.onComplete() }
             ))
         )
 
