@@ -4,14 +4,15 @@ package bazel
 
 import bazel.events.OrderedBuildEvent
 import bazel.messages.*
+import bazel.v1.PublishBuildEventService
 import devteam.rx.*
 
-class BesServer<TEvent>(
-        private val _gRpcServer: GRpcServer,
-        private val _verbosity: Verbosity,
-        private val _bindableEventService: BindableEventService<TEvent>,
-        private val _buildEventConverter: Converter<Event<TEvent>, Event<OrderedBuildEvent>>,
-        private val _messageFactory: MessageFactory)
+class BesServer(
+    private val _gRpcServer: GRpcServer,
+    private val _verbosity: Verbosity,
+    private val _bindableEventService: PublishBuildEventService,
+    private val _buildEventConverter: Converter<Event<com.google.devtools.build.v1.OrderedBuildEvent>, Event<OrderedBuildEvent>>,
+    private val _messageFactory: MessageFactory)
     : Observable<String> {
 
     override fun subscribe(observer: Observer<String>): Disposable {

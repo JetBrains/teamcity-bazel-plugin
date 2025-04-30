@@ -1,6 +1,5 @@
 package bazel
 
-import com.google.devtools.build.v1.OrderedBuildEvent
 import devteam.rx.Observer
 import devteam.rx.disposableOf
 import io.mockk.*
@@ -61,7 +60,7 @@ class MainKtTest {
 
         mockkConstructor(BesServer::class)
         val subscriberSlot = slot<Observer<String>>()
-        every { anyConstructed<BesServer<OrderedBuildEvent>>().subscribe(capture(subscriberSlot)) } answers {
+        every { anyConstructed<BesServer>().subscribe(capture(subscriberSlot)) } answers {
             subscriberSlot.captured.onNext("next 1")
             subscriberSlot.captured.onNext("next 2")
             subscriberSlot.captured.onComplete()
@@ -78,7 +77,7 @@ class MainKtTest {
         Assert.assertTrue(disposed.get())
 
         verify(exactly = 1) { anyConstructed<BazelRunner>().run() }
-        verify(exactly = 1) { anyConstructed<BesServer<OrderedBuildEvent>>().subscribe(any()) }
+        verify(exactly = 1) { anyConstructed<BesServer>().subscribe(any()) }
     }
 
     object ExitException : RuntimeException()
