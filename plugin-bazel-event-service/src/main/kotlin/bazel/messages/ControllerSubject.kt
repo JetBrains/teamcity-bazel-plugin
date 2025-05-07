@@ -11,6 +11,8 @@ import bazel.messages.handlers.*
 import devteam.rx.*
 import jetbrains.buildServer.messages.serviceMessages.ServiceMessage
 import java.util.concurrent.atomic.AtomicBoolean
+import java.util.logging.Level
+import java.util.logging.Logger
 
 class ControllerSubject(
         private val _verbosity: Verbosity,
@@ -29,6 +31,8 @@ class ControllerSubject(
 
         val invocationId = value.payload.streamId.invocationId
         val handlerIterator = handlers.iterator()
+
+        // this subject is needed to wrap all onNext calls from handlers with updateHeader method
         val subject = subjectOf<ServiceMessage>()
         val ctx = ServiceMessageContext(subject, handlerIterator, value, _messageFactory, _hierarchy, _verbosity)
         subject.subscribe(observer(
@@ -56,7 +60,9 @@ class ControllerSubject(
 
     override fun onError(error: Exception) = _controllerSubject.onError(error)
 
-    override fun onComplete() {}
+    override fun onComplete() {
+        logger.log(Level.INFO, "onComplete")
+    }
 
     override fun subscribe(observer: Observer<ServiceMessage>): Disposable = _controllerSubject.subscribe(observer)
 
@@ -100,5 +106,6 @@ class ControllerSubject(
                 ComponentStreamFinishedHandler(),
                 NotProcessedEventHandler()
         ).sortedBy { it.priority }.toList()
+        private val logger = Logger.getLogger(ControllerSubject::class.java.name)
     }
 }

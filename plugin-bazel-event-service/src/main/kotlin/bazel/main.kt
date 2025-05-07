@@ -67,6 +67,7 @@ fun main(args: Array<String>) {
     var besIsActive = false
 
     try {
+        var finalExitCode = 0
         BesServer(
             gRpcServer,
             verbosity,
@@ -79,7 +80,9 @@ fun main(args: Array<String>) {
                         besIsActive = true
                         println(it)
                     },
-                    onError = { },
+                    onError = {
+                        println(messageFactory.createErrorMessage("BES Server onError", it.toString()).asString())
+                    },
                     onComplete = {}
                 )).use {
                     // when has no bazel command and port is Auto
@@ -94,19 +97,20 @@ fun main(args: Array<String>) {
                             println("Starting: $commandLine")
                             println("in directory: ${bazelRunner.workingDirectory}")
                             val result = bazelRunner.run()
+                            finalExitCode = result.exitCode
+
                             if (!besIsActive) {
                                 for (error in result.errors) {
                                     println(messageFactory.createErrorMessage(error).asString())
                                 }
                             }
-
-                            exit(result.exitCode)
                         } catch (ex: Exception) {
                             gRpcServer.shutdown()
                             throw ex
                         }
                     }
                 }
+        exit(finalExitCode)
     } catch (ex: Exception) {
         println(messageFactory.createErrorMessage(ex.message ?: ex.toString()).asString())
         exit(1)
@@ -118,5 +122,5 @@ fun exit(status: Int) : Nothing {
 }
 
 private fun println(line: String) {
-    System.out.println(line)
+    kotlin.io.println(line)
 }

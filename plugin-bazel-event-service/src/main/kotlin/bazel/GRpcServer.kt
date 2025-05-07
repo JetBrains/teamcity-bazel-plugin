@@ -22,14 +22,17 @@ class GRpcServer(private val _port: Int)
     fun start(bindableService: io.grpc.BindableService): Disposable {
         _server = ServerBuilder.forPort(_port)
                 .addTransportFilter(this)
+                .intercept(GRpcServerLoggingInterceptor())
                 .addService(bindableService)
                 .build()
                 .start()
 
-        logger.log(Level.FINE, "Server started, listening on {0}", _port)
+        logger.log(Level.INFO, "Server started, listening on {0}", _port)
         return disposableOf {
+            logger.log(Level.INFO, "Initiating server termination..")
+            shutdown()
             _server?.awaitTermination()
-            logger.log(Level.FINE, "Server is shutdown")
+            logger.log(Level.INFO, "Server is shutdown")
         }
     }
 
@@ -37,7 +40,7 @@ class GRpcServer(private val _port: Int)
         val shutdownTread = object : Thread() {
             override fun run() {
                 _server?.let {
-                    logger.log(Level.FINE, "Server is shutting down")
+                    logger.log(Level.INFO, "Server is shutting down")
                     it.shutdownNow()
                 }
             }
@@ -58,10 +61,7 @@ class GRpcServer(private val _port: Int)
     }
 
     private fun connectionCounterChanged(connectionCounter: Int) {
-        logger.log(Level.FINE, "Connections: {0}", connectionCounter)
-        if (connectionCounter == 0) {
-            shutdown()
-        }
+        logger.log(Level.INFO, "Server connections changed: {0}", connectionCounter)
     }
 
     companion object {

@@ -2,13 +2,13 @@
 
 package bazel.v1
 
-import bazel.BindableEventService
 import bazel.Event
 import bazel.toObserver
 import bazel.toStreamObserver
 import com.google.devtools.build.v1.*
 import com.google.protobuf.Empty
 import devteam.rx.Disposable
+import devteam.rx.Observable
 import devteam.rx.Observer
 import devteam.rx.observer
 import devteam.rx.subjectOf
@@ -17,8 +17,8 @@ import java.util.concurrent.atomic.AtomicReference
 import java.util.logging.Level
 import java.util.logging.Logger
 
-internal class PublishBuildEventService
-    : PublishBuildEventGrpc.PublishBuildEventImplBase(), BindableEventService<OrderedBuildEvent> {
+class PublishBuildEventService
+    : PublishBuildEventGrpc.PublishBuildEventImplBase(), Observable<Event<OrderedBuildEvent>> {
 
     private val _eventSubject = subjectOf<Event<OrderedBuildEvent>>()
     private val _projectId = AtomicReference<String>("")
@@ -27,6 +27,7 @@ internal class PublishBuildEventService
         return _eventSubject.subscribe(observer)
     }
 
+    // BuildEvents are used to declare the beginning and end of major portions of a Build
     override fun publishLifecycleEvent(request: PublishLifecycleEventRequest?, responseObserver: StreamObserver<Empty>?) {
         logger.log(Level.FINE, "publishLifecycleEvent: $request")
 
@@ -42,8 +43,11 @@ internal class PublishBuildEventService
         }
     }
 
+    // This method is used to stream detailed events from the build tool during the build (e.g., target completion, test results, actions, etc.).
+    // This is a bidirectional streaming RPC, server responds to each one with an acknowledgment.
+    // NOTE: only single stream can be opened during the build
     override fun publishBuildToolEventStream(responseObserver: StreamObserver<PublishBuildToolEventStreamResponse>?): StreamObserver<PublishBuildToolEventStreamRequest> {
-        logger.log(Level.FINE, "publishBuildToolEventStream: $responseObserver")
+        logger.log(Level.INFO, "publishBuildToolEventStream: $responseObserver")
         val responses = responseObserver?.toObserver() ?: observer(onNext = {}, onError = {}, onComplete = {})
         return PublishEventObserver(_projectId.get(), responses, _eventSubject).toStreamObserver()
     }
@@ -76,7 +80,7 @@ internal class PublishBuildEventService
 
             if (value.orderedBuildEvent.event.hasComponentStreamFinished()) {
                 // send onCompleted
-                logger.log(Level.FINE, "The ComponentStreamFinished event was received.")
+                logger.log(Level.INFO, "The ComponentStreamFinished event was received.")
                 _responseObserver.onComplete()
             }
         }
@@ -87,7 +91,7 @@ internal class PublishBuildEventService
         }
 
         override fun onComplete() {
-            logger.log(Level.FINE, "onComplete")
+            logger.log(Level.INFO, "onComplete")
             _eventObserver.onComplete()
         }
 
