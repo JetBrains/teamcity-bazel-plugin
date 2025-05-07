@@ -1,5 +1,7 @@
 package bazel
 
+import bazel.messages.Message
+import bazel.messages.MessageFactoryImpl
 import devteam.rx.Observer
 import devteam.rx.disposableOf
 import io.mockk.*
@@ -25,13 +27,16 @@ class MainKtTest {
         mockkConstructor(BazelRunner::class)
         every { anyConstructed<BazelRunner>().args } returns sequenceOf("foo", "bar")
         every { anyConstructed<BazelRunner>().run() } returns BazelRunner.Result(57, emptyList())
+
+        mockkConstructor(MessageFactoryImpl::class)
+        every { anyConstructed<MessageFactoryImpl>().createErrorMessage(any()) } returns Message("caught ExitException", "Normal")
     }
 
     @Test
     fun shouldSubscribeToBuildEventBinaryFile() {
         mockkConstructor(BinaryFile::class)
         val subscriberSlot = slot<Observer<String>>()
-        var disposed = AtomicBoolean(false)
+        val disposed = AtomicBoolean(false)
         every { anyConstructed<BinaryFile>().subscribe(capture(subscriberSlot)) } answers {
             subscriberSlot.captured.onNext("next 1")
             subscriberSlot.captured.onNext("next 2")
@@ -54,7 +59,7 @@ class MainKtTest {
     fun shouldSubscribeToBuildEventServer() {
         mockkConstructor(GRpcServer::class)
         every { anyConstructed<GRpcServer>().port } returns 1234
-        var disposed = AtomicBoolean(false)
+        val disposed = AtomicBoolean(false)
 
         mockkConstructor(BesServer::class)
         val subscriberSlot = slot<Observer<String>>()

@@ -12,13 +12,16 @@ import devteam.rx.observer
 import devteam.rx.use
 import java.io.File
 import java.io.IOException
-import java.net.URL
+import java.util.logging.ConsoleHandler
+import java.util.logging.LogManager
 import java.util.logging.Logger
 import kotlin.system.exitProcess
 
 
 @Throws(IOException::class, InterruptedException::class)
 fun main(args: Array<String>) {
+    redirectLogsToStdout()
+
     org.apache.log4j.BasicConfigurator.configure()
     org.apache.log4j.Logger.getRootLogger().level = org.apache.log4j.Level.FATAL
 
@@ -122,4 +125,12 @@ fun exit(status: Int) : Nothing {
 
 private fun println(line: String) {
     kotlin.io.println(line)
+}
+
+private fun redirectLogsToStdout() {
+    // Redirect java.util.logging output to System.out
+    val rootLogger = LogManager.getLogManager().getLogger("")
+    rootLogger.handlers.forEach { rootLogger.removeHandler(it) }
+    val stdoutHandler = object : ConsoleHandler() {init { setOutputStream(System.out) } }
+    rootLogger.addHandler(stdoutHandler)
 }
