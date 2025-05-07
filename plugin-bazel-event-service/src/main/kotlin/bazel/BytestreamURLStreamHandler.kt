@@ -2,7 +2,6 @@
 
 package bazel
 
-import bazel.BytestreamURLConnection
 import java.net.URL
 import java.net.URLConnection
 import java.net.URLStreamHandler

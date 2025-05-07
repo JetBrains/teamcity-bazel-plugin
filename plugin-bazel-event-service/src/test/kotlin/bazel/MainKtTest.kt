@@ -50,9 +50,7 @@ class MainKtTest {
         verify(exactly = 1) { anyConstructed<BinaryFile>().subscribe(any()) }
     }
 
-    //@Test
-    // Cannot run more than one test case
-    // because URL.setURLStreamHandlerFactory can be run only once per JVM
+    @Test
     fun shouldSubscribeToBuildEventServer() {
         mockkConstructor(GRpcServer::class)
         every { anyConstructed<GRpcServer>().port } returns 1234

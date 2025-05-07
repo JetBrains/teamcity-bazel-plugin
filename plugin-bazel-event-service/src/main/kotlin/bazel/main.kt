@@ -39,7 +39,6 @@ fun main(args: Array<String>) {
         exit(1)
     }
 
-    URL.setURLStreamHandlerFactory(CustomURLStreamHandlerFactory())
     val messageFactory = MessageFactoryImpl()
 
     if (eventFile != null && bazelCommandlineFile != null) {

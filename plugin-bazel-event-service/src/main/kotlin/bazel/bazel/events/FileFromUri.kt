@@ -2,6 +2,7 @@
 
 package bazel.bazel.events
 
+import bazel.BytestreamURLStreamHandler
 import java.io.InputStream
 import java.net.URL
 import java.net.URLConnection
@@ -11,7 +12,12 @@ class FileFromUri(
         val uri: String)
     : File {
     override fun createStream(): InputStream {
-        val connection: URLConnection = URL(uri).openConnection()
+        val url = if (uri.startsWith("bytestream")) {
+            URL(null, uri, BytestreamURLStreamHandler())
+        } else {
+            URL(uri)
+        }
+        val connection: URLConnection = url.openConnection()
         connection.connect()
         return connection.getInputStream()
     }
