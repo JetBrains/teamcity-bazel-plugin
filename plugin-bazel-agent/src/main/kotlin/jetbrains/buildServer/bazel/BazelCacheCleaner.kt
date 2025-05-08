@@ -5,7 +5,6 @@ package jetbrains.buildServer.bazel
 import com.intellij.openapi.diagnostic.Logger
 import jetbrains.buildServer.agent.*
 import jetbrains.buildServer.agent.runner.BuildStepContext
-import jetbrains.buildServer.agent.runner.MultiCommandBuildSessionFactory
 import java.util.*
 
 /**

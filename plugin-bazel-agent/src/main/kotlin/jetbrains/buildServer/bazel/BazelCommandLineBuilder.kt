@@ -2,6 +2,7 @@ package jetbrains.buildServer.bazel
 
 import jetbrains.buildServer.agent.runner.*
 import jetbrains.buildServer.bazel.BazelConstants.PARAM_INTEGRATION_MODE
+import java.io.File
 
 class BazelCommandLineBuilder(
     private val _pathsService: PathsService,
@@ -11,8 +12,16 @@ class BazelCommandLineBuilder(
     private val _besCommandLineBuilder: BesCommandLineBuilder
 ) {
     fun build(command: BazelCommand): ProgramCommandLine {
-        if (isBesIntegrationMode(command)) {
-            return _besCommandLineBuilder.build(command)
+        val commandArgs = command.arguments
+        val integrationMode = getIntegrationMode()
+        if (BEP_COMMANDS.contains(command.command)) {
+            if (integrationMode == IntegrationMode.BES) {
+                return _besCommandLineBuilder.build(command)
+            }
+            else {
+                val binaryFile = File(_pathsService.getPath(PathType.AgentTemp), _pathsService.uniqueName).absolutePath
+                commandArgs.plus(CommandArgument(CommandArgumentType.Argument, "--build_event_binary_file==$binaryFile"))
+            }
         }
 
         val environmentVariables = _parametersService.getParameterNames(ParameterType.Environment)
@@ -24,20 +33,16 @@ class BazelCommandLineBuilder(
             environmentVariables,
             _workingDirectoryProvider.workingDirectory.absolutePath,
             _pathsService.toolPath.absolutePath,
-            _argumentsConverter.convert(command.arguments).toList()
+            _argumentsConverter.convert(commandArgs).toList()
         )
     }
 
-    private fun isBesIntegrationMode(command: BazelCommand) = BES_COMMANDS.contains(command.command)
-            && integrationMode == IntegrationMode.BES
-
-    private val integrationMode
-        get() = _parametersService.tryGetParameter(ParameterType.Runner, PARAM_INTEGRATION_MODE)
-            ?.let { IntegrationMode.tryParse(it) }
-            ?: IntegrationMode.BES
+    private fun getIntegrationMode() = _parametersService.tryGetParameter(ParameterType.Runner, PARAM_INTEGRATION_MODE)
+        ?.let { IntegrationMode.tryParse(it) }
+        ?: IntegrationMode.BES
 
     companion object {
-        private val BES_COMMANDS = setOf(
+        private val BEP_COMMANDS = setOf(
             BazelConstants.COMMAND_BUILD,
             BazelConstants.COMMAND_TEST,
             BazelConstants.COMMAND_RUN

@@ -52,7 +52,7 @@ class BazelRunnerBuildService(
         return super.getRunResult(exitCode)
     }
 
-    override fun isCommandLineLoggingEnabled() = false
+    override fun isCommandLineLoggingEnabled() = true
 
     private fun getCommandName() = runnerParameters[BazelConstants.PARAM_COMMAND]?.trim()
 }
