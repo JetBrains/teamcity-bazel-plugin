@@ -10,10 +10,10 @@ import jetbrains.buildServer.agent.runner.*
  * Bazel runner service.
  */
 class BazelRunnerBuildService(
-        buildStepContext: BuildStepContext,
-        private val _commandRegistry: CommandRegistry,
-        private val _commandFactory: BazelCommandFactory,
-        private val _commandLineBuilder: BazelCommandLineBuilder) : BuildServiceAdapter() {
+    buildStepContext: BuildStepContext,
+    private val _shutdownMonitor: ShutdownMonitor,
+    private val _commandFactory: BazelCommandFactory,
+    private val _commandLineBuilder: BazelCommandLineBuilder) : BuildServiceAdapter() {
 
     init {
         initialize(buildStepContext.runnerContext.build, buildStepContext.runnerContext)
@@ -31,7 +31,7 @@ class BazelRunnerBuildService(
 
         // Register for shutdown only on build agent
         if (!runnerContext.isVirtualContext) {
-            _commandRegistry.register(command)
+            _shutdownMonitor.register(command)
         }
 
         return _commandLineBuilder.build(command)

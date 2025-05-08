@@ -17,7 +17,7 @@ class ShutdownMonitor(
         private val _shutdownCommand: BazelCommand,
         private val _workspaceRegistry: WorkspaceRegistry,
         private val _commandLineBuilder: BazelCommandLineBuilder)
-    : CommandRegistry, Disposable {
+    : Disposable {
 
     private var _subscriptionToken: Disposable
     private var _shutdownCommands: MutableSet<ShutdownCommandLine> = mutableSetOf()
@@ -41,7 +41,7 @@ class ShutdownMonitor(
         )
     }
 
-    override fun register(command: BazelCommand) {
+    fun register(command: BazelCommand) {
         val commandLine = _commandLineBuilder.build(_shutdownCommand)
         val workingDirectory = File(commandLine.workingDirectory)
 
