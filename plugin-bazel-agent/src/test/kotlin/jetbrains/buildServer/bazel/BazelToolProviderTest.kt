@@ -3,11 +3,13 @@
 package jetbrains.buildServer.bazel
 
 import com.github.zafarkhaja.semver.Version
+import io.mockk.MockKAnnotations
+import io.mockk.clearAllMocks
+import io.mockk.every
+import io.mockk.impl.annotations.MockK
+import io.mockk.mockk
 import jetbrains.buildServer.agent.*
 import jetbrains.buildServer.agent.impl.AgentEventDispatcher
-import jetbrains.buildServer.agent.runner.SimpleProgramCommandLine
-import org.jmock.Expectations
-import org.jmock.Mockery
 import org.testng.Assert
 import org.testng.annotations.BeforeMethod
 import org.testng.annotations.DataProvider
@@ -15,36 +17,30 @@ import org.testng.annotations.Test
 import java.io.File
 
 class BazelToolProviderTest {
-    private lateinit var _ctx: Mockery
+    @MockK
     private lateinit var _toolProvidersRegistry: ToolProvidersRegistry
+    @MockK
     private lateinit var _environment: Environment
+    @MockK
     private lateinit var _fileSystemService: FileSystemService
+    @MockK
     private lateinit var _commandLineExecutor: CommandLineExecutor
+    @MockK
+    private lateinit var _buildRunnerContext: BuildRunnerContext
 
     @BeforeMethod
     fun setUp() {
-        _ctx = Mockery()
-        _toolProvidersRegistry = _ctx.mock(ToolProvidersRegistry::class.java)
-        _environment = _ctx.mock(Environment::class.java)
-        _fileSystemService = _ctx.mock(FileSystemService::class.java)
-        _commandLineExecutor = _ctx.mock(CommandLineExecutor::class.java)
+        MockKAnnotations.init(this)
+        clearAllMocks()
+
+        every { _toolProvidersRegistry.registerToolProvider(any()) } returns Unit
+        every { _buildRunnerContext.isVirtualContext } returns true
     }
 
     @Test
     fun shouldNotSearchToolInVirtualContext() {
-        val build = _ctx.mock(AgentRunningBuild::class.java)
-        val context = _ctx.mock(BuildRunnerContext::class.java)
-        _ctx.checking(object : Expectations() {
-            init {
-                oneOf(_toolProvidersRegistry)!!.registerToolProvider(with(any(BazelToolProvider::class.java)))
-
-                allowing(context).isVirtualContext
-                will(returnValue(true))
-            }
-        })
-
         val toolProvider = createInstance()
-        val path = toolProvider.getPath("bazel", build, context)
+        val path = toolProvider.getPath("bazel", mockk<AgentRunningBuild>(), _buildRunnerContext)
 
         Assert.assertEquals(path, "bazel")
     }
@@ -69,16 +65,6 @@ class BazelToolProviderTest {
     @Test(dataProvider = "testDataForVersions")
     fun shouldParseVersion(line: String, expectedVersion: Version?) {
         // Given
-        val context = _ctx.mock(BuildRunnerContext::class.java)
-        _ctx.checking(object : Expectations() {
-            init {
-                oneOf(_toolProvidersRegistry)!!.registerToolProvider(with(any(BazelToolProvider::class.java)))
-
-                allowing(context).isVirtualContext
-                will(returnValue(true))
-            }
-        })
-
         val toolProvider = createInstance()
 
         // When
@@ -140,51 +126,24 @@ class BazelToolProviderTest {
     @Test(dataProvider = "testDataToFindVersions")
     fun shouldFindVersion(result: CommandLineResult, expectedVersions: List<Version>) {
         // Given
-        val context = _ctx.mock(BuildRunnerContext::class.java)
-        _ctx.checking(object : Expectations() {
-            init {
-                oneOf(_environment).tryGetEnvironmentVariable("PATH")
-                will(returnValue("p1${File.pathSeparatorChar}${File.pathSeparatorChar}p2${File.pathSeparatorChar}  ${File.pathSeparatorChar}P3"))
+        every { _environment.tryGetEnvironmentVariable("PATH") } returns "p1${File.pathSeparatorChar}${File.pathSeparatorChar}p2${File.pathSeparatorChar}  ${File.pathSeparatorChar}P3"
+        every { _environment.EnvironmentVariables } returns mapOf("var" to "val")
 
-                oneOf(_fileSystemService).isDirectory(File("p1"))
-                will(returnValue(true))
+        _fileSystemService.let {
+            every { it.isDirectory(File("p1")) } returns true
+            every { it.isDirectory(File("p2")) } returns true
+            every { it.isDirectory(File("P3")) } returns false
 
-                oneOf(_fileSystemService).isDirectory(File("p2"))
-                will(returnValue(true))
+            every { it.list(File("p1")) } returns sequenceOf(File("bazel", "bazel.exec"))
+            every { it.list(File("p2")) } returns sequenceOf(File("bazelb", "bazel"))
 
-                oneOf(_fileSystemService).isDirectory(File("P3"))
-                will(returnValue(false))
+            every { it.isDirectory(File("p1/bazel")) } returns true
+            every { it.isDirectory(File("bazel/bazel.exec")) } returns false
+            every { it.isDirectory(File("bazelb/bazelb")) } returns false
+            every { it.isDirectory(File("bazelb/bazel")) } returns false
+        }
 
-                oneOf(_fileSystemService).list(File("p1"))
-                will(returnValue(sequenceOf(File("bazel", "bazel.exec"))))
-
-                oneOf(_fileSystemService).list(File("p2"))
-                will(returnValue(sequenceOf(File("bazelb", "bazel"))))
-
-                oneOf(_fileSystemService).isDirectory(File("p1/bazel"))
-                will(returnValue(true))
-
-                oneOf(_fileSystemService).isDirectory(File("bazel/bazel.exec"))
-                will(returnValue(false))
-
-                oneOf(_fileSystemService).isDirectory(File("bazelb/bazelb"))
-                will(returnValue(false))
-
-                oneOf(_fileSystemService).isDirectory(File("bazelb/bazel"))
-                will(returnValue(false))
-
-                oneOf(_commandLineExecutor).tryExecute(with(any(SimpleProgramCommandLine::class.java)), with(any(Int::class.java)))
-                will(returnValue(result))
-
-                allowing(_environment).EnvironmentVariables
-                will(returnValue(mapOf("var" to "val")))
-
-                oneOf(_toolProvidersRegistry)!!.registerToolProvider(with(any(BazelToolProvider::class.java)))
-
-                allowing(context).isVirtualContext
-                will(returnValue(true))
-            }
-        })
+        every { _commandLineExecutor.tryExecute(any(), any()) } returns result
 
         val toolProvider = createInstance()
 
@@ -202,6 +161,4 @@ class BazelToolProviderTest {
                     _environment,
                     _fileSystemService,
                     _commandLineExecutor)
-
-
 }

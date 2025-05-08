@@ -30,7 +30,6 @@ dependencies {
   testImplementation libs.teamcity.common.api
   testImplementation libs.teamcity.internal.agent
   testImplementation libs.testng
-  testImplementation libs.jmock
   testImplementation libs.mockk
 
   implementation project(':plugin-bazel-common')

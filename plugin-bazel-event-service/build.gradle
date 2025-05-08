@@ -25,7 +25,6 @@ dependencies {
     testImplementation libs.grpc.testing
     testImplementation libs.mockk
     testImplementation libs.testng
-    testImplementation libs.jmock
 
 }
 
