@@ -18,7 +18,7 @@ class BesCommandLineBuilder(
     fun build(command: BazelCommand): ProgramCommandLine {
         val sb = StringBuilder()
         sb.appendLine(_pathsService.toolPath)
-        for (arg in _argumentsConverter.convert(getArgs(command))) {
+        for (arg in _argumentsConverter.convert(getArgs(command).asIterable())) {
             sb.appendLine(StringUtil.unquoteString(arg))
         }
 

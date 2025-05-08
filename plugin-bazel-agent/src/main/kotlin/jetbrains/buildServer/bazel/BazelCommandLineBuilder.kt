@@ -12,7 +12,7 @@ class BazelCommandLineBuilder(
     private val _besCommandLineBuilder: BesCommandLineBuilder
 ) {
     fun build(command: BazelCommand): ProgramCommandLine {
-        val commandArgs = command.arguments
+        val commandArgs = command.arguments.toMutableList()
         val integrationMode = getIntegrationMode()
         if (BEP_COMMANDS.contains(command.command)) {
             if (integrationMode == IntegrationMode.BES) {
@@ -20,7 +20,7 @@ class BazelCommandLineBuilder(
             }
             else {
                 val binaryFile = File(_pathsService.getPath(PathType.AgentTemp), _pathsService.uniqueName).absolutePath
-                commandArgs.plus(CommandArgument(CommandArgumentType.Argument, "--build_event_binary_file==$binaryFile"))
+                commandArgs.add(CommandArgument(CommandArgumentType.Argument, "--build_event_binary_file=$binaryFile"))
             }
         }
 

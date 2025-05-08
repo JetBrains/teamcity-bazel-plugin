@@ -45,12 +45,12 @@ class ArgumentsConverterTest {
     @Test(dataProvider = "testData")
     fun shouldConvertArguments(arguments: Sequence<CommandArgument>, expectedArguments: Sequence<String>, expectedSuccess: Boolean) {
         // given
-        val argumentsConverter = ArgumentsConverterImpl()
+        val argumentsConverter = ArgumentsConverter()
 
         var actualSuccess: Boolean
         // when
         try {
-            val actualArguments = argumentsConverter.convert(arguments).toList()
+            val actualArguments = argumentsConverter.convert(arguments.asIterable()).toList()
             actualSuccess = true
 
             // then
