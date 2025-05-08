@@ -56,7 +56,7 @@ task copyToTools(type: Copy) {
     from configurations.runtimeClasspath
 }
 
-build.dependsOn(copyToTools)
+assemble.dependsOn(copyToTools)
 
 // mark the generated source as such for IntelliJ IDEA
 def generatedSrc = file("build/generated/source/proto/main")

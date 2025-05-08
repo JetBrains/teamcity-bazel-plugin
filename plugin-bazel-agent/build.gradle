@@ -25,6 +25,7 @@ dependencies {
   implementation libs.kotlin.reflect
   implementation libs.java.semver
   implementation libs.jackson.module.kotlin
+  implementation libs.protobuf.java
   compileOnly libs.teamcity.common.api
   compileOnly libs.teamcity.internal.agent
   testImplementation libs.teamcity.common.api
@@ -43,4 +44,4 @@ dependencies {
   }
 }
 
-agentPlugin.dependsOn(project(':plugin-bazel-event-service').tasks.build)
+agentPlugin.dependsOn(project(':plugin-bazel-event-service').tasks.assemble)
