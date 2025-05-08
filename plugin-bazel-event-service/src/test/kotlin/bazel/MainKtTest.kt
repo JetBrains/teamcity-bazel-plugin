@@ -16,8 +16,6 @@ class MainKtTest {
 
     @BeforeMethod
     fun setUp() {
-        // This is needed to disable an annoying stack trace
-        System.setProperty("log4j2.disable.jmx", "true")
         MockKAnnotations.init(this)
         clearAllMocks()
 

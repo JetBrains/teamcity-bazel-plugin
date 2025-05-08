@@ -22,9 +22,6 @@ import kotlin.system.exitProcess
 fun main(args: Array<String>) {
     redirectLogsToStdout()
 
-    org.apache.log4j.BasicConfigurator.configure()
-    org.apache.log4j.Logger.getRootLogger().level = org.apache.log4j.Level.FATAL
-
     val logger = Logger.getLogger("main")
     val port: Int
     val eventFile: File?
