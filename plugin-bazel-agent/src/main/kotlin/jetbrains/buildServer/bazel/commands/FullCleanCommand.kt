@@ -5,7 +5,6 @@ package jetbrains.buildServer.bazel.commands
 import jetbrains.buildServer.bazel.*
 
 class FullCleanCommand(
-        override val commandLineBuilder: CommandLineBuilder,
         private val _startupArgumentsProvider: ArgumentsProvider)
     : BazelCommand {
 

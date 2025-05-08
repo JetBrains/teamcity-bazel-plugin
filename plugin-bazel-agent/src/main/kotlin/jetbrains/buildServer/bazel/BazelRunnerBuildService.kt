@@ -12,7 +12,8 @@ import jetbrains.buildServer.agent.runner.*
 class BazelRunnerBuildService(
         buildStepContext: BuildStepContext,
         private val _commandRegistry: CommandRegistry,
-        private val _commandFactory: BazelCommandFactory) : BuildServiceAdapter() {
+        private val _commandFactory: BazelCommandFactory,
+        private val _commandLineBuilder: BazelCommandLineBuilder) : BuildServiceAdapter() {
 
     init {
         initialize(buildStepContext.runnerContext.build, buildStepContext.runnerContext)
@@ -33,7 +34,7 @@ class BazelRunnerBuildService(
             _commandRegistry.register(command)
         }
 
-        return command.commandLineBuilder.build(command)
+        return _commandLineBuilder.build(command)
     }
 
     override fun getRunResult(exitCode: Int): BuildFinishedStatus {

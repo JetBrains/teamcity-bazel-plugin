@@ -8,7 +8,6 @@ import jetbrains.buildServer.bazel.*
  * Provides arguments to bazel clean command.
  */
 class CleanCommand(
-        override val commandLineBuilder: CommandLineBuilder,
         private val _commonArgumentsProvider: ArgumentsProvider)
     : BazelCommand {
 

@@ -15,7 +15,8 @@ class ShutdownMonitor(
         commandLineExecutor: CommandLineExecutor,
         private val _workspaceExplorer: WorkspaceExplorer,
         private val _shutdownCommand: BazelCommand,
-        private val _workspaceRegistry: WorkspaceRegistry)
+        private val _workspaceRegistry: WorkspaceRegistry,
+        private val _commandLineBuilder: BazelCommandLineBuilder)
     : CommandRegistry, Disposable {
 
     private var _subscriptionToken: Disposable
@@ -41,7 +42,7 @@ class ShutdownMonitor(
     }
 
     override fun register(command: BazelCommand) {
-        val commandLine = _shutdownCommand.commandLineBuilder.build(_shutdownCommand)
+        val commandLine = _commandLineBuilder.build(_shutdownCommand)
         val workingDirectory = File(commandLine.workingDirectory)
 
         _workspaceExplorer.tryFindWorkspace(workingDirectory)?.let {

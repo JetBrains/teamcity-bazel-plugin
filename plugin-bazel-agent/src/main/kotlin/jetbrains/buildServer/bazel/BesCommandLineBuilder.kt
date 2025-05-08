@@ -14,8 +14,8 @@ class BesCommandLineBuilder(
         private val _parametersService: ParametersService,
         private val _workingDirectoryProvider: WorkingDirectoryProvider,
         private val _argumentsConverter: ArgumentsConverter)
-    : CommandLineBuilder {
-    override fun build(command: BazelCommand): ProgramCommandLine {
+{
+    fun build(command: BazelCommand): ProgramCommandLine {
         val sb = StringBuilder()
         sb.appendLine(_pathsService.toolPath)
         for (arg in _argumentsConverter.convert(getArgs(command))) {

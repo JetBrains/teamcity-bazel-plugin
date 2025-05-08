@@ -6,6 +6,4 @@ interface BazelCommand {
     val command: String
 
     val arguments: Sequence<CommandArgument>
-
-    val commandLineBuilder: CommandLineBuilder
 }

@@ -34,6 +34,7 @@ dependencies {
   testImplementation libs.mockk
 
   implementation project(':plugin-bazel-common')
+  implementation project(':plugin-bazel-event-service')
   testImplementation project(':plugin-bazel-event-service')
 
   constraints {
