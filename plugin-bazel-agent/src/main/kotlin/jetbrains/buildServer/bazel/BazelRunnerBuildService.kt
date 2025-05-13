@@ -2,6 +2,7 @@
 
 package jetbrains.buildServer.bazel
 
+import bazel.messages.MessageFactoryImpl
 import jetbrains.buildServer.RunBuildException
 import jetbrains.buildServer.agent.BuildFinishedStatus
 import jetbrains.buildServer.agent.runner.*
@@ -13,7 +14,8 @@ class BazelRunnerBuildService(
     buildStepContext: BuildStepContext,
     private val _shutdownMonitor: ShutdownMonitor,
     private val _commandFactory: BazelCommandFactory,
-    private val _commandLineBuilder: BazelCommandLineBuilder) : BuildServiceAdapter() {
+    private val _commandLineBuilder: BazelCommandLineBuilder,
+    private val _binaryFileWatcher: BazelBinaryFileWatcher) : BuildServiceAdapter() {
 
     init {
         initialize(buildStepContext.runnerContext.build, buildStepContext.runnerContext)
@@ -33,7 +35,6 @@ class BazelRunnerBuildService(
         if (!runnerContext.isVirtualContext) {
             _shutdownMonitor.register(command)
         }
-
         return _commandLineBuilder.build(command)
     }
 
@@ -50,6 +51,19 @@ class BazelRunnerBuildService(
             }
         }
         return super.getRunResult(exitCode)
+    }
+
+    override fun beforeProcessStarted() {
+        val m1 = MessageFactoryImpl().createBlockOpened(getCommandName() ?: "block", "todo add description")
+        build.buildLogger.message(m1.toString())
+        super.beforeProcessStarted()
+    }
+
+    override fun afterProcessFinished() {
+        _binaryFileWatcher.stop()
+        val m1=MessageFactoryImpl().createBlockClosed(getCommandName() ?: "block")
+        build.buildLogger.message(m1.toString())
+        super.afterProcessFinished()
     }
 
     override fun isCommandLineLoggingEnabled() = true

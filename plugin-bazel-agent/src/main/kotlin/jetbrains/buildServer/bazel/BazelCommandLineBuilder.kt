@@ -2,14 +2,16 @@ package jetbrains.buildServer.bazel
 
 import jetbrains.buildServer.agent.runner.*
 import jetbrains.buildServer.bazel.BazelConstants.PARAM_INTEGRATION_MODE
-import java.io.File
+import kotlin.io.path.absolutePathString
 
 class BazelCommandLineBuilder(
     private val _pathsService: PathsService,
     private val _parametersService: ParametersService,
     private val _workingDirectoryProvider: WorkingDirectoryProvider,
     private val _argumentsConverter: ArgumentsConverter,
-    private val _besCommandLineBuilder: BesCommandLineBuilder
+    private val _besCommandLineBuilder: BesCommandLineBuilder,
+    private val _watcher: BazelBinaryFileWatcher,
+    private val _buildContext: BuildStepContext
 ) {
     fun build(command: BazelCommand): ProgramCommandLine {
         val commandArgs = command.arguments.toMutableList()
@@ -20,8 +22,10 @@ class BazelCommandLineBuilder(
                     return _besCommandLineBuilder.build(command)
                 }
                 IntegrationMode.BinaryFile -> {
-                    val binaryFile = File(_pathsService.getPath(PathType.AgentTemp), _pathsService.uniqueName).absolutePath
-                    commandArgs.add(CommandArgument(CommandArgumentType.Argument, "--build_event_binary_file=$binaryFile"))
+                    val binaryFile = _pathsService.getPath(PathType.AgentTemp).toPath().resolve(_pathsService.uniqueName)
+                    _watcher.eventFile = binaryFile
+                    _watcher.start()
+                    commandArgs.add(CommandArgument(CommandArgumentType.Argument, "--build_event_binary_file=${binaryFile.absolutePathString()}"))
                 }
             }
         }
@@ -31,10 +35,15 @@ class BazelCommandLineBuilder(
             .toMutableMap()
         environmentVariables.getOrPut("HOME") { System.getProperty("user.home") }
 
+        val executable = when(_buildContext.runnerContext.isVirtualContext) {
+            true -> BazelConstants.EXECUTABLE
+            false -> _pathsService.toolPath.absolutePath
+        }
+
         return SimpleProgramCommandLine(
             environmentVariables,
             _workingDirectoryProvider.workingDirectory.absolutePath,
-            _pathsService.toolPath.absolutePath,
+            executable,
             _argumentsConverter.convert(commandArgs).toList()
         )
     }

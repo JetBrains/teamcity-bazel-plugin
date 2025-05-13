@@ -21,7 +21,6 @@ class InvocationAttemptStartedHandler : EventHandler {
                                     .toString()))
                 }
 
-                ctx.onNext(ctx.messageFactory.createFlowStarted(ctx.event.payload.streamId.invocationId, ctx.event.payload.streamId.buildId))
                 true
             } else ctx.handlerIterator.next().handle(ctx)
 }

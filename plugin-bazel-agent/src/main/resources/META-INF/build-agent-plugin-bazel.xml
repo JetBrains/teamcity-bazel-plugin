@@ -37,6 +37,7 @@
   <bean class="jetbrains.buildServer.bazel.ShutdownMonitor">
     <constructor-arg ref="shutdownCommand"/>
   </bean>
+  <bean class="jetbrains.buildServer.bazel.BazelBinaryFileWatcher"/>
   <bean class="jetbrains.buildServer.bazel.WorkingDirectoryProviderImpl"/>
   <bean class="jetbrains.buildServer.bazel.ArgumentsConverter"/>
   <bean class="jetbrains.buildServer.bazel.BazelCommandFactory">

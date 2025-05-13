@@ -11,4 +11,6 @@ class Timestamp(seconds: Long, nanos: Int) {
     companion object {
         val zero = Timestamp(0, 0)
     }
+
+    override fun toString() = date.toString()
 }

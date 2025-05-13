@@ -12,6 +12,8 @@ import bazel.messages.handlers.*
 import devteam.rx.*
 import jetbrains.buildServer.messages.serviceMessages.ServiceMessage
 
+
+// rename to Invocation something (Handlers)
 class StreamSubject(
         private val _verbosity: Verbosity,
         private val _messageFactory: MessageFactory,

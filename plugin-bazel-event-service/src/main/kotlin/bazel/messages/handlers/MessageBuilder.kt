@@ -4,6 +4,7 @@ package bazel.messages.handlers
 
 import bazel.Verbosity
 import bazel.atLeast
+import bazel.events.BuildComponent
 import bazel.messages.Color
 import bazel.messages.ServiceMessageContext
 import bazel.messages.apply
@@ -19,11 +20,19 @@ class MessageBuilder(
             val text = StringBuilder()
             text.append(String.format("%8d", _serviceMessageContext.event.payload.sequenceNumber))
             text.append(' ')
-            text.append(_serviceMessageContext.event.payload.streamId.component)
-            text.append(' ')
+            _serviceMessageContext.event.payload.streamId.component.let {
+                if (it != BuildComponent.UnknownComponent) { // UnknownComponent is used in BinaryFile mode
+                    text.append(_serviceMessageContext.event.payload.streamId.component)
+                    text.append(' ')
+                }
+            }
+
             val streamId = _serviceMessageContext.event.payload.streamId
-            text.append(if (streamId.invocationId.isNotEmpty()) "${streamId.buildId.take(8)}:${streamId.invocationId.take(8)}" else streamId.buildId.take(8))
-            text.append(' ')
+            if (streamId.invocationId.isNotEmpty() && streamId.buildId.isNotEmpty()) {
+                text.append(if (streamId.invocationId.isNotEmpty()) "${streamId.buildId.take(8)}:${streamId.invocationId.take(8)}" else streamId.buildId.take(8))
+                text.append(' ')
+            }
+
             _text.append(text.toString().apply(Color.Trace))
         }
     }
