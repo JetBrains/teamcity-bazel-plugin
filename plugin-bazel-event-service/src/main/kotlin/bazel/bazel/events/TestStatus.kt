@@ -11,5 +11,5 @@ enum class TestStatus {
     Incomplete,
     RemoteFailure,
     FailedToBuild,
-    ToolHaltedBeforeTesting
+    ToolHaltedBeforeTesting,
 }

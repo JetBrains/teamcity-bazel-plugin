@@ -11,16 +11,18 @@ import java.util.concurrent.atomic.AtomicInteger
 import java.util.logging.Level
 import java.util.logging.Logger
 
-class GRpcServer(private val _port: Int)
-    : ServerTransportFilter() {
+class GRpcServer(
+    private val _port: Int,
+) : ServerTransportFilter() {
+    private var server: io.grpc.Server? = null
+    private val connectionCounter = AtomicInteger()
 
-    private var _server: io.grpc.Server? = null
-    private val _connectionCounter = AtomicInteger()
-
-    val port: Int get() = _server!!.port
+    val port: Int get() = server!!.port
 
     fun start(bindableService: io.grpc.BindableService): Disposable {
-        _server = ServerBuilder.forPort(_port)
+        server =
+            ServerBuilder
+                .forPort(_port)
                 .addTransportFilter(this)
                 .intercept(GRpcServerLoggingInterceptor())
                 .addService(bindableService)
@@ -31,33 +33,34 @@ class GRpcServer(private val _port: Int)
         return disposableOf {
             logger.log(Level.INFO, "Initiating server termination..")
             shutdown()
-            _server?.awaitTermination()
+            server?.awaitTermination()
             logger.log(Level.INFO, "Server is shutdown")
         }
     }
 
     fun shutdown() {
-        val shutdownTread = object : Thread() {
-            override fun run() {
-                _server?.let {
-                    logger.log(Level.INFO, "Server is shutting down")
-                    it.shutdownNow()
+        val shutdownTread =
+            object : Thread() {
+                override fun run() {
+                    server?.let {
+                        logger.log(Level.INFO, "Server is shutting down")
+                        it.shutdownNow()
+                    }
                 }
             }
-        }
 
         shutdownTread.start()
         shutdownTread.join()
     }
 
     override fun transportReady(transportAttrs: Attributes?): Attributes {
-        connectionCounterChanged(_connectionCounter.incrementAndGet())
+        connectionCounterChanged(connectionCounter.incrementAndGet())
         return super.transportReady(transportAttrs)
     }
 
     override fun transportTerminated(transportAttrs: Attributes?) {
         super.transportTerminated(transportAttrs)
-        connectionCounterChanged(_connectionCounter.decrementAndGet())
+        connectionCounterChanged(connectionCounter.decrementAndGet())
     }
 
     private fun connectionCounterChanged(connectionCounter: Int) {

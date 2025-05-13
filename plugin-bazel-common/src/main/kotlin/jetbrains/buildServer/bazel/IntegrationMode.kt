@@ -2,13 +2,15 @@
 
 package jetbrains.buildServer.bazel
 
-enum class IntegrationMode(val id: String, val description: String) {
+enum class IntegrationMode(
+    val id: String,
+    val description: String,
+) {
     BES("BES", "Build Event Service"),
-    BinaryFile("BinaryFile", "Binary File");
+    BinaryFile("BinaryFile", "Binary File"),
+    ;
 
     companion object {
-        fun tryParse(id: String): IntegrationMode? {
-            return IntegrationMode.values().singleOrNull { it.id.equals(id, true) }
-        }
+        fun tryParse(id: String): IntegrationMode? = IntegrationMode.values().singleOrNull { it.id.equals(id, true) }
     }
 }

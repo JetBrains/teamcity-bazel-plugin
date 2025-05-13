@@ -13,8 +13,8 @@ import java.time.Instant
 
 class TestResultHandler(
     private val _fileConverter: Converter<BuildEventStreamProtos.File, File>,
-    private val _testStatusConverter: Converter<BuildEventStreamProtos.TestStatus, TestStatus>)
-    : BazelHandler {
+    private val _testStatusConverter: Converter<BuildEventStreamProtos.TestStatus, TestStatus>,
+) : BazelHandler {
     override val priority = HandlerPriority.High
 
     override fun handle(ctx: HandlerContext) =
@@ -29,12 +29,14 @@ class TestResultHandler(
             for (i in 0 until content.warningCount) {
                 warnings.add(content.getWarning(i))
             }
-            val testAttemptDurationMillis = content.testAttemptDuration
-                .let { Duration.ofSeconds(it.seconds, it.nanos.toLong()) }
-                .toMillis()
-            val testAttemptStartMillisEpoch = content.testAttemptStart
-                .let { Instant.ofEpochSecond(it.seconds, it.nanos.toLong()) }
-                .toEpochMilli()
+            val testAttemptDurationMillis =
+                content.testAttemptDuration
+                    .let { Duration.ofSeconds(it.seconds, it.nanos.toLong()) }
+                    .toMillis()
+            val testAttemptStartMillisEpoch =
+                content.testAttemptStart
+                    .let { Instant.ofEpochSecond(it.seconds, it.nanos.toLong()) }
+                    .toEpochMilli()
 
             TestResult(
                 ctx.id,
@@ -49,6 +51,9 @@ class TestResultHandler(
                 testAttemptStartMillisEpoch,
                 testAttemptDurationMillis,
                 testActionOutput,
-                warnings)
-        } else ctx.handlerIterator.next().handle(ctx)
+                warnings,
+            )
+        } else {
+            ctx.handlerIterator.next().handle(ctx)
+        }
 }

@@ -7,7 +7,7 @@ import jetbrains.buildServer.util.OSType
 interface Environment {
     val osType: OSType
 
-    val EnvironmentVariables: Map<String, String>
+    val environmentVariables: Map<String, String>
 
     fun tryGetEnvironmentVariable(name: String): String?
 }

@@ -4,8 +4,12 @@ package jetbrains.bazel.integration
 
 import java.util.regex.PatternSyntaxException
 
-data class ServiceMessageAttribute(val name: String, val value: String) {
-    override fun toString(): String = "${name}='${value}'"
+data class ServiceMessageAttribute(
+    val name: String,
+    val value: String,
+) {
+    override fun toString(): String = "$name='$value'"
+
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
@@ -18,20 +22,18 @@ data class ServiceMessageAttribute(val name: String, val value: String) {
             if (value.toRegex().find(other.value) != null) {
                 return true
             }
+        } catch (ex: PatternSyntaxException) {
         }
-        catch (ex: PatternSyntaxException) { }
 
         try {
             if (other.value.toRegex().find(value) != null) {
                 return true
             }
+        } catch (ex: PatternSyntaxException) {
         }
-        catch (ex: PatternSyntaxException) { }
 
-        return value == other.value;
+        return value == other.value
     }
 
-    override fun hashCode(): Int {
-        return name.hashCode()
-    }
+    override fun hashCode(): Int = name.hashCode()
 }

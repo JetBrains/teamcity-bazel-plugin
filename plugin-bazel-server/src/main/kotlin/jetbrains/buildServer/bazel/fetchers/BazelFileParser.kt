@@ -11,22 +11,22 @@ import org.jetbrains.bazel.BazelBuildFileParser
 import java.io.InputStream
 
 object BazelFileParser {
+    fun readTargets(inputStream: InputStream) =
+        sequence {
+            inputStream.bufferedReader().use {
+                try {
+                    val buildFileLexer = BazelBuildFileLexer(CharStreams.fromReader(it))
+                    val tokens = CommonTokenStream(buildFileLexer)
+                    val buildFileParser = BazelBuildFileParser(tokens)
 
-    fun readTargets(inputStream: InputStream) = sequence {
-        inputStream.bufferedReader().use {
-            try {
-                val buildFileLexer = BazelBuildFileLexer(CharStreams.fromReader(it))
-                val tokens = CommonTokenStream(buildFileLexer)
-                val buildFileParser = BazelBuildFileParser(tokens)
-
-                val targetNamesListener = BazelTargetNamesListener()
-                ParseTreeWalker().walk(targetNamesListener, buildFileParser.buildFile())
-                yieldAll(targetNamesListener.names)
-            } catch (e: Exception) {
-                LOG.infoAndDebugDetails("Failed to read BUILD file", e)
+                    val targetNamesListener = BazelTargetNamesListener()
+                    ParseTreeWalker().walk(targetNamesListener, buildFileParser.buildFile())
+                    yieldAll(targetNamesListener.names)
+                } catch (e: Exception) {
+                    LOG.infoAndDebugDetails("Failed to read BUILD file", e)
+                }
             }
         }
-    }
 
     private val LOG = Logger.getInstance(BazelFileParser::class.java.name)
 }

@@ -5,26 +5,35 @@ package jetbrains.buildServer.agent
 import java.io.*
 
 class VirtualFileSystemService : FileSystemService {
-    private val _directories: MutableMap<File, DirectoryInfo> = mutableMapOf()
-    private val _files: MutableMap<File, FileInfo> = mutableMapOf()
+    private val directories: MutableMap<File, DirectoryInfo> = mutableMapOf()
+    private val files: MutableMap<File, FileInfo> = mutableMapOf()
 
-    override fun write(file: File, writer: (OutputStream) -> Unit) {
+    override fun write(
+        file: File,
+        writer: (OutputStream) -> Unit,
+    ) {
         addFile(file)
-        writer(_files[file]!!.outputStream)
+        writer(files[file]!!.outputStream)
     }
 
-    override fun read(file: File, reader: (InputStream) -> Unit) {
-        reader(_files[file]!!.inputStream)
+    override fun read(
+        file: File,
+        reader: (InputStream) -> Unit,
+    ) {
+        reader(files[file]!!.inputStream)
     }
 
-    fun addDirectory(directory: File, attributes: Attributes = Attributes()): VirtualFileSystemService {
-        _directories[directory] = DirectoryInfo(attributes)
+    fun addDirectory(
+        directory: File,
+        attributes: Attributes = Attributes(),
+    ): VirtualFileSystemService {
+        directories[directory] = DirectoryInfo(attributes)
         var parent: File? = directory
         while (parent != null) {
             parent = parent.parentFile
             if (parent != null) {
-                if (!_directories.contains(parent)) {
-                    _directories[parent] = DirectoryInfo(attributes)
+                if (!directories.contains(parent)) {
+                    directories[parent] = DirectoryInfo(attributes)
                 }
             }
         }
@@ -32,24 +41,27 @@ class VirtualFileSystemService : FileSystemService {
         return this
     }
 
-    fun addFile(file: File, attributes: Attributes = Attributes()): VirtualFileSystemService {
+    fun addFile(
+        file: File,
+        attributes: Attributes = Attributes(),
+    ): VirtualFileSystemService {
         val parent = file.parentFile
         if (parent != null) {
             addDirectory(parent)
         }
 
-        if (!_files.containsKey(file)) {
-            _files[file] = FileInfo(attributes)
+        if (!files.containsKey(file)) {
+            files[file] = FileInfo(attributes)
         }
 
         return this
     }
 
-    override fun isExists(file: File): Boolean = _directories.contains(file) || _files.contains(file)
+    override fun isExists(file: File): Boolean = directories.contains(file) || files.contains(file)
 
-    override fun isDirectory(file: File): Boolean = _directories.contains(file)
+    override fun isDirectory(file: File): Boolean = directories.contains(file)
 
-    override fun isAbsolute(file: File): Boolean = _directories[file]?.attributes?.isAbsolute ?: _files[file]?.attributes?.isAbsolute ?: false
+    override fun isAbsolute(file: File): Boolean = directories[file]?.attributes?.isAbsolute ?: files[file]?.attributes?.isAbsolute ?: false
 
     override fun createDirectory(path: File): Boolean {
         addDirectory(path)
@@ -57,30 +69,36 @@ class VirtualFileSystemService : FileSystemService {
     }
 
     override fun remove(file: File) {
-        val fileInfo = _files[file]
+        val fileInfo = files[file]
         if (fileInfo != null) {
             val errorOnRemove = fileInfo.attributes.errorOnRemove
             if (errorOnRemove != null) {
                 throw errorOnRemove
             }
 
-            _files.remove(file)
+            files.remove(file)
         }
 
-        val dirInfo = _directories[file]
+        val dirInfo = directories[file]
         if (dirInfo != null) {
             val errorOnRemove = dirInfo.attributes.errorOnRemove
             if (errorOnRemove != null) {
                 throw errorOnRemove
             }
 
-            _directories.remove(file)
+            directories.remove(file)
         }
     }
 
-    override fun list(file: File): Sequence<File> = _directories.keys.asSequence().plus(_files.map { it.key }).filter { it.parentFile == file }
+    override fun list(file: File): Sequence<File> =
+        directories.keys
+            .asSequence()
+            .plus(files.map { it.key })
+            .filter { it.parentFile == file }
 
-    private data class FileInfo(val attributes: Attributes) {
+    private data class FileInfo(
+        val attributes: Attributes,
+    ) {
         val inputStream: InputStream
         val outputStream: OutputStream
 
@@ -90,7 +108,9 @@ class VirtualFileSystemService : FileSystemService {
         }
     }
 
-    private data class DirectoryInfo(val attributes: Attributes)
+    private data class DirectoryInfo(
+        val attributes: Attributes,
+    )
 
     class Attributes {
         var isAbsolute: Boolean = false

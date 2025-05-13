@@ -2,8 +2,12 @@
 
 package jetbrains.bazel.integration
 
-data class ServiceMessage(val name: String, val attributes: List<ServiceMessageAttribute>) {
-    override fun toString(): String = "##teamcity[${name} ${attributes.joinToString(" ")}]"
+data class ServiceMessage(
+    val name: String,
+    val attributes: List<ServiceMessageAttribute>,
+) {
+    override fun toString(): String = "##teamcity[$name ${attributes.joinToString(" ")}]"
+
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
@@ -16,7 +20,5 @@ data class ServiceMessage(val name: String, val attributes: List<ServiceMessageA
         return attrs.containsAll(otherAttrs) || otherAttrs.containsAll(attrs)
     }
 
-    override fun hashCode(): Int {
-        return name.hashCode()
-    }
+    override fun hashCode(): Int = name.hashCode()
 }

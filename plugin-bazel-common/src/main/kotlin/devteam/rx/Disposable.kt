@@ -6,14 +6,16 @@ interface Disposable {
     fun dispose()
 }
 
-inline fun disposableOf(crossinline action: () -> Unit): Disposable = object : Disposable {
-    var isDisposed = AtomicBoolean(false)
-    override fun dispose() {
-        if (isDisposed.compareAndSet(false, true)) {
-            action()
+inline fun disposableOf(crossinline action: () -> Unit): Disposable =
+    object : Disposable {
+        var isDisposed = AtomicBoolean(false)
+
+        override fun dispose() {
+            if (isDisposed.compareAndSet(false, true)) {
+                action()
+            }
         }
     }
-}
 
 fun disposableOf(vararg disposables: Disposable): Disposable = disposableOf { disposables.forEach { it.dispose() } }
 

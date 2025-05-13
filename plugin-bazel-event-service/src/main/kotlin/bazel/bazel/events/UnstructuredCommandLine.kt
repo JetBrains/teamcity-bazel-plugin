@@ -10,6 +10,7 @@ package bazel.bazel.events
 // invocation.
 
 data class UnstructuredCommandLine(
-        override val id: Id,
-        override val children: List<Id>,
-        val args: List<String>) : BazelContent
+    override val id: Id,
+    override val children: List<Id>,
+    val args: List<String>,
+) : BazelContent

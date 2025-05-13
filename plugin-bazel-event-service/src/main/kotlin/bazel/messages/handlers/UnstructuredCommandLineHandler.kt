@@ -16,17 +16,23 @@ class UnstructuredCommandLineHandler : EventHandler {
         get() = HandlerPriority.Medium
 
     override fun handle(ctx: ServiceMessageContext) =
-            if (ctx.event.payload is BazelEvent && ctx.event.payload.content is UnstructuredCommandLine) {
-                val commandLine = ctx.event.payload.content
-                val cmd = commandLine.args.joinToStringEscaped()
-                if (ctx.verbosity.atLeast(Verbosity.Detailed)) {
-                    ctx.onNext(ctx.messageFactory.createMessage(
-                            ctx.buildMessage()
-                                    .append("Run ")
-                                    .append(cmd.apply(Color.Details))
-                                    .toString()))
-                }
+        if (ctx.event.payload is BazelEvent && ctx.event.payload.content is UnstructuredCommandLine) {
+            val commandLine = ctx.event.payload.content
+            val cmd = commandLine.args.joinToStringEscaped()
+            if (ctx.verbosity.atLeast(Verbosity.Detailed)) {
+                ctx.onNext(
+                    ctx.messageFactory.createMessage(
+                        ctx
+                            .buildMessage()
+                            .append("Run ")
+                            .append(cmd.apply(Color.Details))
+                            .toString(),
+                    ),
+                )
+            }
 
-                true
-            } else ctx.handlerIterator.next().handle(ctx)
+            true
+        } else {
+            ctx.handlerIterator.next().handle(ctx)
+        }
 }

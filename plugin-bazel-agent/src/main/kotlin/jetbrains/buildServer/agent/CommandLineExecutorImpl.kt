@@ -9,9 +9,12 @@ import jetbrains.buildServer.agent.runner.ProgramCommandLine
 import java.io.File
 
 class CommandLineExecutorImpl : CommandLineExecutor {
-    override fun tryExecute(commandLine: ProgramCommandLine?, executionTimeoutSeconds: Int): CommandLineResult {
+    override fun tryExecute(
+        commandLine: ProgramCommandLine?,
+        executionTimeoutSeconds: Int,
+    ): CommandLineResult {
         val cmd = GeneralCommandLine()
-        if(commandLine != null) {
+        if (commandLine != null) {
             cmd.exePath = commandLine.executablePath
             cmd.setWorkingDirectory(File(commandLine.workingDirectory))
             cmd.addParameters(commandLine.arguments)

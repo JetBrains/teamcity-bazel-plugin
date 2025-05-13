@@ -11,7 +11,7 @@ class Environment {
         val bazelExecutable
             get() = findBazelExecutable() ?: error("Could not find bazel executable in PATH")
         val javaExecutable: File
-            get() = if(isWindows) File(File(System.getProperty("java.home")), File("bin", "java.exe").path) else File("/usr/bin/java")
+            get() = if (isWindows) File(File(System.getProperty("java.home")), File("bin", "java.exe").path) else File("/usr/bin/java")
 
         private val isWindows get(): Boolean = System.getProperty("os.name").startsWith("Windows")
 

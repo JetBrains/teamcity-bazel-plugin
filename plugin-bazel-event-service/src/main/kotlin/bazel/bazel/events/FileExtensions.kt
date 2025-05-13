@@ -10,8 +10,7 @@ import java.io.InputStreamReader
 fun File.read(ctx: ServiceMessageContext): String {
     try {
         return InputStreamReader(this.createStream()).use { it.readText() }
-    }
-    catch (ex: Exception) {
+    } catch (ex: Exception) {
         ctx.logError("Cannot read from ${this.name}.", ex)
         return ""
     }
@@ -20,14 +19,16 @@ fun File.read(ctx: ServiceMessageContext): String {
 fun File.readLines(ctx: ServiceMessageContext): List<String> {
     try {
         return InputStreamReader(this.createStream()).use { it.readLines() }
-    }
-    catch (ex: Exception) {
+    } catch (ex: Exception) {
         ctx.logError("Cannot read from ${this.name}.", ex)
         return emptyList()
     }
 }
 
-private fun ServiceMessageContext.logError(message: String, error: Exception) {
+private fun ServiceMessageContext.logError(
+    message: String,
+    error: Exception,
+) {
     if (this.verbosity.atLeast(Verbosity.Diagnostic)) {
         this.onNext(this.messageFactory.createErrorMessage(message, error.toString()))
     }

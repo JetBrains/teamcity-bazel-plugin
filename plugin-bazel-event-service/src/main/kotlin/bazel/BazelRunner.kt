@@ -9,77 +9,82 @@ import java.io.BufferedReader
 import java.io.File
 
 class BazelRunner(
-    private val _messageFactory: MessageFactory,
-    private val _verbosity: Verbosity,
-    private val _bazelCommandlineFile: File,
-    private val _besPort: Int,
-    private val _eventFile: File? = null) {
-
+    private val messageFactory: MessageFactory,
+    private val verbosity: Verbosity,
+    private val bazelCommandlineFile: File,
+    private val besPort: Int,
+    private val eventFile: File? = null,
+) {
     val args: Sequence<String>
-        get() = sequence {
-            var hasSpecialArgs = false
-            for (arg in _bazelCommandlineFile.readLines()) {
-                val normalizedArg = arg.replace(" ", "").replace("\"", "").replace("'", "")
+        get() =
+            sequence {
+                var hasSpecialArgs = false
+                for (arg in bazelCommandlineFile.readLines()) {
+                    val normalizedArg = arg.replace(" ", "").replace("\"", "").replace("'", "")
 
-                // remove existing bes_backend arg if port != 0
-                if (_besPort != 0 && normalizedArg.startsWith(besBackendArg, true)) {
-                    continue
+                    // remove existing bes_backend arg if port != 0
+                    if (besPort != 0 && normalizedArg.startsWith(BES_BACKEND_ARG, true)) {
+                        continue
+                    }
+
+                    // remove existing bes_backend arg if eventFile was specified
+                    if (eventFile != null && normalizedArg.startsWith(BINARY_FILE_ARG, true)) {
+                        continue
+                    }
+
+                    if (arg.trim() == "--") {
+                        yieldAll(specialArgs)
+                        hasSpecialArgs = true
+                    }
+
+                    yield(arg)
                 }
 
-                // remove existing bes_backend arg if eventFile was specified
-                if (_eventFile != null && normalizedArg.startsWith(eventBinaryFileArg, true)) {
-                    continue
-                }
-
-                if (arg.trim() == "--") {
+                if (!hasSpecialArgs) {
                     yieldAll(specialArgs)
-                    hasSpecialArgs = true
                 }
-
-                yield(arg)
             }
-
-            if (!hasSpecialArgs) {
-                yieldAll(specialArgs)
-            }
-        }
 
     private val specialArgs: Sequence<String>
-        get() = sequence {
-            if (_besPort != 0) {
-                yield("${besBackendArg}grpc://localhost:$_besPort")
-            }
+        get() =
+            sequence {
+                if (besPort != 0) {
+                    yield("${BES_BACKEND_ARG}grpc://localhost:$besPort")
+                }
 
-            if (_eventFile != null) {
-                yield("${eventBinaryFileArg}${_eventFile.absolutePath}")
+                if (eventFile != null) {
+                    yield("${BINARY_FILE_ARG}${eventFile.absolutePath}")
+                }
             }
-        }
 
     val workingDirectory: File = File(".").absoluteFile
 
     fun run(): Result {
-        val process = ProcessBuilder(args.toList())
+        val process =
+            ProcessBuilder(args.toList())
                 .directory(workingDirectory)
                 .start()
 
         val errors = mutableListOf<String>()
 
-        val stdOutReader = ActiveReader(process.inputStream.bufferedReader()) { line ->
-            if (_verbosity.atLeast(Verbosity.Diagnostic)) {
-                // this message is printed by bazel itself, we will get the same message from BES/Binary log file
-                // logging it as trace to reduce noise in the build log
-                println(_messageFactory.createTraceMessage(line))
+        val stdOutReader =
+            ActiveReader(process.inputStream.bufferedReader()) { line ->
+                if (verbosity.atLeast(Verbosity.Diagnostic)) {
+                    // this message is printed by bazel itself, we will get the same message from BES/Binary log file
+                    // logging it as trace to reduce noise in the build log
+                    println(messageFactory.createTraceMessage(line))
+                }
             }
-        }
-        val stdErrReader = ActiveReader(process.errorStream.bufferedReader()) { line ->
-            if (line.startsWith("ERROR:") || line.startsWith("FATAL:")) {
-                errors.add(line)
-            }
+        val stdErrReader =
+            ActiveReader(process.errorStream.bufferedReader()) { line ->
+                if (line.startsWith("ERROR:") || line.startsWith("FATAL:")) {
+                    errors.add(line)
+                }
 
-            if (_verbosity.atLeast(Verbosity.Diagnostic)) {
-                println(_messageFactory.createTraceMessage(line))
+                if (verbosity.atLeast(Verbosity.Diagnostic)) {
+                    println(messageFactory.createTraceMessage(line))
+                }
             }
-        }
         stdOutReader.use { stdErrReader.use {} }
 
         process.waitFor()
@@ -88,28 +93,35 @@ class BazelRunner(
     }
 
     companion object {
-        private const val besBackendArg = "--bes_backend="
-        private const val eventBinaryFileArg = "--build_event_binary_file="
+        private const val BES_BACKEND_ARG = "--bes_backend="
+        private const val BINARY_FILE_ARG = "--build_event_binary_file="
     }
 
-    private class ActiveReader(reader: BufferedReader, action: (line: String) -> Unit) : Disposable {
-        private val _tread: Thread = object : Thread() {
-            override fun run() {
-                do {
-                    val line = reader.readLine()
-                    if (!line.isNullOrBlank()) {
-                        action(line)
-                    }
-                } while (line != null)
+    private class ActiveReader(
+        reader: BufferedReader,
+        action: (line: String) -> Unit,
+    ) : Disposable {
+        private val thread: Thread =
+            object : Thread() {
+                override fun run() {
+                    do {
+                        val line = reader.readLine()
+                        if (!line.isNullOrBlank()) {
+                            action(line)
+                        }
+                    } while (line != null)
+                }
             }
-        }
 
         init {
-            _tread.start()
+            thread.start()
         }
 
-        override fun dispose() = _tread.join()
+        override fun dispose() = thread.join()
     }
 
-    data class Result(val exitCode: Int, val errors: List<String>)
+    data class Result(
+        val exitCode: Int,
+        val errors: List<String>,
+    )
 }

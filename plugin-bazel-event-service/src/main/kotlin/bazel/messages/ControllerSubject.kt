@@ -15,17 +15,17 @@ import java.util.logging.Level
 import java.util.logging.Logger
 
 class ControllerSubject(
-        private val _verbosity: Verbosity,
-        private val _messageFactory: MessageFactory,
-        private val _hierarchy: Hierarchy,
-        private val _streamSubjectFactory: () -> ServiceMessageSubject)
-    : ServiceMessageSubject {
-    private val _controllerSubject = subjectOf<ServiceMessage>()
-    private val _streams = mutableMapOf<String, Stream>()
-    private val _disposed: AtomicBoolean = AtomicBoolean()
+    private val verbosity: Verbosity,
+    private val messageFactory: MessageFactory,
+    private val hierarchy: Hierarchy,
+    private val streamSubjectFactory: () -> ServiceMessageSubject,
+) : ServiceMessageSubject {
+    private val controllerSubject = subjectOf<ServiceMessage>()
+    private val streams = mutableMapOf<String, Stream>()
+    private val disposed: AtomicBoolean = AtomicBoolean()
 
     override fun onNext(value: Event<OrderedBuildEvent>) {
-        if (_disposed.get()) {
+        if (disposed.get()) {
             return
         }
 
@@ -34,52 +34,58 @@ class ControllerSubject(
 
         // this subject is needed to wrap all onNext calls from handlers with updateHeader method
         val subject = subjectOf<ServiceMessage>()
-        val ctx = ServiceMessageContext(subject, handlerIterator, value, _messageFactory, _hierarchy, _verbosity)
-        subject.subscribe(observer(
-            onNext = { _controllerSubject.onNext(updateHeader(value.payload, it)) },
-            onError = { _controllerSubject.onError(it) },
-            onComplete = { _controllerSubject.onComplete() }
-        )).use {
-            val processed = handlerIterator.next().handle(ctx)
+        val ctx = ServiceMessageContext(subject, handlerIterator, value, messageFactory, hierarchy, verbosity)
+        subject
+            .subscribe(
+                observer(
+                    onNext = { controllerSubject.onNext(updateHeader(value.payload, it)) },
+                    onError = { controllerSubject.onError(it) },
+                    onComplete = { controllerSubject.onComplete() },
+                ),
+            ).use {
+                val processed = handlerIterator.next().handle(ctx)
 
-            if (processed) {
-                if (_verbosity.atLeast(Verbosity.Diagnostic)) {
-                    subject.onNext(_messageFactory.createTraceMessage(value.payload.toString()))
+                if (processed) {
+                    if (verbosity.atLeast(Verbosity.Diagnostic)) {
+                        subject.onNext(messageFactory.createTraceMessage(value.payload.toString()))
+                    }
+
+                    if (value.payload is InvocationAttemptFinished) {
+                        streams.remove(invocationId)
+                    }
+
+                    return
                 }
-
-                if (value.payload is InvocationAttemptFinished) {
-                    _streams.remove(invocationId)
-                }
-
-                return
             }
-        }
 
-        _streams.getOrPut(value.payload.streamId.invocationId) { createStreamSubject() }.subject.onNext(value)
+        streams.getOrPut(value.payload.streamId.invocationId) { createStreamSubject() }.subject.onNext(value)
     }
 
-    override fun onError(error: Exception) = _controllerSubject.onError(error)
+    override fun onError(error: Exception) = controllerSubject.onError(error)
 
     override fun onComplete() {
         logger.log(Level.INFO, "onComplete")
     }
 
-    override fun subscribe(observer: Observer<ServiceMessage>): Disposable = _controllerSubject.subscribe(observer)
+    override fun subscribe(observer: Observer<ServiceMessage>): Disposable = controllerSubject.subscribe(observer)
 
     override fun dispose() {
-        if (_disposed.compareAndSet(false, true)) {
-            for (stream in _streams.values) {
+        if (disposed.compareAndSet(false, true)) {
+            for (stream in streams.values) {
                 stream.dispose()
             }
         }
     }
 
     private fun createStreamSubject(): Stream {
-        val newStreamSubject = _streamSubjectFactory()
-        return Stream(newStreamSubject, newStreamSubject.subscribe(_controllerSubject))
+        val newStreamSubject = streamSubjectFactory()
+        return Stream(newStreamSubject, newStreamSubject.subscribe(controllerSubject))
     }
 
-    private fun updateHeader(event: OrderedBuildEvent, message: ServiceMessage): ServiceMessage {
+    private fun updateHeader(
+        event: OrderedBuildEvent,
+        message: ServiceMessage,
+    ): ServiceMessage {
         if (message.flowId.isNullOrEmpty()) {
             message.setFlowId(event.streamId.buildId)
         }
@@ -89,8 +95,9 @@ class ControllerSubject(
     }
 
     private class Stream(
-            val subject: ServiceMessageSubject,
-            private val _subscription: Disposable) : Disposable {
+        val subject: ServiceMessageSubject,
+        private val _subscription: Disposable,
+    ) : Disposable {
         override fun dispose() {
             _subscription.dispose()
             subject.dispose()
@@ -98,14 +105,15 @@ class ControllerSubject(
     }
 
     companion object {
-        private val handlers = sequenceOf(
+        private val handlers =
+            sequenceOf(
                 BuildEnqueuedHandler(),
                 InvocationAttemptStartedHandler(),
                 InvocationAttemptFinishedHandler(),
                 BuildFinishedHandler(),
                 ComponentStreamFinishedHandler(),
-                NotProcessedEventHandler()
-        ).sortedBy { it.priority }.toList()
+                NotProcessedEventHandler(),
+            ).sortedBy { it.priority }.toList()
         private val logger = Logger.getLogger(ControllerSubject::class.java.name)
     }
 }

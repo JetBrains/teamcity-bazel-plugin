@@ -9,7 +9,6 @@ import java.io.File
 import java.nio.file.Files
 
 class BazelRunnerTest {
-
     private lateinit var tempDir: File
 
     @BeforeMethod
@@ -22,32 +21,35 @@ class BazelRunnerTest {
 
     @Test
     fun shouldProcessBazelArgs() {
-        val inputArgs = listOf(
+        val inputArgs =
+            listOf(
                 "/fake/bazel",
                 "--build_event_binary_file=/should/be/omitted",
                 "bar x'\"y",
                 "",
                 "--",
-                "baz"
-        )
+                "baz",
+            )
         val commandFile = File(tempDir, "commands")
         commandFile.writeText(inputArgs.joinToString("\n"))
         val eventFile = File(tempDir, "events")
-        val fixture = BazelRunner(MessageFactoryImpl(),
+        val fixture =
+            BazelRunner(
+                MessageFactoryImpl(),
                 Verbosity.Normal,
                 commandFile,
                 0,
-                eventFile
-        )
-        val expectedArgs = listOf(
+                eventFile,
+            )
+        val expectedArgs =
+            listOf(
                 "/fake/bazel",
                 "bar x'\"y",
                 "",
                 "--build_event_binary_file=${eventFile.absolutePath}",
                 "--",
-                "baz"
-        )
+                "baz",
+            )
         Assert.assertEquals(fixture.args.toList(), expectedArgs)
     }
-
 }

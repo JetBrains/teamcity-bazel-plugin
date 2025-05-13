@@ -29,5 +29,5 @@ enum class PathType {
 
     Config,
 
-    Log
+    Log,
 }

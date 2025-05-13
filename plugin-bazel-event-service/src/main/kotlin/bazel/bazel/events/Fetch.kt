@@ -7,7 +7,8 @@ package bazel.bazel.events
 // where a cached copy of the entity to be fetched was used.
 
 data class Fetch(
-        override val id: Id,
-        override val children: List<Id>,
-        val url: String,
-        val success: Boolean) : BazelContent
+    override val id: Id,
+    override val children: List<Id>,
+    val url: String,
+    val success: Boolean,
+) : BazelContent

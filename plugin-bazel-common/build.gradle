@@ -16,8 +16,6 @@ dependencies {
     }
 
     testImplementation libs.testng
-    testImplementation libs.jmock
-    testImplementation libs.hamcrest
     testImplementation libs.mockk
 }
 

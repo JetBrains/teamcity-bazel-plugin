@@ -8,11 +8,13 @@ import devteam.rx.observer
 enum class NotificationKind {
     OnNext,
     OnError,
-    OnCompleted
+    OnCompleted,
 }
 
 @Suppress("unused")
-abstract class Notification<T>(val notificationKind: NotificationKind)
+abstract class Notification<T>(
+    val notificationKind: NotificationKind,
+)
 
 class NotificationCompleted<T> private constructor() : Notification<T>(NotificationKind.OnCompleted) {
     companion object {
@@ -25,22 +27,28 @@ class NotificationCompleted<T> private constructor() : Notification<T>(Notificat
     }
 }
 
-data class NotificationError<T>(val error: Exception) : Notification<T>(NotificationKind.OnError)
+data class NotificationError<T>(
+    val error: Exception,
+) : Notification<T>(NotificationKind.OnError)
 
-data class NotificationNext<T>(val value: T) : Notification<T>(NotificationKind.OnNext)
+data class NotificationNext<T>(
+    val value: T,
+) : Notification<T>(NotificationKind.OnNext)
 
 fun <T> Observable<T>.materialize(): Observable<Notification<T>> =
     object : Observable<Notification<T>> {
-        override fun subscribe(observer: Observer<Notification<T>>): Disposable = subscribe(
-            observer(
-                onNext = { it: T -> observer.onNext(NotificationNext(it)) },
-                onError = { it ->
-                    observer.onNext(NotificationError(it))
-                    observer.onComplete()
-                },
-                onComplete = {
-                    observer.onNext(NotificationCompleted.completed())
-                    observer.onComplete()
-                })
-        )
+        override fun subscribe(observer: Observer<Notification<T>>): Disposable =
+            subscribe(
+                observer(
+                    onNext = { it: T -> observer.onNext(NotificationNext(it)) },
+                    onError = { it ->
+                        observer.onNext(NotificationError(it))
+                        observer.onComplete()
+                    },
+                    onComplete = {
+                        observer.onNext(NotificationCompleted.completed())
+                        observer.onComplete()
+                    },
+                ),
+            )
     }

@@ -6,7 +6,6 @@ package jetbrains.buildServer.bazel
  * Provides parameters for bazel runner.
  */
 class BazelParametersProvider {
-
     val workingDirKey: String
         get() = BazelConstants.PARAM_WORKING_DIR
 

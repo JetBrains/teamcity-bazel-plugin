@@ -9,8 +9,7 @@ import org.testng.annotations.BeforeMethod
 import org.testng.annotations.Test
 
 class HierarchyImplTest {
-
-    @MockK private lateinit var _ctx: ServiceMessageContext
+    @MockK private lateinit var ctx: ServiceMessageContext
 
     @BeforeMethod
     fun setUp() {
@@ -23,7 +22,7 @@ class HierarchyImplTest {
         val hierarchy = HierarchyImpl()
         hierarchy.createNode(Id(1), listOf(), "original node")
         hierarchy.createNode(Id(1), listOf(), "replacement node")
-        val node = hierarchy.tryCloseNode(_ctx, Id(1))
+        val node = hierarchy.tryCloseNode(ctx, Id(1))
         assertEquals(node!!.description, "original node")
     }
 
@@ -35,13 +34,13 @@ class HierarchyImplTest {
             actionPerformed = true
         }
 
-        val firstNode = hierarchy.tryCloseNode(_ctx, Id(1))
+        val firstNode = hierarchy.tryCloseNode(ctx, Id(1))
         assertFalse(actionPerformed)
         assertEquals(firstNode!!.description, "original node")
 
         // Verify that the original node has been removed
         hierarchy.createNode(Id(1), listOf(), "replacement node")
-        val secondNode = hierarchy.tryCloseNode(_ctx, Id(1))
+        val secondNode = hierarchy.tryCloseNode(ctx, Id(1))
         assertEquals(secondNode!!.description, "replacement node")
     }
 
@@ -53,11 +52,11 @@ class HierarchyImplTest {
             actionPerformed = true
         }
 
-        val firstNode = hierarchy.tryCloseNode(_ctx, Id(1))
+        val firstNode = hierarchy.tryCloseNode(ctx, Id(1))
         assertFalse(actionPerformed)
         assertEquals(firstNode!!.description, "foo")
 
-        val secondNode = hierarchy.tryCloseNode(_ctx, Id(2))
+        val secondNode = hierarchy.tryCloseNode(ctx, Id(2))
         assertTrue(actionPerformed)
         // Verify that the child has inherited the parent's description
         assertEquals(secondNode!!.description, "foo")
@@ -72,17 +71,17 @@ class HierarchyImplTest {
             actionPerformed = true
         }
 
-        val firstNode = hierarchy.tryCloseNode(_ctx, Id(1))
+        val firstNode = hierarchy.tryCloseNode(ctx, Id(1))
         assertFalse(actionPerformed)
         assertEquals(firstNode!!.description, "root")
 
-        val secondNode = hierarchy.tryCloseNode(_ctx, Id(2))
+        val secondNode = hierarchy.tryCloseNode(ctx, Id(2))
         assertTrue(actionPerformed)
         assertEquals(secondNode!!.description, "leaf")
 
         // Verify that the root has also been removed
         hierarchy.createNode(Id(1), listOf(), "replacement node")
-        val thirdNode = hierarchy.tryCloseNode(_ctx, Id(1))
+        val thirdNode = hierarchy.tryCloseNode(ctx, Id(1))
         assertEquals(thirdNode!!.description, "replacement node")
     }
 }

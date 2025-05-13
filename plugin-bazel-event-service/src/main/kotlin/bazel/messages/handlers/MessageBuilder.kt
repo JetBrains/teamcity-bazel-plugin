@@ -9,38 +9,46 @@ import bazel.messages.ServiceMessageContext
 import bazel.messages.apply
 
 class MessageBuilder(
-        private val _serviceMessageContext: ServiceMessageContext,
-        improve: Boolean) {
-
-    private val _text = StringBuilder()
+    private val serviceMessageContext: ServiceMessageContext,
+    improve: Boolean,
+) {
+    private val text = StringBuilder()
 
     init {
-        if (improve && _serviceMessageContext.verbosity.atLeast(Verbosity.Diagnostic)) {
+        if (improve && serviceMessageContext.verbosity.atLeast(Verbosity.Diagnostic)) {
             val text = StringBuilder()
-            text.append(String.format("%8d", _serviceMessageContext.event.payload.sequenceNumber))
+            text.append(String.format("%8d", serviceMessageContext.event.payload.sequenceNumber))
             text.append(' ')
-            text.append(_serviceMessageContext.event.payload.streamId.component)
+            text.append(serviceMessageContext.event.payload.streamId.component)
             text.append(' ')
-            val streamId = _serviceMessageContext.event.payload.streamId
-            text.append(if (streamId.invocationId.isNotEmpty()) "${streamId.buildId.take(8)}:${streamId.invocationId.take(8)}" else streamId.buildId.take(8))
+            val streamId = serviceMessageContext.event.payload.streamId
+            text.append(
+                if (streamId.invocationId.isNotEmpty()) {
+                    "${streamId.buildId.take(
+                        8,
+                    )}:${streamId.invocationId.take(8)}"
+                } else {
+                    streamId.buildId.take(8)
+                },
+            )
             text.append(' ')
-            _text.append(text.toString().apply(Color.Trace))
+            text.append(text.toString().apply(Color.Trace))
         }
     }
 
-    fun append(text: String, verbosity: Verbosity = _serviceMessageContext.verbosity, condition: () -> Boolean = { true }): MessageBuilder {
-        if (condition() && _serviceMessageContext.verbosity.atLeast(verbosity)) {
-            this._text.append(text)
+    fun append(
+        text: String,
+        verbosity: Verbosity = serviceMessageContext.verbosity,
+        condition: () -> Boolean = { true },
+    ): MessageBuilder {
+        if (condition() && serviceMessageContext.verbosity.atLeast(verbosity)) {
+            this.text.append(text)
         }
 
         return this
     }
 
-    override fun toString(): String {
-        return _text.toString()
-    }
+    override fun toString(): String = text.toString()
 }
 
-fun ServiceMessageContext.buildMessage(improve: Boolean = true): MessageBuilder {
-    return MessageBuilder(this, improve)
-}
+fun ServiceMessageContext.buildMessage(improve: Boolean = true): MessageBuilder = MessageBuilder(this, improve)

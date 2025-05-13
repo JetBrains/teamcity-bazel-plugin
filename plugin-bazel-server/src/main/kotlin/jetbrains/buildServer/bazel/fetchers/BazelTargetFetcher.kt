@@ -12,49 +12,58 @@ import jetbrains.buildServer.util.browser.Element
  * Provides the list of targets in directory.
  */
 class BazelTargetFetcher : ProjectDataFetcher {
-
     private val analysisDepth = 3
 
     override fun getType() = "BazelTargets"
 
-    override fun retrieveData(fsBrowser: Browser, workingDir: String): MutableList<DataItem> {
-        val directory = (if (workingDir.isEmpty()) {
-            fsBrowser.root
-        } else {
-            fsBrowser.getElement(workingDir)
-        })
+    override fun retrieveData(
+        fsBrowser: Browser,
+        workingDir: String,
+    ): MutableList<DataItem> {
+        val directory = (
+            if (workingDir.isEmpty()) {
+                fsBrowser.root
+            } else {
+                fsBrowser.getElement(workingDir)
+            }
+        )
 
         if (directory == null || directory.isLeaf) {
             return arrayListOf()
         }
 
-        return processDirectory(directory, normalizePath(workingDir)).map {
-            DataItem(it, null)
-        }.toMutableList()
+        return processDirectory(directory, normalizePath(workingDir))
+            .map {
+                DataItem(it, null)
+            }.toMutableList()
     }
 
-    private fun processDirectory(directory: Element, workingDir: String): Sequence<String> = sequence {
-        val targetPath = normalizePath(directory.fullName.substring(workingDir.length))
-        if (targetPath.split('/').size > analysisDepth) {
-            return@sequence
-        }
+    private fun processDirectory(
+        directory: Element,
+        workingDir: String,
+    ): Sequence<String> =
+        sequence {
+            val targetPath = normalizePath(directory.fullName.substring(workingDir.length))
+            if (targetPath.split('/').size > analysisDepth) {
+                return@sequence
+            }
 
-        directory.children?.forEach { element ->
-            if (BazelConstants.BUILD_FILE_NAME.matches(element.name) && element.isContentAvailable) {
-                yieldAll(BazelFileParser.readTargets(element.inputStream).map { target ->
-                    if (targetPath.isEmpty()) {
-                        ":$target"
-                    } else {
-                        "//$targetPath:$target"
-                    }
-                })
-            } else if (!element.isLeaf) {
-                yieldAll(processDirectory(element, workingDir))
+            directory.children?.forEach { element ->
+                if (BazelConstants.BUILD_FILE_NAME.matches(element.name) && element.isContentAvailable) {
+                    yieldAll(
+                        BazelFileParser.readTargets(element.inputStream).map { target ->
+                            if (targetPath.isEmpty()) {
+                                ":$target"
+                            } else {
+                                "//$targetPath:$target"
+                            }
+                        },
+                    )
+                } else if (!element.isLeaf) {
+                    yieldAll(processDirectory(element, workingDir))
+                }
             }
         }
-    }
 
-    private fun normalizePath(path: String): String {
-        return path.trim().replace('\\', '/').trimStart('/')
-    }
+    private fun normalizePath(path: String): String = path.trim().replace('\\', '/').trimStart('/')
 }

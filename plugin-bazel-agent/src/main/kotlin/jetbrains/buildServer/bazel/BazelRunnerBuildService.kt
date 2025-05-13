@@ -10,10 +10,11 @@ import jetbrains.buildServer.agent.runner.*
  * Bazel runner service.
  */
 class BazelRunnerBuildService(
-        buildStepContext: BuildStepContext,
-        private val _commandRegistry: CommandRegistry,
-        private val _commandFactory: BazelCommandFactory) : BuildServiceAdapter() {
-
+    buildStepContext: BuildStepContext,
+    private val _commandRegistry: CommandRegistry,
+    private val _commandFactory: BazelCommandFactory,
+    private val _commandLineBuilder: BazelCommandLineBuilder,
+) : BuildServiceAdapter() {
     init {
         initialize(buildStepContext.runnerContext.build, buildStepContext.runnerContext)
     }
@@ -33,7 +34,7 @@ class BazelRunnerBuildService(
             _commandRegistry.register(command)
         }
 
-        return command.commandLineBuilder.build(command)
+        return _commandLineBuilder.build(command)
     }
 
     override fun getRunResult(exitCode: Int): BuildFinishedStatus {
@@ -42,7 +43,7 @@ class BazelRunnerBuildService(
                 return BuildFinishedStatus.FINISHED_SUCCESS
             } else if (exitCode == 4) {
                 val successWhenNoTests =
-                        runnerParameters[BazelConstants.PARAM_SUCCESS_WHEN_NO_TESTS]?.trim()?.toBoolean()
+                    runnerParameters[BazelConstants.PARAM_SUCCESS_WHEN_NO_TESTS]?.trim()?.toBoolean()
                 if (successWhenNoTests == true) {
                     return BuildFinishedStatus.FINISHED_SUCCESS
                 }

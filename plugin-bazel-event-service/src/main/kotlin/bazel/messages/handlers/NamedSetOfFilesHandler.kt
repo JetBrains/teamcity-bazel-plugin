@@ -14,17 +14,23 @@ class NamedSetOfFilesHandler : EventHandler {
         get() = HandlerPriority.Medium
 
     override fun handle(ctx: ServiceMessageContext) =
-            if (ctx.event.payload is BazelEvent && ctx.event.payload.content is NamedSetOfFiles) {
-                val event = ctx.event.payload.content
-                if (ctx.verbosity.atLeast(Verbosity.Detailed) && event.files.isNotEmpty()) {
-                    for (file in event.files) {
-                        ctx.onNext(ctx.messageFactory.createMessage(
-                                ctx.buildMessage()
-                                        .append(file.name)
-                                        .toString()))
-                    }
+        if (ctx.event.payload is BazelEvent && ctx.event.payload.content is NamedSetOfFiles) {
+            val event = ctx.event.payload.content
+            if (ctx.verbosity.atLeast(Verbosity.Detailed) && event.files.isNotEmpty()) {
+                for (file in event.files) {
+                    ctx.onNext(
+                        ctx.messageFactory.createMessage(
+                            ctx
+                                .buildMessage()
+                                .append(file.name)
+                                .toString(),
+                        ),
+                    )
                 }
+            }
 
-                true
-            } else ctx.handlerIterator.next().handle(ctx)
+            true
+        } else {
+            ctx.handlerIterator.next().handle(ctx)
+        }
 }

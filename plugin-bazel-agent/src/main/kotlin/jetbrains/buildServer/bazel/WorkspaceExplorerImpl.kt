@@ -7,16 +7,17 @@ import jetbrains.buildServer.agent.CommandLineExecutor
 import java.io.File
 
 class WorkspaceExplorerImpl(
-        private val _commandLineExecutor: CommandLineExecutor,
-        private val _infoWorkspaceCommand: BazelCommand,
-        private val _fullCleanCommand: BazelCommand)
-    : WorkspaceExplorer {
+    private val _commandLineExecutor: CommandLineExecutor,
+    private val _infoWorkspaceCommand: BazelCommand,
+    private val _fullCleanCommand: BazelCommand,
+    private val _commandLineBuilder: BazelCommandLineBuilder,
+) : WorkspaceExplorer {
     override fun tryFindWorkspace(path: File): Workspace? {
-        val commandLine = _infoWorkspaceCommand.commandLineBuilder.build(_infoWorkspaceCommand)
+        val commandLine = _commandLineBuilder.build(_infoWorkspaceCommand)
         val result = _commandLineExecutor.tryExecute(commandLine)
         if (result.exitCode == 0) {
             try {
-                val workspace = Workspace(File(result.stdOut.trim()), _fullCleanCommand.commandLineBuilder.build(_fullCleanCommand))
+                val workspace = Workspace(File(result.stdOut.trim()), _commandLineBuilder.build(_fullCleanCommand))
                 LOG.info("The workspace \"${workspace.path}\" was found for \"$path\"")
                 return workspace
             } catch (ex: Exception) {

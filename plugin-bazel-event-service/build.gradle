@@ -20,12 +20,9 @@ dependencies {
     implementation libs.grpc.stub
     implementation libs.javax.annotation.api
     implementation libs.teamcity.service.messages
-    implementation libs.log4j.api
-    implementation libs.log4j.core
     testImplementation libs.grpc.testing
     testImplementation libs.mockk
     testImplementation libs.testng
-    testImplementation libs.jmock
 
 }
 
@@ -59,7 +56,7 @@ task copyToTools(type: Copy) {
     from configurations.runtimeClasspath
 }
 
-build.dependsOn(copyToTools)
+assemble.dependsOn(copyToTools)
 
 // mark the generated source as such for IntelliJ IDEA
 def generatedSrc = file("build/generated/source/proto/main")

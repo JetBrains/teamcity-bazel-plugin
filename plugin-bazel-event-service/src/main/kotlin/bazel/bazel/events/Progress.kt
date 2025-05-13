@@ -7,11 +7,12 @@ package bazel.bazel.events
 // event cannot be posted yet as the needed information is not yet complete.
 
 data class Progress(
-        override val id: Id,
-        override val children: List<Id>,
-        // The next chunk of stdout that bazel produced since the last progress event
-        // or the beginning of the build.
-        val stdout: String,
-        // The next chunk of stderr that bazel produced since the last progress event
-        // or the beginning of the build.
-        val stderr: String) : BazelContent
+    override val id: Id,
+    override val children: List<Id>,
+    // The next chunk of stdout that bazel produced since the last progress event
+    // or the beginning of the build.
+    val stdout: String,
+    // The next chunk of stderr that bazel produced since the last progress event
+    // or the beginning of the build.
+    val stderr: String,
+) : BazelContent

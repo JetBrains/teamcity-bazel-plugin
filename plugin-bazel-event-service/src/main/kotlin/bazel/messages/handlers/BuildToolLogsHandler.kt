@@ -16,21 +16,27 @@ class BuildToolLogsHandler : EventHandler {
         get() = HandlerPriority.Low
 
     override fun handle(ctx: ServiceMessageContext) =
-            if (ctx.event.payload is BazelEvent && ctx.event.payload.content is BuildToolLogs) {
-                val event = ctx.event.payload.content
-                if (ctx.verbosity.atLeast(Verbosity.Verbose)) {
-                    for (log in event.logs) {
-                        if (log.name.isNullOrEmpty()) {
-                            continue
-                        }
-
-                        ctx.onNext(ctx.messageFactory.createMessage(
-                                ctx.buildMessage()
-                                        .append("$log".apply(Color.Items))
-                                        .toString()))
+        if (ctx.event.payload is BazelEvent && ctx.event.payload.content is BuildToolLogs) {
+            val event = ctx.event.payload.content
+            if (ctx.verbosity.atLeast(Verbosity.Verbose)) {
+                for (log in event.logs) {
+                    if (log.name.isNullOrEmpty()) {
+                        continue
                     }
-                }
 
-                true
-            } else ctx.handlerIterator.next().handle(ctx)
+                    ctx.onNext(
+                        ctx.messageFactory.createMessage(
+                            ctx
+                                .buildMessage()
+                                .append("$log".apply(Color.Items))
+                                .toString(),
+                        ),
+                    )
+                }
+            }
+
+            true
+        } else {
+            ctx.handlerIterator.next().handle(ctx)
+        }
 }

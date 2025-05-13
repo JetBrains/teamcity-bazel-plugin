@@ -7,9 +7,9 @@ package bazel.events
 // Individual invocations trigger InvocationFinished when they finish.
 
 data class BuildFinished(
-        override val streamId: StreamId,
-        override val sequenceNumber: Long,
-        override val eventTime: Timestamp,
-        // Final status of the build.
-        val result: Result)
-    : OrderedBuildEvent
+    override val streamId: StreamId,
+    override val sequenceNumber: Long,
+    override val eventTime: Timestamp,
+    // Final status of the build.
+    val result: Result,
+) : OrderedBuildEvent

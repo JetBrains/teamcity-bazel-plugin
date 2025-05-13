@@ -8,15 +8,14 @@ import jetbrains.buildServer.bazel.*
  * Provides arguments to bazel shutdowm command.
  */
 class ShutdownCommand(
-        override val commandLineBuilder: CommandLineBuilder,
-        private val _startupArgumentsProvider: ArgumentsProvider)
-    : BazelCommand {
-
+    private val _startupArgumentsProvider: ArgumentsProvider,
+) : BazelCommand {
     override val command: String = BazelConstants.COMMAND_SHUTDOWN
 
     override val arguments: Sequence<CommandArgument>
-        get() = sequence {
-            yield(CommandArgument(CommandArgumentType.Command, command))
-            yieldAll(_startupArgumentsProvider.getArguments(this@ShutdownCommand))
-        }
+        get() =
+            sequence {
+                yield(CommandArgument(CommandArgumentType.Command, command))
+                yieldAll(_startupArgumentsProvider.getArguments(this@ShutdownCommand))
+            }
 }

@@ -28,8 +28,8 @@
   <!--bazel services-->
   <bean class="jetbrains.buildServer.bazel.RunnerInitializer"/>
   <bean class="jetbrains.buildServer.bazel.WorkspaceRegistryImpl"/>
-  <bean class="jetbrains.buildServer.bazel.BesCommandLineBuilder" id="besCommandLineBuilder"/>
-  <bean class="jetbrains.buildServer.bazel.BazelCommandLineBuilder" id="bazelCommandLineBuilder"/>
+  <bean class="jetbrains.buildServer.bazel.BesCommandLineBuilder"/>
+  <bean class="jetbrains.buildServer.bazel.BazelCommandLineBuilder"/>
   <bean class="jetbrains.buildServer.bazel.WorkspaceExplorerImpl">
     <constructor-arg ref="infoWorkspaceCommand"/>
     <constructor-arg ref="fullCleanCommand"/>
@@ -40,7 +40,6 @@
   <bean class="jetbrains.buildServer.bazel.WorkingDirectoryProviderImpl"/>
   <bean class="jetbrains.buildServer.bazel.ArgumentsConverterImpl"/>
   <bean class="jetbrains.buildServer.bazel.BazelCommandFactory">
-    <constructor-arg ref="bazelCommandLineBuilder"/>
     <constructor-arg ref="commonArgumentsProvider"/>
   </bean>
 
@@ -57,32 +56,25 @@
 
   <!--bazel commands-->
   <bean class="jetbrains.buildServer.bazel.commands.BuildCommand">
-    <constructor-arg ref="besCommandLineBuilder"/>
     <constructor-arg ref="buildArgumentsProvider"/>
   </bean>
   <bean class="jetbrains.buildServer.bazel.commands.CleanCommand" id="cleanCommand">
-    <constructor-arg ref="bazelCommandLineBuilder"/>
     <constructor-arg ref="commonArgumentsProvider"/>
   </bean>
   <bean class="jetbrains.buildServer.bazel.commands.RunCommand">
-    <constructor-arg ref="besCommandLineBuilder"/>
     <constructor-arg ref="commonArgumentsProvider"/>
     <constructor-arg ref="targetsArgumentsProvider"/>
   </bean>
   <bean class="jetbrains.buildServer.bazel.commands.TestCommand">
-    <constructor-arg ref="besCommandLineBuilder"/>
     <constructor-arg ref="buildArgumentsProvider"/>
   </bean>
   <bean class="jetbrains.buildServer.bazel.commands.ShutdownCommand" id="shutdownCommand">
-    <constructor-arg ref="bazelCommandLineBuilder"/>
     <constructor-arg ref="startupArgumentsProvider"/>
   </bean>
   <bean class="jetbrains.buildServer.bazel.commands.InfoWorkspaceCommand" id="infoWorkspaceCommand">
-    <constructor-arg ref="bazelCommandLineBuilder"/>
     <constructor-arg ref="startupArgumentsProvider"/>
   </bean>
   <bean class="jetbrains.buildServer.bazel.commands.FullCleanCommand" id="fullCleanCommand">
-    <constructor-arg ref="bazelCommandLineBuilder"/>
     <constructor-arg ref="startupArgumentsProvider"/>
   </bean>
 

@@ -2,4 +2,7 @@
 
 package bazel
 
-data class Event<TPayload>(val projectId: String, val payload: TPayload)
+data class Event<TPayload>(
+    val projectId: String,
+    val payload: TPayload,
+)

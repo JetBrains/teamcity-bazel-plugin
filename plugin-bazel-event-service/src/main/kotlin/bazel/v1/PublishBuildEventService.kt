@@ -17,24 +17,25 @@ import java.util.concurrent.atomic.AtomicReference
 import java.util.logging.Level
 import java.util.logging.Logger
 
-class PublishBuildEventService
-    : PublishBuildEventGrpc.PublishBuildEventImplBase(), Observable<Event<OrderedBuildEvent>> {
+class PublishBuildEventService :
+    PublishBuildEventGrpc.PublishBuildEventImplBase(),
+    Observable<Event<OrderedBuildEvent>> {
+    private val eventSubject = subjectOf<Event<OrderedBuildEvent>>()
+    private val projectId = AtomicReference<String>("")
 
-    private val _eventSubject = subjectOf<Event<OrderedBuildEvent>>()
-    private val _projectId = AtomicReference<String>("")
-
-    override fun subscribe(observer: Observer<Event<OrderedBuildEvent>>): Disposable {
-        return _eventSubject.subscribe(observer)
-    }
+    override fun subscribe(observer: Observer<Event<OrderedBuildEvent>>): Disposable = eventSubject.subscribe(observer)
 
     // BuildEvents are used to declare the beginning and end of major portions of a Build
-    override fun publishLifecycleEvent(request: PublishLifecycleEventRequest?, responseObserver: StreamObserver<Empty>?) {
+    override fun publishLifecycleEvent(
+        request: PublishLifecycleEventRequest?,
+        responseObserver: StreamObserver<Empty>?,
+    ) {
         logger.log(Level.FINE, "publishLifecycleEvent: $request")
 
-        _projectId.compareAndSet("", request?.projectId ?: "")
+        projectId.compareAndSet("", request?.projectId ?: "")
 
         if (request?.hasBuildEvent() == true) {
-            _eventSubject.onNext(Event(_projectId.get(), request.buildEvent))
+            eventSubject.onNext(Event(projectId.get(), request.buildEvent))
         }
 
         responseObserver?.let {
@@ -46,10 +47,12 @@ class PublishBuildEventService
     // This method is used to stream detailed events from the build tool during the build (e.g., target completion, test results, actions, etc.).
     // This is a bidirectional streaming RPC, server responds to each one with an acknowledgment.
     // NOTE: only single stream can be opened during the build
-    override fun publishBuildToolEventStream(responseObserver: StreamObserver<PublishBuildToolEventStreamResponse>?): StreamObserver<PublishBuildToolEventStreamRequest> {
+    override fun publishBuildToolEventStream(
+        responseObserver: StreamObserver<PublishBuildToolEventStreamResponse>?,
+    ): StreamObserver<PublishBuildToolEventStreamRequest> {
         logger.log(Level.INFO, "publishBuildToolEventStream: $responseObserver")
         val responses = responseObserver?.toObserver() ?: observer(onNext = {}, onError = {}, onComplete = {})
-        return PublishEventObserver(_projectId.get(), responses, _eventSubject).toStreamObserver()
+        return PublishEventObserver(projectId.get(), responses, eventSubject).toStreamObserver()
     }
 
     companion object {
@@ -57,20 +60,21 @@ class PublishBuildEventService
     }
 
     private class PublishEventObserver(
-            private val _projectId: String,
-            private val _responseObserver: Observer<PublishBuildToolEventStreamResponse>,
-            private val _eventObserver: Observer<Event<OrderedBuildEvent>>)
-        : Observer<PublishBuildToolEventStreamRequest> {
-
+        private val _projectId: String,
+        private val _responseObserver: Observer<PublishBuildToolEventStreamResponse>,
+        private val _eventObserver: Observer<Event<OrderedBuildEvent>>,
+    ) : Observer<PublishBuildToolEventStreamRequest> {
         override fun onNext(value: PublishBuildToolEventStreamRequest) {
             logger.log(Level.FINE, "onNext: $value")
 
             // send response
             _responseObserver.onNext(
-                    PublishBuildToolEventStreamResponse.newBuilder()
-                            .setSequenceNumber(value.orderedBuildEventOrBuilder.sequenceNumber)
-                            .setStreamId(value.orderedBuildEventOrBuilder.streamId)
-                            .build())
+                PublishBuildToolEventStreamResponse
+                    .newBuilder()
+                    .setSequenceNumber(value.orderedBuildEventOrBuilder.sequenceNumber)
+                    .setStreamId(value.orderedBuildEventOrBuilder.streamId)
+                    .build(),
+            )
 
             if (value.hasOrderedBuildEvent()) {
                 _eventObserver.onNext(Event(_projectId, value.orderedBuildEvent))

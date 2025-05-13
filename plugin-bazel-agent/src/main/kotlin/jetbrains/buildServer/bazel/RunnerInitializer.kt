@@ -10,9 +10,9 @@ import jetbrains.buildServer.util.positioning.PositionAware
 import jetbrains.buildServer.util.positioning.PositionConstraint
 
 class RunnerInitializer(
-        events: EventDispatcher<AgentLifeCycleListener>)
-    : PositionAware, AgentLifeCycleAdapter() {
-
+    events: EventDispatcher<AgentLifeCycleListener>,
+) : AgentLifeCycleAdapter(),
+    PositionAware {
     init {
         events.addListener(this)
     }

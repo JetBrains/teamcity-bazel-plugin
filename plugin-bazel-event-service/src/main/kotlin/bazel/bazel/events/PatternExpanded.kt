@@ -8,6 +8,7 @@ package bazel.bazel.events
 // target or target pattern it was expanded to.
 
 class PatternExpanded(
-        override val id: Id,
-        override val children: List<Id>,
-        val patterns: List<String>) : BazelContent
+    override val id: Id,
+    override val children: List<Id>,
+    val patterns: List<String>,
+) : BazelContent

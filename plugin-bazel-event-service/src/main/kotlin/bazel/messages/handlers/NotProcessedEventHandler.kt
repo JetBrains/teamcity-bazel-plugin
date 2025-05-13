@@ -8,7 +8,5 @@ import bazel.messages.ServiceMessageContext
 class NotProcessedEventHandler : EventHandler {
     override val priority: HandlerPriority get() = HandlerPriority.Last
 
-    override fun handle(ctx: ServiceMessageContext): Boolean {
-        return false
-    }
+    override fun handle(ctx: ServiceMessageContext): Boolean = false
 }

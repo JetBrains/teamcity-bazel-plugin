@@ -2,7 +2,9 @@
 
 package bazel.events
 
-enum class BuildStatus(val description: String) {
+enum class BuildStatus(
+    val description: String,
+) {
     Unknown("Unspecified or unknown"),
     CommandSucceeded("Build was successful and tests (if requested) all pass."),
     CommandFailed("Build error and/or test failure."),
@@ -11,5 +13,5 @@ enum class BuildStatus(val description: String) {
     ResourceExhausted("Build required too many resources, such as build tool RAM."),
     InvocationDeadlineExceeded("An invocation attempt time exceeded its deadline."),
     RequestDeadlineExceeded("Build request time exceeded the request_deadline."),
-    Cancelled("The build was cancelled by a call to CancelBuild.")
+    Cancelled("The build was cancelled by a call to CancelBuild."),
 }

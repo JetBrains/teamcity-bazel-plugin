@@ -14,28 +14,35 @@ class BuildFinishedHandler : EventHandler {
         get() = HandlerPriority.Low
 
     override fun handle(ctx: ServiceMessageContext) =
-            if (ctx.event.payload is BuildFinished) {
-                val status = ctx.event.payload.result.status.description
-                when (ctx.event.payload.result.status) {
-                    BuildStatus.CommandSucceeded -> {
-                        ctx.onNext(ctx.messageFactory.createMessage(
-                                ctx.buildMessage()
-                                        .append(status.apply(Color.Success))
-                                        .toString()))
-                    }
-
-                    BuildStatus.Cancelled,
-                    BuildStatus.CommandFailed,
-                    BuildStatus.SystemError,
-                    BuildStatus.UserError,
-                    BuildStatus.ResourceExhausted,
-                    BuildStatus.InvocationDeadlineExceeded,
-                    BuildStatus.RequestDeadlineExceeded -> {
-                        ctx.onNext(ctx.messageFactory.createErrorMessage(status))
-                    }
-
-                    else -> {}
+        if (ctx.event.payload is BuildFinished) {
+            val status = ctx.event.payload.result.status.description
+            when (ctx.event.payload.result.status) {
+                BuildStatus.CommandSucceeded -> {
+                    ctx.onNext(
+                        ctx.messageFactory.createMessage(
+                            ctx
+                                .buildMessage()
+                                .append(status.apply(Color.Success))
+                                .toString(),
+                        ),
+                    )
                 }
-                true
-            } else ctx.handlerIterator.next().handle(ctx)
+
+                BuildStatus.Cancelled,
+                BuildStatus.CommandFailed,
+                BuildStatus.SystemError,
+                BuildStatus.UserError,
+                BuildStatus.ResourceExhausted,
+                BuildStatus.InvocationDeadlineExceeded,
+                BuildStatus.RequestDeadlineExceeded,
+                -> {
+                    ctx.onNext(ctx.messageFactory.createErrorMessage(status))
+                }
+
+                else -> {}
+            }
+            true
+        } else {
+            ctx.handlerIterator.next().handle(ctx)
+        }
 }

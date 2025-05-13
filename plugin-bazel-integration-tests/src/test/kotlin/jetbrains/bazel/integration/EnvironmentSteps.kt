@@ -6,12 +6,21 @@ import cucumber.api.java.Before
 import org.testng.Assert
 import java.io.File
 
-public class EnvironmentSteps {
-    private var _sandboxDirectory: File = File(".")
+class EnvironmentSteps {
+    private var sandboxDirectory: File = File(".")
 
     @Before
     fun setup() {
-        var projectDirectory = File(File(EnvironmentSteps::class.java.getProtectionDomain().getCodeSource().getLocation().toURI()).getPath(), "/../../../").canonicalFile
+        var projectDirectory =
+            File(
+                File(
+                    EnvironmentSteps::class.java
+                        .getProtectionDomain()
+                        .codeSource.location
+                        .toURI(),
+                ).path,
+                "/../../../",
+            ).canonicalFile
         if (projectDirectory.name != "plugin-bazel-integration-tests") {
             projectDirectory = projectDirectory.parentFile
         }
@@ -20,11 +29,11 @@ public class EnvironmentSteps {
         val tempDirectory = File(projectDirectory, "/build/tmp").canonicalFile
         Assert.assertTrue(tempDirectory.exists(), "\"${tempDirectory}\" does not exist")
 
-        _sandboxDirectory = File(tempDirectory, "/sandbox").canonicalFile
+        sandboxDirectory = File(tempDirectory, "/sandbox").canonicalFile
 
         // clean sandbox
-        _sandboxDirectory.deleteRecursively()
-        _sandboxDirectory.mkdirs()
+        sandboxDirectory.deleteRecursively()
+        sandboxDirectory.mkdirs()
 
         val solutionDirectory = File(projectDirectory, "/../").canonicalFile
         val libsDirectory = File(solutionDirectory, "/plugin-bazel-event-service/build/libs").canonicalFile
@@ -32,10 +41,10 @@ public class EnvironmentSteps {
         val samplesDirectory = File(solutionDirectory, "/plugin-bazel-integration-tests/samples").canonicalFile
 
         // prepare tool
-        toolsDirectory.copyRecursively(_sandboxDirectory, true)
-        libsDirectory.copyRecursively(_sandboxDirectory, true)
-        Environment.sandboxDirectory = _sandboxDirectory
-        Environment.besJar = File(_sandboxDirectory, "plugin-bazel-event-service.jar")
+        toolsDirectory.copyRecursively(sandboxDirectory, true)
+        libsDirectory.copyRecursively(sandboxDirectory, true)
+        Environment.sandboxDirectory = sandboxDirectory
+        Environment.besJar = File(sandboxDirectory, "plugin-bazel-event-service.jar")
         Environment.samplesDirectory = samplesDirectory
     }
 }

@@ -10,7 +10,6 @@ import java.net.MalformedURLException
 import java.net.URL
 
 class BazelPasswordProvider : PasswordsProvider {
-
     override fun getPasswordParameters(build: SBuild): MutableCollection<Parameter> {
         val parameters = mutableListOf<Parameter>()
         build.getBuildFeaturesOfType(BazelConstants.BUILD_FEATURE_TYPE).forEach { feature ->

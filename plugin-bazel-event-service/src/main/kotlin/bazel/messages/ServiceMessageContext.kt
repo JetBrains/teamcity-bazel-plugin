@@ -10,12 +10,13 @@ import devteam.rx.Observer
 import jetbrains.buildServer.messages.serviceMessages.ServiceMessage
 
 class ServiceMessageContext(
-        private val _observer: Observer<ServiceMessage>,
-        val handlerIterator: Iterator<EventHandler>,
-        val event: Event<OrderedBuildEvent>,
-        val messageFactory: MessageFactory,
-        val hierarchy: Hierarchy,
-        val verbosity: Verbosity) : Observer<ServiceMessage> {
+    private val _observer: Observer<ServiceMessage>,
+    val handlerIterator: Iterator<EventHandler>,
+    val event: Event<OrderedBuildEvent>,
+    val messageFactory: MessageFactory,
+    val hierarchy: Hierarchy,
+    val verbosity: Verbosity,
+) : Observer<ServiceMessage> {
     override fun onNext(value: ServiceMessage) = _observer.onNext(value)
 
     override fun onError(error: Exception) = _observer.onError(error)

@@ -10,11 +10,14 @@ class InvocationAttemptStartedHandler : EventHandler {
     override val priority: HandlerPriority = HandlerPriority.Medium
 
     override fun handle(ctx: HandlerContext): OrderedBuildEvent =
-            if (ctx.event.hasInvocationAttemptStarted()) {
-                InvocationAttemptStarted(
-                        ctx.streamId,
-                        ctx.sequenceNumber,
-                        ctx.eventTime,
-                        ctx.event.invocationAttemptStarted.attemptNumber)
-            } else ctx.handlerIterator.next().handle(ctx)
+        if (ctx.event.hasInvocationAttemptStarted()) {
+            InvocationAttemptStarted(
+                ctx.streamId,
+                ctx.sequenceNumber,
+                ctx.eventTime,
+                ctx.event.invocationAttemptStarted.attemptNumber,
+            )
+        } else {
+            ctx.handlerIterator.next().handle(ctx)
+        }
 }

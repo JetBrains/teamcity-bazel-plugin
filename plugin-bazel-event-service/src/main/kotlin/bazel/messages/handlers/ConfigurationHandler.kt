@@ -16,23 +16,49 @@ class ConfigurationHandler : EventHandler {
         get() = HandlerPriority.Medium
 
     override fun handle(ctx: ServiceMessageContext) =
-            if (ctx.event.payload is BazelEvent && ctx.event.payload.content is Configuration) {
-                val event = ctx.event.payload.content
-                if (ctx.verbosity.atLeast(Verbosity.Detailed)) {
-                    ctx.onNext(ctx.messageFactory.createMessage(ctx.buildMessage().append(listOf("platformName", event.platformName).joinToStringEscaped(" = ").apply(Color.Items)).toString()))
-                    ctx.onNext(ctx.messageFactory.createMessage(ctx.buildMessage().append(listOf("mnemonic", event.mnemonic).joinToStringEscaped(" = ").apply(Color.Items)).toString()))
-                    ctx.onNext(ctx.messageFactory.createMessage(ctx.buildMessage().append(listOf("cpu", event.cpu).joinToStringEscaped(" = ").apply(Color.Items)).toString()))
+        if (ctx.event.payload is BazelEvent && ctx.event.payload.content is Configuration) {
+            val event = ctx.event.payload.content
+            if (ctx.verbosity.atLeast(Verbosity.Detailed)) {
+                ctx.onNext(
+                    ctx.messageFactory.createMessage(
+                        ctx
+                            .buildMessage()
+                            .append(
+                                listOf("platformName", event.platformName).joinToStringEscaped(" = ").apply(Color.Items),
+                            ).toString(),
+                    ),
+                )
+                ctx.onNext(
+                    ctx.messageFactory.createMessage(
+                        ctx
+                            .buildMessage()
+                            .append(
+                                listOf("mnemonic", event.mnemonic).joinToStringEscaped(" = ").apply(Color.Items),
+                            ).toString(),
+                    ),
+                )
+                ctx.onNext(
+                    ctx.messageFactory.createMessage(
+                        ctx.buildMessage().append(listOf("cpu", event.cpu).joinToStringEscaped(" = ").apply(Color.Items)).toString(),
+                    ),
+                )
 
-                    if (ctx.verbosity.atLeast(Verbosity.Verbose)) {
-                        for (item in event.makeVariableMap) {
-                            ctx.onNext(ctx.messageFactory.createMessage(
-                                    ctx.buildMessage()
-                                            .append(listOf(item.key, item.value).joinToStringEscaped(" = ").apply(Color.Items))
-                                            .toString()))
-                        }
+                if (ctx.verbosity.atLeast(Verbosity.Verbose)) {
+                    for (item in event.makeVariableMap) {
+                        ctx.onNext(
+                            ctx.messageFactory.createMessage(
+                                ctx
+                                    .buildMessage()
+                                    .append(listOf(item.key, item.value).joinToStringEscaped(" = ").apply(Color.Items))
+                                    .toString(),
+                            ),
+                        )
                     }
                 }
+            }
 
-                true
-            } else ctx.handlerIterator.next().handle(ctx)
+            true
+        } else {
+            ctx.handlerIterator.next().handle(ctx)
+        }
 }

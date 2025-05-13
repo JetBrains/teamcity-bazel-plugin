@@ -11,24 +11,19 @@ import jetbrains.buildServer.web.openapi.PluginDescriptor
 /**
  * Bazel runner definition.
  */
-class BazelRunnerRunType(private val myPluginDescriptor: PluginDescriptor,
-                         runTypeRegistry: RunTypeRegistry) : RunType() {
-
+class BazelRunnerRunType(
+    private val myPluginDescriptor: PluginDescriptor,
+    runTypeRegistry: RunTypeRegistry,
+) : RunType() {
     init {
         runTypeRegistry.registerRunType(this)
     }
 
-    override fun getType(): String {
-        return BazelConstants.RUNNER_TYPE
-    }
+    override fun getType(): String = BazelConstants.RUNNER_TYPE
 
-    override fun getDisplayName(): String {
-        return BazelConstants.RUNNER_DISPLAY_NAME
-    }
+    override fun getDisplayName(): String = BazelConstants.RUNNER_DISPLAY_NAME
 
-    override fun getDescription(): String {
-        return BazelConstants.RUNNER_DESCRIPTION
-    }
+    override fun getDescription(): String = BazelConstants.RUNNER_DESCRIPTION
 
     override fun getRunnerPropertiesProcessor(): PropertiesProcessor? {
         return PropertiesProcessor { properties ->
@@ -41,17 +36,11 @@ class BazelRunnerRunType(private val myPluginDescriptor: PluginDescriptor,
         }
     }
 
-    override fun getEditRunnerParamsJspFilePath(): String? {
-        return myPluginDescriptor.getPluginResourcesPath("editBazelParameters.jsp")
-    }
+    override fun getEditRunnerParamsJspFilePath(): String? = myPluginDescriptor.getPluginResourcesPath("editBazelParameters.jsp")
 
-    override fun getViewRunnerParamsJspFilePath(): String? {
-        return myPluginDescriptor.getPluginResourcesPath("viewBazelParameters.jsp")
-    }
+    override fun getViewRunnerParamsJspFilePath(): String? = myPluginDescriptor.getPluginResourcesPath("viewBazelParameters.jsp")
 
-    override fun getDefaultRunnerProperties(): Map<String, String>? {
-        return emptyMap()
-    }
+    override fun getDefaultRunnerProperties(): Map<String, String>? = emptyMap()
 
     override fun describeParameters(parameters: Map<String, String>): String {
         val builder = StringBuilder("bazel")
@@ -82,8 +71,9 @@ class BazelRunnerRunType(private val myPluginDescriptor: PluginDescriptor,
         return listOf(Requirement(BazelConstants.BAZEL_CONFIG_PATH, null, RequirementType.EXISTS))
     }
 
-    override fun supports(runTypeExtension: RunTypeExtension) = when {
-        runTypeExtension is PositionAware && runTypeExtension.orderId == "dockerWrapper" -> true
-        else -> super.supports(runTypeExtension)
-    }
+    override fun supports(runTypeExtension: RunTypeExtension) =
+        when {
+            runTypeExtension is PositionAware && runTypeExtension.orderId == "dockerWrapper" -> true
+            else -> super.supports(runTypeExtension)
+        }
 }

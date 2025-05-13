@@ -17,13 +17,9 @@ import java.util.logging.LogManager
 import java.util.logging.Logger
 import kotlin.system.exitProcess
 
-
 @Throws(IOException::class, InterruptedException::class)
 fun main(args: Array<String>) {
     redirectLogsToStdout()
-
-    org.apache.log4j.BasicConfigurator.configure()
-    org.apache.log4j.Logger.getRootLogger().level = org.apache.log4j.Level.FATAL
 
     val logger = Logger.getLogger("main")
     val port: Int
@@ -58,8 +54,8 @@ fun main(args: Array<String>) {
             eventFile,
             verbosity,
             BazelEventConverter(),
-            messageFactory)
-            .subscribe(observer(onNext = { it: String -> println(it) }, onError = { }, onComplete = {}))
+            messageFactory,
+        ).subscribe(observer(onNext = { it: String -> println(it) }, onError = { }, onComplete = {}))
             .dispose()
 
         exit(result.exitCode)
@@ -75,43 +71,44 @@ fun main(args: Array<String>) {
             verbosity,
             PublishBuildEventService(),
             BuildEventConverter(StreamIdConverter(BuildComponentConverter())),
-            messageFactory)
-            .subscribe(
-                observer(
-                    onNext = { it ->
-                        besIsActive = true
-                        println(it)
-                    },
-                    onError = {
-                        println(messageFactory.createErrorMessage("BES Server onError", it.toString()).asString())
-                    },
-                    onComplete = {}
-                )).use {
-                    // when has no bazel command and port is Auto
-                    if (bazelCommandlineFile == null && port == 0) {
-                        println("BES Port: ${gRpcServer.port}")
-                    }
+            messageFactory,
+        ).subscribe(
+            observer(
+                onNext = { it ->
+                    besIsActive = true
+                    println(it)
+                },
+                onError = {
+                    println(messageFactory.createErrorMessage("BES Server onError", it.toString()).asString())
+                },
+                onComplete = {},
+            ),
+        ).use {
+            // when has no bazel command and port is Auto
+            if (bazelCommandlineFile == null && port == 0) {
+                println("BES Port: ${gRpcServer.port}")
+            }
 
-                    if (bazelCommandlineFile != null) {
-                        try {
-                            val bazelRunner = BazelRunner(messageFactory, verbosity, bazelCommandlineFile, gRpcServer.port)
-                            val commandLine = bazelRunner.args.joinToString(" ") { if (it.contains(' ')) "\"$it\"" else it }
-                            println("Starting: $commandLine")
-                            println("in directory: ${bazelRunner.workingDirectory}")
-                            val result = bazelRunner.run()
-                            finalExitCode = result.exitCode
+            if (bazelCommandlineFile != null) {
+                try {
+                    val bazelRunner = BazelRunner(messageFactory, verbosity, bazelCommandlineFile, gRpcServer.port)
+                    val commandLine = bazelRunner.args.joinToString(" ") { if (it.contains(' ')) "\"$it\"" else it }
+                    println("Starting: $commandLine")
+                    println("in directory: ${bazelRunner.workingDirectory}")
+                    val result = bazelRunner.run()
+                    finalExitCode = result.exitCode
 
-                            if (!besIsActive) {
-                                for (error in result.errors) {
-                                    println(messageFactory.createErrorMessage(error).asString())
-                                }
-                            }
-                        } catch (ex: Exception) {
-                            gRpcServer.shutdown()
-                            throw ex
+                    if (!besIsActive) {
+                        for (error in result.errors) {
+                            println(messageFactory.createErrorMessage(error).asString())
                         }
                     }
+                } catch (ex: Exception) {
+                    gRpcServer.shutdown()
+                    throw ex
                 }
+            }
+        }
         exit(finalExitCode)
     } catch (ex: Exception) {
         println(messageFactory.createErrorMessage(ex.message ?: ex.toString()).asString())
@@ -119,7 +116,7 @@ fun main(args: Array<String>) {
     }
 }
 
-fun exit(status: Int) : Nothing {
+fun exit(status: Int): Nothing {
     exitProcess(status)
 }
 
@@ -131,6 +128,11 @@ private fun redirectLogsToStdout() {
     // Redirect java.util.logging output to System.out
     val rootLogger = LogManager.getLogManager().getLogger("")
     rootLogger.handlers.forEach { rootLogger.removeHandler(it) }
-    val stdoutHandler = object : ConsoleHandler() {init { setOutputStream(System.out) } }
+    val stdoutHandler =
+        object : ConsoleHandler() {
+            init {
+                setOutputStream(System.out)
+            }
+        }
     rootLogger.addHandler(stdoutHandler)
 }

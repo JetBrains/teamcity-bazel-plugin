@@ -8,6 +8,7 @@ package bazel.bazel.events
 // space).
 
 data class WorkspaceStatus(
-        override val id: Id,
-        override val children: List<Id>,
-        val items: Map<String, String>) : BazelContent
+    override val id: Id,
+    override val children: List<Id>,
+    val items: Map<String, String>,
+) : BazelContent

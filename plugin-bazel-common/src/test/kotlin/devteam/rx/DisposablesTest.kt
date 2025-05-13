@@ -1,7 +1,7 @@
 package devteam.rx
 
-import org.jmock.Expectations
-import org.jmock.Mockery
+import io.mockk.mockk
+import io.mockk.verify
 import org.testng.Assert
 import org.testng.annotations.Test
 
@@ -37,66 +37,45 @@ class DisposablesTest {
     @Test
     fun shouldDisposeWhenComposite() {
         // Given
-        val ctx = Mockery()
-        val disposable1 = ctx.mock<Disposable>(Disposable::class.java, "1")
-        val disposable2 = ctx.mock<Disposable>(Disposable::class.java, "2")
-        val disposable3 = ctx.mock<Disposable>(Disposable::class.java, "3")
+        val disposable1 = mockk<Disposable>(relaxed = true)
+        val disposable2 = mockk<Disposable>(relaxed = true)
+        val disposable3 = mockk<Disposable>(relaxed = true)
 
-        ctx.checking(object : Expectations() {
-            init {
-                oneOf<Disposable>(disposable1).dispose()
-                oneOf<Disposable>(disposable2).dispose()
-                oneOf<Disposable>(disposable3).dispose()
-            }
-        })
-
-        val disposable = disposableOf(disposable1, disposable2, disposable3)
+        val composite = disposableOf(disposable1, disposable2, disposable3)
 
         // When
-        disposable.dispose()
+        composite.dispose()
 
         // Then
-        ctx.assertIsSatisfied()
+        verify(exactly = 1) { disposable1.dispose() }
+        verify(exactly = 1) { disposable2.dispose() }
+        verify(exactly = 1) { disposable3.dispose() }
     }
 
     @Test
     fun shouldDisposeAfterUse() {
         // Given
-        val ctx = Mockery()
-        val disposable = ctx.mock<Disposable>(Disposable::class.java, "1")
-
-        ctx.checking(object : Expectations() {
-            init {
-                oneOf<Disposable>(disposable).dispose()
-            }
-        })
+        val disposable = mockk<Disposable>(relaxed = true)
 
         // When
         disposable.use { }
 
         // Then
-        ctx.assertIsSatisfied()
+        verify(exactly = 1) { disposable.dispose() }
     }
 
     @Test
     fun shouldDisposeAfterUseWhenException() {
         // Given
-        val ctx = Mockery()
-        val disposable = ctx.mock<Disposable>(Disposable::class.java, "1")
-
-        ctx.checking(object : Expectations() {
-            init {
-                oneOf<Disposable>(disposable).dispose()
-            }
-        })
+        val disposable = mockk<Disposable>(relaxed = true)
 
         // When
         try {
-            disposable.use { throw Exception() }
-        } catch (ex: Exception) {
+            disposable.use { throw Exception("boom") }
+        } catch (_: Exception) {
         }
 
         // Then
-        ctx.assertIsSatisfied()
+        verify(exactly = 1) { disposable.dispose() }
     }
 }

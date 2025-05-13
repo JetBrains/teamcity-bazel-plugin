@@ -6,7 +6,6 @@ import org.jetbrains.bazel.BazelBuildFileBaseListener
 import org.jetbrains.bazel.BazelBuildFileParser.*
 
 class BazelTargetNamesListener : BazelBuildFileBaseListener() {
-
     val names = hashSetOf<String>()
 
     override fun enterNamedParameter(ctx: NamedParameterContext) {

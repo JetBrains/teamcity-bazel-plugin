@@ -8,7 +8,7 @@ package bazel.events
 // failure.
 
 data class BuildEnqueued(
-        override val streamId: StreamId,
-        override val sequenceNumber: Long,
-        override val eventTime: Timestamp)
-    : OrderedBuildEvent
+    override val streamId: StreamId,
+    override val sequenceNumber: Long,
+    override val eventTime: Timestamp,
+) : OrderedBuildEvent

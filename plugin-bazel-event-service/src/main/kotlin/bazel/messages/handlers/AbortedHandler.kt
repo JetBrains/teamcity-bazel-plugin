@@ -14,21 +14,27 @@ class AbortedHandler : EventHandler {
         get() = HandlerPriority.Low
 
     override fun handle(ctx: ServiceMessageContext) =
-            if (ctx.event.payload is BazelEvent && ctx.event.payload.content is Aborted) {
-                val event = ctx.event.payload.content
-                ctx.hierarchy.tryAbortNode(ctx, event.id)?.let {
-                    if (it.description.isNotEmpty()) {
-                        ctx.onNext(ctx.messageFactory.
-                                createMessage(
-                                ctx.buildMessage(false)
-                                        .append(it.description)
-                                        .append(" aborted.".apply(Color.Error))
-                                        .append(" ${event.reason.description}")
-                                        .append(if (event.description.isNotBlank()) ": ${event.description}" else ".")
-                                        .toString()))
-                    }
+        if (ctx.event.payload is BazelEvent && ctx.event.payload.content is Aborted) {
+            val event = ctx.event.payload.content
+            ctx.hierarchy.tryAbortNode(ctx, event.id)?.let {
+                if (it.description.isNotEmpty()) {
+                    ctx.onNext(
+                        ctx.messageFactory
+                            .createMessage(
+                                ctx
+                                    .buildMessage(false)
+                                    .append(it.description)
+                                    .append(" aborted.".apply(Color.Error))
+                                    .append(" ${event.reason.description}")
+                                    .append(if (event.description.isNotBlank()) ": ${event.description}" else ".")
+                                    .toString(),
+                            ),
+                    )
                 }
+            }
 
-                true
-            } else ctx.handlerIterator.next().handle(ctx)
+            true
+        } else {
+            ctx.handlerIterator.next().handle(ctx)
+        }
 }

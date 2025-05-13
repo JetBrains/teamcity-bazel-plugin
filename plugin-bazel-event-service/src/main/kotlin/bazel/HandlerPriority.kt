@@ -6,5 +6,5 @@ enum class HandlerPriority {
     High,
     Medium,
     Low,
-    Last
+    Last,
 }

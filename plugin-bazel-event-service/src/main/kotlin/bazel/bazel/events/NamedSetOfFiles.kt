@@ -7,7 +7,8 @@ package bazel.bazel.events
 // as outputs of several targets have to be named only once.
 
 data class NamedSetOfFiles(
-        override val id: Id,
-        override val children: List<Id>,
-        // Files that belong to this named set of files.
-        val files: MutableList<File>) : BazelContent
+    override val id: Id,
+    override val children: List<Id>,
+    // Files that belong to this named set of files.
+    val files: MutableList<File>,
+) : BazelContent

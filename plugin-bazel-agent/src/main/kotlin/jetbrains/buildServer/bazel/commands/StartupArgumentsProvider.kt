@@ -7,16 +7,22 @@ import jetbrains.buildServer.agent.runner.ParametersService
 import jetbrains.buildServer.bazel.*
 
 class StartupArgumentsProvider(
-        private val _parametersService: ParametersService,
-        private val _argumentsSplitter: BazelArgumentsSplitter) : ArgumentsProvider {
+    private val _parametersService: ParametersService,
+    private val _argumentsSplitter: BazelArgumentsSplitter,
+) : ArgumentsProvider {
     override fun getArguments(command: BazelCommand): Sequence<CommandArgument> =
-            sequence {
-                _parametersService.tryGetBuildFeatureParameter(BazelConstants.BUILD_FEATURE_TYPE, BazelConstants.PARAM_STARTUP_OPTIONS)?.trim()?.let {
+        sequence {
+            _parametersService
+                .tryGetBuildFeatureParameter(
+                    BazelConstants.BUILD_FEATURE_TYPE,
+                    BazelConstants.PARAM_STARTUP_OPTIONS,
+                )?.trim()
+                ?.let {
                     yieldAll(_argumentsSplitter.splitArguments(it).map { CommandArgument(CommandArgumentType.StartupOption, it) })
                 }
 
-                _parametersService.tryGetParameter(ParameterType.Runner, BazelConstants.PARAM_STARTUP_OPTIONS)?.trim()?.let {
-                    yieldAll(_argumentsSplitter.splitArguments(it).map { CommandArgument(CommandArgumentType.StartupOption, it) })
-                }
+            _parametersService.tryGetParameter(ParameterType.Runner, BazelConstants.PARAM_STARTUP_OPTIONS)?.trim()?.let {
+                yieldAll(_argumentsSplitter.splitArguments(it).map { CommandArgument(CommandArgumentType.StartupOption, it) })
             }
+        }
 }

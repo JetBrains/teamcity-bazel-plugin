@@ -15,16 +15,22 @@ class TestSummaryHandler : EventHandler {
         get() = HandlerPriority.Low
 
     override fun handle(ctx: ServiceMessageContext) =
-            if (ctx.event.payload is BazelEvent && ctx.event.payload.content is TestSummary) {
-                val event = ctx.event.payload.content
-                ctx.onNext(ctx.messageFactory.createMessage(
-                        ctx.buildMessage()
-                                .append("${event.label} test summary:")
-                                .append(" ${event.overallStatus}".apply(event.overallStatus.toColor()))
-                                .append(", total run count: ${event.totalRunCount}", Verbosity.Detailed)
-                                .append(", total cached: ${event.totalNumCached}".apply(Color.Details), Verbosity.Verbose)
-                                .toString()))
+        if (ctx.event.payload is BazelEvent && ctx.event.payload.content is TestSummary) {
+            val event = ctx.event.payload.content
+            ctx.onNext(
+                ctx.messageFactory.createMessage(
+                    ctx
+                        .buildMessage()
+                        .append("${event.label} test summary:")
+                        .append(" ${event.overallStatus}".apply(event.overallStatus.toColor()))
+                        .append(", total run count: ${event.totalRunCount}", Verbosity.Detailed)
+                        .append(", total cached: ${event.totalNumCached}".apply(Color.Details), Verbosity.Verbose)
+                        .toString(),
+                ),
+            )
 
-                true
-            } else ctx.handlerIterator.next().handle(ctx)
+            true
+        } else {
+            ctx.handlerIterator.next().handle(ctx)
+        }
 }

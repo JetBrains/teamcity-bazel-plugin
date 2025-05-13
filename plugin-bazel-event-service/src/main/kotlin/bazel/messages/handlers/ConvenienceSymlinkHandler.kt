@@ -16,17 +16,23 @@ class ConvenienceSymlinkHandler : EventHandler {
         get() = HandlerPriority.Medium
 
     override fun handle(ctx: ServiceMessageContext) =
-            if (ctx.event.payload is BazelEvent && ctx.event.payload.content is ConvenienceSymlinks) {
-                val event = ctx.event.payload.content
-                if (ctx.verbosity.atLeast(Verbosity.Verbose)) {
-                    val symlinks = event.symlinks.joinToStringEscaped(", ")
-                    ctx.onNext(ctx.messageFactory.createMessage(
-                            ctx.buildMessage()
-                                    .append("Convenience symlinks identified ")
-                                    .append(symlinks.apply(Color.Details))
-                                    .toString()))
-                }
+        if (ctx.event.payload is BazelEvent && ctx.event.payload.content is ConvenienceSymlinks) {
+            val event = ctx.event.payload.content
+            if (ctx.verbosity.atLeast(Verbosity.Verbose)) {
+                val symlinks = event.symlinks.joinToStringEscaped(", ")
+                ctx.onNext(
+                    ctx.messageFactory.createMessage(
+                        ctx
+                            .buildMessage()
+                            .append("Convenience symlinks identified ")
+                            .append(symlinks.apply(Color.Details))
+                            .toString(),
+                    ),
+                )
+            }
 
-                true
-            } else ctx.handlerIterator.next().handle(ctx)
+            true
+        } else {
+            ctx.handlerIterator.next().handle(ctx)
+        }
 }

@@ -1,36 +1,39 @@
 package devteam.rx
 
-interface Subject<T> : Observable<T>, Observer<T> {}
+interface Subject<T> :
+    Observable<T>,
+    Observer<T>
 
-fun <T> subjectOf(): Subject<T> = object : Subject<T> {
-    private val observers: MutableList<Observer<T>> = mutableListOf()
-    private var isCompleted: Boolean = false
+fun <T> subjectOf(): Subject<T> =
+    object : Subject<T> {
+        private val observers: MutableList<Observer<T>> = mutableListOf()
+        private var isCompleted: Boolean = false
 
-    override fun subscribe(observer: Observer<T>): Disposable {
-        synchronized(observers) {
-            if (isCompleted) {
-                observer.onComplete()
-                return@synchronized
-            }
-
-            observers.add(observer)
-        }
-
-        return disposableOf {
+        override fun subscribe(observer: Observer<T>): Disposable {
             synchronized(observers) {
-                observers.remove(observer)
+                if (isCompleted) {
+                    observer.onComplete()
+                    return@synchronized
+                }
+
+                observers.add(observer)
+            }
+
+            return disposableOf {
+                synchronized(observers) {
+                    observers.remove(observer)
+                }
             }
         }
-    }
 
-    override fun onNext(value: T) =
+        override fun onNext(value: T) =
             synchronized(observers) {
                 for (observer in observers) {
                     observer.onNext(value)
                 }
             }
 
-    override fun onError(error: Exception) =
+        override fun onError(error: Exception) =
             synchronized(observers) {
                 for (observer in observers) {
                     observer.onError(error)
@@ -39,7 +42,7 @@ fun <T> subjectOf(): Subject<T> = object : Subject<T> {
                 finish()
             }
 
-    override fun onComplete() =
+        override fun onComplete() =
             synchronized(observers) {
                 for (observer in observers) {
                     observer.onComplete()
@@ -48,8 +51,8 @@ fun <T> subjectOf(): Subject<T> = object : Subject<T> {
                 finish()
             }
 
-    private fun finish() {
-        observers.clear()
-        isCompleted = true
+        private fun finish() {
+            observers.clear()
+            isCompleted = true
+        }
     }
-}

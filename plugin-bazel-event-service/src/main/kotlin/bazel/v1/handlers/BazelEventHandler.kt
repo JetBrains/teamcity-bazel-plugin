@@ -10,19 +10,19 @@ import bazel.bazel.events.BazelEvent
 import bazel.bazel.events.BazelUnknownContent
 import bazel.events.OrderedBuildEvent
 import com.google.devtools.build.lib.buildeventstream.BuildEventStreamProtos
-import com.google.protobuf.Any
-import java.util.logging.Logger
 import java.util.logging.Level
+import java.util.logging.Logger
 
 class BazelEventHandler(
-        private val _bazelEventConverter: Converter<BuildEventStreamProtos.BuildEvent, BazelContent>)
-    : EventHandler {
+    private val _bazelEventConverter: Converter<BuildEventStreamProtos.BuildEvent, BazelContent>,
+) : EventHandler {
     override val priority: HandlerPriority = HandlerPriority.High
 
     override fun handle(ctx: HandlerContext): OrderedBuildEvent =
-            if (ctx.event.hasBazelEvent()) {
-                val bazelEvent = ctx.event.bazelEvent
-                val content = when (bazelEvent.typeUrl) {
+        if (ctx.event.hasBazelEvent()) {
+            val bazelEvent = ctx.event.bazelEvent
+            val content =
+                when (bazelEvent.typeUrl) {
                     "type.googleapis.com/build_event_stream.BuildEvent" -> {
                         val event = bazelEvent.unpack(BuildEventStreamProtos.BuildEvent::class.java)
                         _bazelEventConverter.convert(event)
@@ -34,12 +34,15 @@ class BazelEventHandler(
                     }
                 }
 
-                BazelEvent(
-                        ctx.streamId,
-                        ctx.sequenceNumber,
-                        ctx.eventTime,
-                        content)
-            } else ctx.handlerIterator.next().handle(ctx)
+            BazelEvent(
+                ctx.streamId,
+                ctx.sequenceNumber,
+                ctx.eventTime,
+                content,
+            )
+        } else {
+            ctx.handlerIterator.next().handle(ctx)
+        }
 
     companion object {
         private val logger = Logger.getLogger(BazelEventConverter::class.java.name)

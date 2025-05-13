@@ -9,9 +9,9 @@ import jetbrains.buildServer.agent.runner.TerminationAction
 import java.io.File
 
 class CommandExecutionAdapter(
-        private val _bazelRunnerBuildService: BazelRunnerBuildService)
-    : CommandExecution {
-    private val _processListeners by lazy { _bazelRunnerBuildService.listeners }
+    private val _bazelRunnerBuildService: BazelRunnerBuildService,
+) : CommandExecution {
+    private val processListeners by lazy { _bazelRunnerBuildService.listeners }
 
     var result: BuildFinishedStatus? = null
         private set
@@ -22,22 +22,25 @@ class CommandExecutionAdapter(
 
     override fun beforeProcessStarted() = _bazelRunnerBuildService.beforeProcessStarted()
 
-    override fun processStarted(programCommandLine: String, workingDirectory: File) {
-        _processListeners.forEach {
+    override fun processStarted(
+        programCommandLine: String,
+        workingDirectory: File,
+    ) {
+        processListeners.forEach {
             it.processStarted(programCommandLine, workingDirectory)
         }
     }
 
-    override fun onStandardOutput(text: String) = _processListeners.forEach { it.onStandardOutput(text) }
+    override fun onStandardOutput(text: String) = processListeners.forEach { it.onStandardOutput(text) }
 
-    override fun onErrorOutput(text: String) = _processListeners.forEach { it.onStandardOutput(text) }
+    override fun onErrorOutput(text: String) = processListeners.forEach { it.onStandardOutput(text) }
 
     override fun interruptRequested(): TerminationAction = _bazelRunnerBuildService.interrupt()
 
     override fun processFinished(exitCode: Int) {
         _bazelRunnerBuildService.afterProcessFinished()
 
-        _processListeners.forEach {
+        processListeners.forEach {
             it.processFinished(exitCode)
         }
 
