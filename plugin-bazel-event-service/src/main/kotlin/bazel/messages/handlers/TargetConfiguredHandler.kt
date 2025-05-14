@@ -1,5 +1,3 @@
-
-
 package bazel.messages.handlers
 
 import bazel.HandlerPriority
@@ -24,7 +22,10 @@ class TargetConfiguredHandler : EventHandler {
                         false,
                     ).append("Target ${event.targetKind} \"${event.label}\"".apply(Color.BuildStage))
                     .toString()
-            ctx.hierarchy.createNode(event.id, event.children, targetName)
+
+            // add TargetConfigured and it's children TargetCompleted
+            event.children.plus(event.id).forEach { ctx.hierarchy.createNode(it, targetName) }
+
             if (ctx.verbosity.atLeast(Verbosity.Detailed)) {
                 ctx.onNext(
                     ctx.messageFactory.createMessage(

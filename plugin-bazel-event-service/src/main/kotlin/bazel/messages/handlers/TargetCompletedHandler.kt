@@ -18,11 +18,11 @@ class TargetCompletedHandler : EventHandler {
     override fun handle(ctx: ServiceMessageContext) =
         if (ctx.event.payload is BazelEvent && ctx.event.payload.content is TargetComplete) {
             val event = ctx.event.payload.content
-            ctx.hierarchy.tryCloseNode(ctx, event.id)?.let {
+            ctx.hierarchy.getNode(event.id)?.let {
                 val description =
                     ctx
                         .buildMessage()
-                        .append(it.description)
+                        .append(it)
                         .append(
                             if (event.success) {
                                 " completed"

@@ -41,24 +41,26 @@ fun main(args: Array<String>) {
     val messageFactory = MessageFactoryImpl()
 
     if (eventFile != null && bazelCommandlineFile != null) {
-        val bazelRunner = BazelRunner(messageFactory, verbosity, bazelCommandlineFile, 0, eventFile)
-        val commandLine = bazelRunner.args.joinToString(" ") { if (it.contains(' ')) "\"$it\"" else it }
-        println("Starting: $commandLine")
-        println("in directory: ${bazelRunner.workingDirectory}")
-        val result = bazelRunner.run()
-        for (error in result.errors) {
-            println(messageFactory.createErrorMessage(error).asString())
-        }
-
+        var finalExitCode = 0
         BinaryFile(
             eventFile,
             verbosity,
             BazelEventConverter(),
             messageFactory,
         ).subscribe(observer(onNext = { it: String -> println(it) }, onError = { }, onComplete = {}))
-            .dispose()
+            .use {
+                val bazelRunner = BazelRunner(messageFactory, verbosity, bazelCommandlineFile, 0, eventFile)
+                val commandLine = bazelRunner.args.joinToString(" ") { if (it.contains(' ')) "\"$it\"" else it }
+                println("Starting: $commandLine")
+                println("in directory: ${bazelRunner.workingDirectory}")
+                val result = bazelRunner.run()
+                finalExitCode = result.exitCode
+                for (error in result.errors) {
+                    println(messageFactory.createErrorMessage(error).asString())
+                }
+            }
 
-        exit(result.exitCode)
+        exit(finalExitCode)
     }
 
     val gRpcServer = GRpcServer(port)

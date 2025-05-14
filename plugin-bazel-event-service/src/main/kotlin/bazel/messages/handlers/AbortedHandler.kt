@@ -16,22 +16,19 @@ class AbortedHandler : EventHandler {
     override fun handle(ctx: ServiceMessageContext) =
         if (ctx.event.payload is BazelEvent && ctx.event.payload.content is Aborted) {
             val event = ctx.event.payload.content
-            ctx.hierarchy.tryAbortNode(ctx, event.id)?.let {
-                if (it.description.isNotEmpty()) {
-                    ctx.onNext(
-                        ctx.messageFactory
-                            .createMessage(
-                                ctx
-                                    .buildMessage(false)
-                                    .append(it.description)
-                                    .append(" aborted.".apply(Color.Error))
-                                    .append(" ${event.reason.description}")
-                                    .append(if (event.description.isNotBlank()) ": ${event.description}" else ".")
-                                    .toString(),
-                            ),
-                    )
-                }
-            }
+            val eventName = ctx.hierarchy.getNode(event.id) ?: "Event ${event.id}"
+            ctx.onNext(
+                ctx.messageFactory
+                    .createMessage(
+                        ctx
+                            .buildMessage(false)
+                            .append(eventName)
+                            .append(" aborted.".apply(Color.Error))
+                            .append(" ${event.reason.description}")
+                            .append(if (event.description.isNotBlank()) ": ${event.description}" else ".")
+                            .toString(),
+                    ),
+            )
 
             true
         } else {

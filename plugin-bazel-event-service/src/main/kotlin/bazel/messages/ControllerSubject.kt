@@ -67,7 +67,19 @@ class ControllerSubject(
         logger.log(Level.INFO, "onComplete")
     }
 
-    override fun subscribe(observer: Observer<ServiceMessage>): Disposable = controllerSubject.subscribe(observer)
+    override fun subscribe(observer: Observer<ServiceMessage>): Disposable {
+        val subscription = controllerSubject.subscribe(observer)
+
+        controllerSubject.onNext(messageFactory.createFlowStarted(FLOW_ID, ""))
+        controllerSubject.onNext(messageFactory.createBlockOpened("bazel", "events stream").also { it.setFlowId(FLOW_ID) })
+
+
+        return disposableOf {
+            controllerSubject.onNext(messageFactory.createBlockClosed("bazel").also { it.setFlowId(FLOW_ID) })
+            controllerSubject.onNext(messageFactory.createFlowFinished(FLOW_ID))
+            subscription.dispose()
+        }
+    }
 
     override fun dispose() {
         if (disposed.compareAndSet(false, true)) {
@@ -86,9 +98,10 @@ class ControllerSubject(
         event: OrderedBuildEvent,
         message: ServiceMessage,
     ): ServiceMessage {
-        if (message.flowId.isNullOrEmpty()) {
-            message.setFlowId(event.streamId.buildId)
-        }
+//        if (message.flowId.isNullOrEmpty()) {
+//            message.setFlowId(event.streamId.buildId)
+//        }
+        message.setFlowId(FLOW_ID)
 
         message.setTimestamp(event.eventTime.date)
         return message
@@ -105,7 +118,7 @@ class ControllerSubject(
     }
 
     companion object {
-        private val handlers =
+        private val handlers: List<EventHandler> =
             sequenceOf(
                 BuildEnqueuedHandler(),
                 InvocationAttemptStartedHandler(),
@@ -115,5 +128,6 @@ class ControllerSubject(
                 NotProcessedEventHandler(),
             ).sortedBy { it.priority }.toList()
         private val logger = Logger.getLogger(ControllerSubject::class.java.name)
+        private const val FLOW_ID = "events"
     }
 }

@@ -20,7 +20,7 @@ class ActionExecutedHandler : EventHandler {
         if (ctx.event.payload is BazelEvent && ctx.event.payload.content is ActionExecuted) {
             val event = ctx.event.payload.content
             val actionName = "Action \"${event.type}\""
-            ctx.hierarchy.createNode(event.id, event.children, actionName)
+            ctx.hierarchy.createNode(event.id, actionName)
 
             val details = StringBuilder()
             details.appendLine(event.cmdLines.joinToStringEscaped().trim())

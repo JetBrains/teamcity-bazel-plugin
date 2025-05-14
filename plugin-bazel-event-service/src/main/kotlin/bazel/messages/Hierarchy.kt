@@ -1,24 +1,12 @@
-
-
 package bazel.messages
 
 import bazel.bazel.events.Id
+import java.util.concurrent.ConcurrentHashMap
 
-interface Hierarchy {
-    fun createNode(
-        id: Id,
-        children: List<Id>,
-        description: String,
-        action: (ctx: ServiceMessageContext) -> Unit = {},
-    ): Node
+class Hierarchy {
+    private val nodes = ConcurrentHashMap<Id, String>()
 
-    fun tryCloseNode(
-        ctx: ServiceMessageContext,
-        id: Id,
-    ): Node?
+    fun createNode(id: Id, description: String): String = nodes.getOrPut(id) { description }
 
-    fun tryAbortNode(
-        ctx: ServiceMessageContext,
-        id: Id,
-    ): Node?
+    fun getNode(id: Id): String? = nodes[id]
 }

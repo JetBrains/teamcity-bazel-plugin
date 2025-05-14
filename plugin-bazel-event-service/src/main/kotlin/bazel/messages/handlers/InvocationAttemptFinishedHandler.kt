@@ -17,8 +17,6 @@ class InvocationAttemptFinishedHandler : EventHandler {
 
     override fun handle(ctx: ServiceMessageContext) =
         if (ctx.event.payload is InvocationAttemptFinished) {
-            ctx.onNext(ctx.messageFactory.createFlowFinished(ctx.event.payload.streamId.invocationId))
-
             if (ctx.event.payload.invocationResult.status == BuildStatus.CommandSucceeded) {
                 if (ctx.verbosity.atLeast(Verbosity.Detailed)) {
                     ctx.onNext(

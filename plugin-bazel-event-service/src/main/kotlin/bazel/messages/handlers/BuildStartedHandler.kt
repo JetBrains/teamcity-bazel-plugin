@@ -27,10 +27,7 @@ class BuildStartedHandler : EventHandler {
                     .toString()
 
             if (ctx.verbosity.atLeast(Verbosity.Normal)) {
-                ctx.onNext(ctx.messageFactory.createBlockOpened(description, details))
-                ctx.hierarchy.createNode(event.id, event.children, description) {
-                    it.onNext(it.messageFactory.createBlockClosed(description))
-                }
+                ctx.onNext(ctx.messageFactory.createMessage(details))
             }
 
             true

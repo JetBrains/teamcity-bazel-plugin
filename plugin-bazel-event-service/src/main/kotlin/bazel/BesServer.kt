@@ -16,11 +16,11 @@ class BesServer(
 ) : Observable<String> {
     override fun subscribe(observer: Observer<String>): Disposable {
         val controllerSubject =
-            ControllerSubject(_verbosity, _messageFactory, HierarchyImpl()) {
+            ControllerSubject(_verbosity, _messageFactory, Hierarchy()) {
                 StreamSubject(
                     _verbosity,
                     _messageFactory,
-                    HierarchyImpl(),
+                    Hierarchy(),
                 )
             }
         val subscription =
@@ -29,16 +29,14 @@ class BesServer(
                 controllerSubject.subscribe(
                     observer(
                         onNext = { observer.onNext(it.asString()) },
-                        onError = { observer.onError(it) },
-                        onComplete = { observer.onComplete() },
-                    ),
-                ),
-                // service control signals subscription
-                controllerSubject.subscribe(
-                    observer(
-                        onNext = { },
-                        onError = { _ -> _gRpcServer.shutdown() },
-                        onComplete = { _gRpcServer.shutdown() },
+                        onError = {
+                            observer.onError(it)
+                            _gRpcServer.shutdown()
+                        },
+                        onComplete = {
+                            observer.onComplete()
+                            _gRpcServer.shutdown()
+                        },
                     ),
                 ),
                 // converting subscription
