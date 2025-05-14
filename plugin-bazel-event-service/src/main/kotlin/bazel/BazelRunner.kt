@@ -7,13 +7,15 @@ import devteam.rx.Disposable
 import devteam.rx.use
 import java.io.BufferedReader
 import java.io.File
+import java.nio.file.Path
+import kotlin.io.path.absolutePathString
 
 class BazelRunner(
     private val messageFactory: MessageFactory,
     private val verbosity: Verbosity,
     private val bazelCommandlineFile: File,
     private val besPort: Int,
-    private val eventFile: File? = null,
+    private val eventFile: Path? = null,
 ) {
     val args: Sequence<String>
         get() =
@@ -53,7 +55,7 @@ class BazelRunner(
                 }
 
                 if (eventFile != null) {
-                    yield("${BINARY_FILE_ARG}${eventFile.absolutePath}")
+                    yield("${BINARY_FILE_ARG}${eventFile.absolutePathString()}")
                 }
             }
 

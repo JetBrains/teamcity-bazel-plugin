@@ -4,6 +4,8 @@ package bazel
 
 import org.apache.commons.cli.*
 import java.io.File
+import java.nio.file.Path
+import kotlin.io.path.Path
 
 class BazelOptions(
     args: Array<String>,
@@ -25,7 +27,7 @@ class BazelOptions(
 
     val port: Int get() = line.getOptionValue("p")?.toInt() ?: 0
 
-    val eventFile: File? get() = line.getOptionValue("f")?.let { File(it) }
+    val eventFile: Path? get() = line.getOptionValue("f")?.let { Path(it) }
 
     val bazelCommandlineFile: File? get() = line.getOptionValue("c")?.let { File(it) }
 
