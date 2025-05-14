@@ -47,7 +47,6 @@ dependencies {
         exclude group: 'com.ibm.icu'
     }
     implementation libs.kotlin.stdlibjdk8
-    compileOnly libs.jstl
     compileOnly libs.teamcity.internal.server
     agent project(path: ':plugin-bazel-agent', configuration: 'plugin')
 
