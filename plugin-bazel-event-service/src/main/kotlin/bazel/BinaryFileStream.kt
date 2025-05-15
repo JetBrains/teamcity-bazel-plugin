@@ -40,8 +40,9 @@ class BinaryFileStream(
         override fun subscribe(observer: Observer<BazelEvent>): Disposable {
             val thread = thread(name = "BazelEventStream") { readBazelStreamLoop(observer) }
             return disposableOf {
-                disposed.set(true)
-                thread.join()
+                if (disposed.compareAndSet(false, true)) {
+                    thread.join()
+                }
             }
         }
 
