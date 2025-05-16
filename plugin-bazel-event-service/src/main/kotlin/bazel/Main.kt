@@ -51,10 +51,11 @@ fun main(args: Array<String>) {
                 onNext = { println(it) },
                 onError = {
                     println(
-                        messageFactory.createErrorMessage("Error during binary file read", it.toString()).asString()
+                        messageFactory.createErrorMessage("Error during binary file read", it.toString()).asString(),
                     )
                 },
-                onComplete = {})
+                onComplete = {},
+            ),
         ).use {
             val bazelRunner = BazelRunner(messageFactory, verbosity, bazelCommandlineFile, 0, eventFile)
             val commandLine = bazelRunner.args.joinToString(" ") { if (it.contains(' ')) "\"$it\"" else it }
