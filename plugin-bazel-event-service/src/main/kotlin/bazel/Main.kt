@@ -1,5 +1,3 @@
-
-
 package bazel
 
 import bazel.bazel.converters.BazelEventConverter
@@ -48,7 +46,16 @@ fun main(args: Array<String>) {
             verbosity,
             messageFactory,
             BinaryFileStream(BazelEventConverter()),
-        ).subscribe(observer(onNext = { it: String -> println(it) }, onError = { }, onComplete = {})).use {
+        ).subscribe(
+            observer(
+                onNext = { println(it) },
+                onError = {
+                    println(
+                        messageFactory.createErrorMessage("Error during binary file read", it.toString()).asString()
+                    )
+                },
+                onComplete = {})
+        ).use {
             val bazelRunner = BazelRunner(messageFactory, verbosity, bazelCommandlineFile, 0, eventFile)
             val commandLine = bazelRunner.args.joinToString(" ") { if (it.contains(' ')) "\"$it\"" else it }
             println("Starting: $commandLine")
