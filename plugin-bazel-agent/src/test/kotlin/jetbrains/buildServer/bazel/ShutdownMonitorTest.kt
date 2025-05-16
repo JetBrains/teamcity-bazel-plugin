@@ -1,10 +1,10 @@
 package jetbrains.buildServer.bazel
 
-import devteam.rx.subjectOf
 import io.mockk.MockKAnnotations
 import io.mockk.clearAllMocks
 import io.mockk.every
 import io.mockk.impl.annotations.MockK
+import io.mockk.mockk
 import io.mockk.verify
 import jetbrains.buildServer.agent.*
 import jetbrains.buildServer.agent.runner.ProgramCommandLine
@@ -13,9 +13,6 @@ import org.testng.annotations.Test
 import java.io.File
 
 class ShutdownMonitorTest {
-    @MockK
-    private lateinit var agentLifeCycleEventSources: AgentLifeCycleEventSources
-
     @MockK
     private lateinit var workspaceExplorer: WorkspaceExplorer
 
@@ -71,8 +68,6 @@ class ShutdownMonitorTest {
     @Test
     fun shouldShutdownBazelServerSeveralTimesWhenSeveralDirectories() {
         // given
-        val buildFinishedSource = subjectOf<AgentLifeCycleEventSources.BuildFinishedEvent>()
-        every { agentLifeCycleEventSources.buildFinishedSource } returns buildFinishedSource
         every { command1.arguments } returns sequenceOf(CommandArgument(CommandArgumentType.Argument, "arg"))
         every { command2.arguments } returns sequenceOf(CommandArgument(CommandArgumentType.Argument, "arg"))
         every { shutdownCommandLine1.workingDirectory } returns "dir1"
@@ -85,12 +80,7 @@ class ShutdownMonitorTest {
         shutdownMonitor.register(command1)
         shutdownMonitor.register(command2)
 
-        buildFinishedSource.onNext(
-            AgentLifeCycleEventSources.BuildFinishedEvent(
-                agentRunningBuild,
-                BuildFinishedStatus.FINISHED_SUCCESS,
-            ),
-        )
+        shutdownMonitor.beforeBuildFinish(agentRunningBuild, BuildFinishedStatus.FINISHED_SUCCESS)
 
         // then
         verify(exactly = 1) { commandLineExecutor.tryExecute(shutdownCommandLine1) }
@@ -100,8 +90,6 @@ class ShutdownMonitorTest {
     @Test
     fun shouldShutdownBazelServerSeveralTimesWhenDifferentCleanCommandLine() {
         // given
-        val buildFinishedSource = subjectOf<AgentLifeCycleEventSources.BuildFinishedEvent>()
-        every { agentLifeCycleEventSources.buildFinishedSource } returns buildFinishedSource
         every { shutdownCommandLine1.workingDirectory } returns "dir"
         every { workspaceExplorer.tryFindWorkspace(File("dir")) } returns Workspace(File("ws"), cleanCommandLine1)
         every { shutdownCommandLine2.workingDirectory } returns "dir"
@@ -113,12 +101,7 @@ class ShutdownMonitorTest {
         shutdownMonitor.register(command1)
         shutdownMonitor.register(command2)
 
-        buildFinishedSource.onNext(
-            AgentLifeCycleEventSources.BuildFinishedEvent(
-                agentRunningBuild,
-                BuildFinishedStatus.FINISHED_SUCCESS,
-            ),
-        )
+        shutdownMonitor.beforeBuildFinish(agentRunningBuild, BuildFinishedStatus.FINISHED_SUCCESS)
 
         // then
         verify(exactly = 1) { commandLineExecutor.tryExecute(shutdownCommandLine1) }
@@ -128,8 +111,6 @@ class ShutdownMonitorTest {
     @Test
     fun shouldShutdownBazelServerOnceForSameDirectoriesAndSameOptions() {
         // given
-        val buildFinishedSource = subjectOf<AgentLifeCycleEventSources.BuildFinishedEvent>()
-        every { agentLifeCycleEventSources.buildFinishedSource } returns buildFinishedSource
         every { shutdownCommandLine1.workingDirectory } returns "dir1"
         every { workspaceExplorer.tryFindWorkspace(File("dir1")) } returns Workspace(File("ws1"), cleanCommandLine1)
         every { shutdownCommandLine2.workingDirectory } returns "dir1"
@@ -141,12 +122,7 @@ class ShutdownMonitorTest {
         shutdownMonitor.register(command1)
         shutdownMonitor.register(command2)
 
-        buildFinishedSource.onNext(
-            AgentLifeCycleEventSources.BuildFinishedEvent(
-                agentRunningBuild,
-                BuildFinishedStatus.FINISHED_SUCCESS,
-            ),
-        )
+        shutdownMonitor.beforeBuildFinish(agentRunningBuild, BuildFinishedStatus.FINISHED_SUCCESS)
 
         // then
 
@@ -157,8 +133,6 @@ class ShutdownMonitorTest {
     @Test
     fun shouldShutdownBazelServerWhenWorkspaceWasNotFound() {
         // given
-        val buildFinishedSource = subjectOf<AgentLifeCycleEventSources.BuildFinishedEvent>()
-        every { agentLifeCycleEventSources.buildFinishedSource } returns buildFinishedSource
         every { shutdownCommandLine1.workingDirectory } returns "dir"
         every { workspaceExplorer.tryFindWorkspace(File("dir")) } returns null
         every { shutdownCommandLine2.workingDirectory } returns "dir2"
@@ -170,12 +144,7 @@ class ShutdownMonitorTest {
         shutdownMonitor.register(command1)
         shutdownMonitor.register(command2)
 
-        buildFinishedSource.onNext(
-            AgentLifeCycleEventSources.BuildFinishedEvent(
-                agentRunningBuild,
-                BuildFinishedStatus.FINISHED_SUCCESS,
-            ),
-        )
+        shutdownMonitor.beforeBuildFinish(agentRunningBuild, BuildFinishedStatus.FINISHED_SUCCESS)
 
         // then
         verify(exactly = 0) { commandLineExecutor.tryExecute(shutdownCommandLine1) }
@@ -184,7 +153,7 @@ class ShutdownMonitorTest {
 
     private fun createShutdownMonitor() =
         ShutdownMonitor(
-            agentLifeCycleEventSources,
+            mockk(relaxed = true),
             commandLineExecutor,
             workspaceExplorer,
             shutdownCommand,

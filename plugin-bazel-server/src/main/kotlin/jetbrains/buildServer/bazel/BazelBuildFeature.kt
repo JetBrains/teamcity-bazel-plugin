@@ -45,6 +45,7 @@ class BazelBuildFeature(
             }
         }
 
+    @Deprecated("Deprecated in Java")
     override fun getParametersProcessor(): PropertiesProcessor? =
         PropertiesProcessor { properties ->
             val result = mutableListOf<InvalidProperty>()

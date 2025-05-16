@@ -22,12 +22,9 @@ teamcity {
 
 dependencies {
   implementation libs.kotlin.stdlib
-  implementation libs.kotlin.reflect
   implementation libs.java.semver
   implementation libs.jackson.module.kotlin
-  compileOnly libs.teamcity.common.api
   compileOnly libs.teamcity.internal.agent
-  testImplementation libs.teamcity.common.api
   testImplementation libs.teamcity.internal.agent
   testImplementation libs.testng
   testImplementation libs.mockk
