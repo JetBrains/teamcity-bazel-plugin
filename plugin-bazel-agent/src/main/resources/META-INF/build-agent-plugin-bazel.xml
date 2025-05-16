@@ -17,7 +17,6 @@
   <bean class="jetbrains.buildServer.agent.EnvironmentImpl"/>
   <bean class="jetbrains.buildServer.agent.JacksonJsonSerializer"/>
   <bean class="jetbrains.buildServer.agent.CommandLineExecutorImpl"/>
-  <bean class="jetbrains.buildServer.agent.AgentLifeCycleEventSourcesImpl"/>
   <bean class="jetbrains.buildServer.agent.FileSystemServiceImpl"/>
 
   <!--runner service-->

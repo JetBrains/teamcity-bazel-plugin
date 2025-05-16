@@ -1,46 +1,43 @@
-
-
 package jetbrains.buildServer.bazel
 
 import com.intellij.openapi.diagnostic.Logger
-import devteam.rx.Disposable
-import devteam.rx.observer
-import jetbrains.buildServer.agent.AgentLifeCycleEventSources
+import jetbrains.buildServer.agent.AgentLifeCycleAdapter
+import jetbrains.buildServer.agent.AgentLifeCycleListener
+import jetbrains.buildServer.agent.AgentRunningBuild
+import jetbrains.buildServer.agent.BuildFinishedStatus
 import jetbrains.buildServer.agent.CommandLineExecutor
 import jetbrains.buildServer.agent.runner.ProgramCommandLine
+import jetbrains.buildServer.util.EventDispatcher
 import java.io.File
 
 class ShutdownMonitor(
-    agentLifeCycleEventSources: AgentLifeCycleEventSources,
-    commandLineExecutor: CommandLineExecutor,
+    events: EventDispatcher<AgentLifeCycleListener>,
+    private val _commandLineExecutor: CommandLineExecutor,
     private val _workspaceExplorer: WorkspaceExplorer,
     private val _shutdownCommand: BazelCommand,
     private val _workspaceRegistry: WorkspaceRegistry,
     private val _commandLineBuilder: BazelCommandLineBuilder,
-) : CommandRegistry,
-    Disposable {
-    private var subscriptionToken: Disposable
+) : AgentLifeCycleAdapter(),
+    CommandRegistry {
     private var shutdownCommands: MutableSet<ShutdownCommandLine> = mutableSetOf()
 
     init {
-        subscriptionToken =
-            agentLifeCycleEventSources.buildFinishedSource.subscribe(
-                observer(
-                    onNext = { _ ->
-                        if (shutdownCommands.any()) {
-                            try {
-                                for (shutdownCommand in shutdownCommands) {
-                                    commandLineExecutor.tryExecute(shutdownCommand.commandLine)
-                                }
-                            } finally {
-                                shutdownCommands.clear()
-                            }
-                        }
-                    },
-                    onError = { },
-                    onComplete = {},
-                ),
-            )
+        events.addListener(this)
+    }
+
+    override fun beforeBuildFinish(
+        build: AgentRunningBuild,
+        buildStatus: BuildFinishedStatus,
+    ) {
+        if (shutdownCommands.any()) {
+            try {
+                for (shutdownCommand in shutdownCommands) {
+                    _commandLineExecutor.tryExecute(shutdownCommand.commandLine)
+                }
+            } finally {
+                shutdownCommands.clear()
+            }
+        }
     }
 
     override fun register(command: BazelCommand) {
@@ -54,8 +51,6 @@ class ShutdownMonitor(
             _workspaceRegistry.register(it)
         }
     }
-
-    override fun dispose() = subscriptionToken.dispose()
 
     private class ShutdownCommandLine(
         val commandLine: ProgramCommandLine,
