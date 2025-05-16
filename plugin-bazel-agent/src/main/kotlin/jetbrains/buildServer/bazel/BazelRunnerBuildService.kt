@@ -1,5 +1,3 @@
-
-
 package jetbrains.buildServer.bazel
 
 import jetbrains.buildServer.RunBuildException
@@ -51,8 +49,6 @@ class BazelRunnerBuildService(
         }
         return super.getRunResult(exitCode)
     }
-
-    override fun isCommandLineLoggingEnabled() = false
 
     private fun getCommandName() = runnerParameters[BazelConstants.PARAM_COMMAND]?.trim()
 }

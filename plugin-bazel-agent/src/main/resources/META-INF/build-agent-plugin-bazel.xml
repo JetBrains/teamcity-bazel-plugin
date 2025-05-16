@@ -11,7 +11,10 @@
   <bean class="jetbrains.buildServer.bazel.BazelCacheCleaner"/>
   <bean class="jetbrains.buildServer.bazel.BazelToolProvider"/>
   <bean class="jetbrains.buildServer.bazel.BazelRunnerBuildService" scope="prototype"/>
-  <bean class="jetbrains.buildServer.bazel.CommandExecutionAdapter" scope="prototype"/>
+  <bean class="jetbrains.buildServer.agent.java.DockerWrapperJavaExecutableLocator"/>
+  <bean class="jetbrains.buildServer.agent.java.SystemJavaLocator"/>
+  <bean class="jetbrains.buildServer.agent.java.BazelEmbeddedJavaLocator"/>
+  <bean class="jetbrains.buildServer.agent.java.JavaExecutableProvider"/>
 
   <!--agent service-->
   <bean class="jetbrains.buildServer.agent.EnvironmentImpl"/>
@@ -72,6 +75,9 @@
     <constructor-arg ref="startupArgumentsProvider"/>
   </bean>
   <bean class="jetbrains.buildServer.bazel.commands.InfoWorkspaceCommand" id="infoWorkspaceCommand">
+    <constructor-arg ref="startupArgumentsProvider"/>
+  </bean>
+  <bean class="jetbrains.buildServer.bazel.commands.InfoJavaHomeCommand" id="infoJavaHomeCommand">
     <constructor-arg ref="startupArgumentsProvider"/>
   </bean>
   <bean class="jetbrains.buildServer.bazel.commands.FullCleanCommand" id="fullCleanCommand">
