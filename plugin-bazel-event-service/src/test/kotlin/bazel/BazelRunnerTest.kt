@@ -7,6 +7,7 @@ import org.testng.annotations.BeforeMethod
 import org.testng.annotations.Test
 import java.io.File
 import java.nio.file.Files
+import kotlin.io.path.absolutePathString
 
 class BazelRunnerTest {
     private lateinit var tempDir: File
@@ -32,7 +33,7 @@ class BazelRunnerTest {
             )
         val commandFile = File(tempDir, "commands")
         commandFile.writeText(inputArgs.joinToString("\n"))
-        val eventFile = File(tempDir, "events")
+        val eventFile = tempDir.toPath().resolve("events")
         val fixture =
             BazelRunner(
                 MessageFactoryImpl(),
@@ -46,7 +47,7 @@ class BazelRunnerTest {
                 "/fake/bazel",
                 "bar x'\"y",
                 "",
-                "--build_event_binary_file=${eventFile.absolutePath}",
+                "--build_event_binary_file=${eventFile.absolutePathString()}",
                 "--",
                 "baz",
             )
