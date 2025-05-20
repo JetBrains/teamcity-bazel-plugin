@@ -1,41 +1,43 @@
-
-
 package bazel.messages.handlers
 
 import bazel.HandlerPriority
 import bazel.Verbosity
 import bazel.atLeast
-import bazel.bazel.events.ActionExecuted
+import bazel.bazel.converters.FileConverter
 import bazel.bazel.events.BazelEvent
+import bazel.bazel.events.Id
 import bazel.bazel.events.read
 import bazel.messages.Color
 import bazel.messages.ServiceMessageContext
 import bazel.messages.apply
 
 class ActionExecutedHandler : EventHandler {
+    private val fileConverter = FileConverter()
+
     override val priority: HandlerPriority
         get() = HandlerPriority.Medium
 
-    override fun handle(ctx: ServiceMessageContext) =
-        if (ctx.event.payload is BazelEvent && ctx.event.payload.content is ActionExecuted) {
-            val event = ctx.event.payload.content
+    override fun handle(ctx: ServiceMessageContext): Boolean {
+        val payload = ctx.event.payload
+        return if (ctx.event.payload is BazelEvent && payload.rawEvent.hasAction()) {
+            val event = payload.rawEvent.action
             val actionName = "Action \"${event.type}\""
-            ctx.hierarchy.createNode(event.id, event.children, actionName)
+            ctx.hierarchy.createNode(Id(payload.rawEvent.id), payload.rawEvent.childrenList.map { Id(it) }, actionName)
 
             val details = StringBuilder()
-            details.appendLine(event.cmdLines.joinToStringEscaped().trim())
+            details.appendLine(event.commandLineList.joinToStringEscaped().trim())
 
-            var content = event.primaryOutput.read(ctx)
+            var content = fileConverter.convert(event.primaryOutput).read(ctx)
             if (content.isNotBlank()) {
                 details.appendLine(content)
             }
 
-            content = event.stdout.read(ctx)
+            content = fileConverter.convert(event.stdout).read(ctx)
             if (content.isNotBlank()) {
                 details.appendLine(content)
             }
 
-            content = event.stderr.read(ctx)
+            content = fileConverter.convert(event.stderr).read(ctx)
             if (content.isNotBlank()) {
                 details.appendLine(content.apply(Color.Error))
             }
@@ -94,4 +96,5 @@ class ActionExecutedHandler : EventHandler {
         } else {
             ctx.handlerIterator.next().handle(ctx)
         }
+    }
 }

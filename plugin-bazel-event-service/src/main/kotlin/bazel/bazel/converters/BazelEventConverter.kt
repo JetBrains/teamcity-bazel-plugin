@@ -36,7 +36,8 @@ class BazelEventConverter : Converter<BuildEventStreamProtos.BuildEvent, BazelCo
             source.hasProgress() ||
             source.hasFinished() ||
             source.hasStarted() ||
-            source.hasConfigured()
+            source.hasConfigured() ||
+            source.hasAction()
         ) {
             return object : BazelContent {
                 override val id = id
@@ -51,8 +52,6 @@ class BazelEventConverter : Converter<BuildEventStreamProtos.BuildEvent, BazelCo
     companion object {
         private val handlers =
             sequenceOf(
-                // ActionExecuted action = 7;
-                ActionExecutedHandler(FileConverter()),
                 // TestResult test_result = 10;
                 TestResultHandler(FileConverter(), TestStatusConverter()),
                 // Unknown content.
