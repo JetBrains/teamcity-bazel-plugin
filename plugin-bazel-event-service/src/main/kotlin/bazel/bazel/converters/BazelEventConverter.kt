@@ -28,7 +28,8 @@ class BazelEventConverter : Converter<BuildEventStreamProtos.BuildEvent, BazelCo
             source.hasFetch() ||
             source.hasBuildToolLogs() ||
             source.hasTestProgress() ||
-            source.hasConfiguration()
+            source.hasConfiguration() ||
+            source.hasConvenienceSymlinksIdentified()
         ) {
             return object : BazelContent {
                 override val id = id
@@ -59,8 +60,6 @@ class BazelEventConverter : Converter<BuildEventStreamProtos.BuildEvent, BazelCo
                 BuildMetricsHandler(),
                 // BuildMetadata build_metadata = 26;
                 BuildMetadataHandler(),
-                // ConvenienceSymlinksIdentified convenience_symlinks_identified = 27;
-                ConvenienceSymlinksIdentifiedHandler(ConvenienceSymlinkConverter()),
                 // ExecRequestConstructed exec_request = 29;
                 ExecRequestConstructedHandler(),
                 // Unknown content.
