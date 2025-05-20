@@ -1,5 +1,3 @@
-
-
 package bazel.messages
 
 import bazel.Event
@@ -114,6 +112,8 @@ class StreamSubject(
                 ConvenienceSymlinkHandler(),
                 // TargetSummary target_summary = 28;
                 TargetSummaryHandler(),
+                // TestProgress test_progress = 30;
+                TestProgressHandler(),
                 // Unknown
                 UnknownEventHandler(),
             ).sortedBy { it.priority }.toList()

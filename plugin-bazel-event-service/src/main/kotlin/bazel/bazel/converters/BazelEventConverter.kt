@@ -26,7 +26,8 @@ class BazelEventConverter : Converter<BuildEventStreamProtos.BuildEvent, BazelCo
             source.hasTestSummary() ||
             source.hasCompleted() ||
             source.hasFetch() ||
-            source.hasBuildToolLogs()
+            source.hasBuildToolLogs() ||
+            source.hasTestProgress()
         ) {
             return object : BazelContent {
                 override val id = id
@@ -63,8 +64,6 @@ class BazelEventConverter : Converter<BuildEventStreamProtos.BuildEvent, BazelCo
                 ConvenienceSymlinksIdentifiedHandler(ConvenienceSymlinkConverter()),
                 // ExecRequestConstructed exec_request = 29;
                 ExecRequestConstructedHandler(),
-                // TestProgress test_progress = 30;
-                TestProgressHandler(),
                 // Unknown content.
                 UnknownContentHandler(),
             ).sortedBy { it.priority }.toList()
