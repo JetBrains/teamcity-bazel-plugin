@@ -1,12 +1,9 @@
-
-
 package bazel.messages.handlers
 
 import bazel.HandlerPriority
 import bazel.Verbosity
 import bazel.atLeast
 import bazel.bazel.events.BazelEvent
-import bazel.bazel.events.BuildMetrics
 import bazel.messages.Color
 import bazel.messages.ServiceMessageContext
 import bazel.messages.apply
@@ -15,15 +12,20 @@ class BuildMetricsHandler : EventHandler {
     override val priority: HandlerPriority
         get() = HandlerPriority.Low
 
-    override fun handle(ctx: ServiceMessageContext) =
-        if (ctx.event.payload is BazelEvent && ctx.event.payload.content is BuildMetrics) {
-            val event = ctx.event.payload.content
+    override fun handle(ctx: ServiceMessageContext): Boolean {
+        val payload = ctx.event.payload
+        return if (payload is BazelEvent && payload.rawEvent.hasBuildMetrics()) {
+            val event = payload.rawEvent.buildMetrics
             if (ctx.verbosity.atLeast(Verbosity.Verbose)) {
+                val actionsCreated = if (event.hasActionSummary()) event.actionSummary.actionsCreated else 0
+                val usedHeapSizePostBuild =
+                    if (event.hasMemoryMetrics()) event.memoryMetrics.usedHeapSizePostBuild else 0
+
                 ctx.onNext(
                     ctx.messageFactory.createMessage(
                         ctx
                             .buildMessage()
-                            .append("Actions created: ${event.actionsCreated}".apply(Color.Details))
+                            .append("Actions created: $actionsCreated".apply(Color.Details))
                             .toString(),
                     ),
                 )
@@ -32,7 +34,7 @@ class BuildMetricsHandler : EventHandler {
                     ctx.messageFactory.createMessage(
                         ctx
                             .buildMessage()
-                            .append("Used heap size post build: ${event.usedHeapSizePostBuild}".apply(Color.Details))
+                            .append("Used heap size post build: $usedHeapSizePostBuild".apply(Color.Details))
                             .toString(),
                     ),
                 )
@@ -42,4 +44,5 @@ class BuildMetricsHandler : EventHandler {
         } else {
             ctx.handlerIterator.next().handle(ctx)
         }
+    }
 }
