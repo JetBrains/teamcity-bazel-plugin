@@ -3,7 +3,6 @@ package bazel.tests
 import bazel.Event
 import bazel.FileSystemService
 import bazel.Verbosity
-import bazel.bazel.events.*
 import bazel.events.OrderedBuildEvent
 import bazel.messages.Hierarchy
 import bazel.messages.MessageFactory
@@ -81,7 +80,7 @@ class TestResultHandlerTest {
 
         // When
         val event: Event<OrderedBuildEvent> =
-            createRawEvent(
+            createEvent(
                 BuildEventStreamProtos.BuildEvent
                     .newBuilder()
                     .setTestResult(

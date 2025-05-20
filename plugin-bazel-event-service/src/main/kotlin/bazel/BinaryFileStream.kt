@@ -1,6 +1,5 @@
 package bazel
 
-import bazel.bazel.converters.BazelEventConverter
 import bazel.bazel.events.BazelEvent
 import bazel.events.StreamId
 import bazel.events.Timestamp
@@ -22,17 +21,14 @@ import java.util.logging.Logger
 import kotlin.concurrent.thread
 import kotlin.io.path.exists
 
-class BinaryFileStream(
-    private val _bazelEventConverter: BazelEventConverter,
-) {
+class BinaryFileStream {
     fun create(binaryFile: Path): Listener {
         logger.info("Reading Bazel events from \"$binaryFile\"...")
-        return Listener(binaryFile, _bazelEventConverter)
+        return Listener(binaryFile)
     }
 
     class Listener(
         private val binaryFile: Path,
-        private val _bazelEventConverter: BazelEventConverter,
     ) : Observable<BazelEvent> {
         private val disposed = AtomicBoolean()
         private var sequenceNumber: Long = 0
@@ -106,7 +102,6 @@ class BinaryFileStream(
                 StreamId.default,
                 sequenceNumber++,
                 Timestamp.zero, // timestamp is available only in OrderedBuildEvent (BES grpc mode)
-                _bazelEventConverter.convert(event),
                 event,
             )
     }

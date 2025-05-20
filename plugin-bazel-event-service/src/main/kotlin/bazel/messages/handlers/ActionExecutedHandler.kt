@@ -77,8 +77,7 @@ class ActionExecutedHandler : EventHandler {
                     ctx.messageFactory.createBuildProblem(
                         error,
                         ctx.event.projectId,
-                        ctx.event.payload.content.id
-                            .toString(),
+                        payload.rawEvent.id.toString(),
                     ),
                 )
 

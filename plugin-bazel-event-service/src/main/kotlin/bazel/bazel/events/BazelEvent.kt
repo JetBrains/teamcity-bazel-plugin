@@ -16,6 +16,5 @@ data class BazelEvent(
     // events as children. More details, which are specific to the kind of event
     // that is observed, is provided in the payload. More options for the payload
     // might be added in the future.
-    val content: BazelContent,
     val rawEvent: BuildEventStreamProtos.BuildEvent,
 ) : OrderedBuildEvent

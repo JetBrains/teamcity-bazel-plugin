@@ -5,6 +5,7 @@ import bazel.FileSystemServiceImpl
 import bazel.Verbosity
 import bazel.atLeast
 import bazel.bazel.events.BazelEvent
+import bazel.bazel.events.Id
 import bazel.events.OrderedBuildEvent
 import bazel.messages.handlers.*
 import devteam.rx.*
@@ -36,9 +37,11 @@ class StreamSubject(
                 }
 
                 if (value.payload is BazelEvent) {
-                    val event = value.payload.content
-                    hierarchy.createNode(event.id, event.children, "")
-                    hierarchy.tryCloseNode(ctx, event.id)
+                    val event = value.payload.rawEvent
+                    val id = Id(event.id)
+                    val children = event.childrenList.map { Id(it) }
+                    hierarchy.createNode(id, children, "")
+                    hierarchy.tryCloseNode(ctx, id)
                 }
             }
     }

@@ -1,6 +1,5 @@
 package bazel
 
-import bazel.bazel.converters.BazelEventConverter
 import bazel.messages.MessageFactoryImpl
 import bazel.v1.BuildEventConverter
 import bazel.v1.PublishBuildEventService
@@ -45,7 +44,7 @@ fun main(args: Array<String>) {
             eventFile,
             verbosity,
             messageFactory,
-            BinaryFileStream(BazelEventConverter()),
+            BinaryFileStream(),
         ).subscribe(
             observer(
                 onNext = { println(it) },
