@@ -1,12 +1,10 @@
-
-
 package bazel.messages.handlers
 
 import bazel.HandlerPriority
 import bazel.Verbosity
 import bazel.atLeast
 import bazel.bazel.events.BazelEvent
-import bazel.bazel.events.TargetComplete
+import bazel.bazel.events.Id
 import bazel.messages.Color
 import bazel.messages.ServiceMessageContext
 import bazel.messages.apply
@@ -15,29 +13,33 @@ class TargetCompletedHandler : EventHandler {
     override val priority: HandlerPriority
         get() = HandlerPriority.Medium
 
-    override fun handle(ctx: ServiceMessageContext) =
-        if (ctx.event.payload is BazelEvent && ctx.event.payload.content is TargetComplete) {
-            val event = ctx.event.payload.content
-            ctx.hierarchy.tryCloseNode(ctx, event.id)?.let {
+    override fun handle(ctx: ServiceMessageContext): Boolean {
+        val payload = ctx.event.payload
+        if (payload is BazelEvent && payload.rawEvent.hasCompleted()) {
+            val completed = payload.rawEvent.completed
+
+            ctx.hierarchy.tryCloseNode(ctx, Id(payload.rawEvent.id))?.let {
                 val description =
                     ctx
                         .buildMessage()
                         .append(it.description)
                         .append(
-                            if (event.success) {
+                            if (completed.success) {
                                 " completed"
                             } else {
                                 " failed".apply(Color.Error)
                             },
-                        ).append(", test timeout: ${event.testTimeoutSeconds}(seconds)", Verbosity.Verbose) {
-                            event.testTimeoutSeconds !=
-                                0L
-                        }.append(", tags: \"${event.tags.joinToStringEscaped(", ")}\"", Verbosity.Verbose) {
-                            event.tags
-                                .isNotEmpty()
-                        }.toString()
+                        ).append(
+                            ", test timeout: ${completed.testTimeout.seconds}(seconds)",
+                            Verbosity.Verbose,
+                        ) { completed.testTimeout.seconds != 0L }
+                        .append(
+                            ", tags: \"${completed.tagList.joinToStringEscaped(", ")}\"",
+                            Verbosity.Verbose,
+                        ) { completed.tagList.isNotEmpty() }
+                        .toString()
 
-                if (event.success) {
+                if (completed.success) {
                     if (ctx.verbosity.atLeast(Verbosity.Detailed)) {
                         ctx.onNext(ctx.messageFactory.createMessage(description))
                     }
@@ -46,8 +48,8 @@ class TargetCompletedHandler : EventHandler {
                 }
             }
 
-            true
-        } else {
-            ctx.handlerIterator.next().handle(ctx)
+            return true
         }
+        return ctx.handlerIterator.next().handle(ctx)
+    }
 }

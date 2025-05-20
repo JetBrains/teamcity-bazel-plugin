@@ -23,7 +23,8 @@ class BazelEventConverter : Converter<BuildEventStreamProtos.BuildEvent, BazelCo
             source.hasStructuredCommandLine() ||
             source.hasTargetSummary() ||
             source.hasNamedSetOfFiles() ||
-            source.hasTestSummary()
+            source.hasTestSummary() ||
+            source.hasCompleted()
         ) {
             return object : BazelContent {
                 override val id = id
@@ -50,8 +51,6 @@ class BazelEventConverter : Converter<BuildEventStreamProtos.BuildEvent, BazelCo
                 TargetConfiguredHandler(TestSizeConverter()),
                 // ActionExecuted action = 7;
                 ActionExecutedHandler(FileConverter()),
-                // TargetComplete completed = 8;
-                TargetCompleteHandler(),
                 // TestResult test_result = 10;
                 TestResultHandler(FileConverter(), TestStatusConverter()),
                 // BuildFinished finished = 14;
