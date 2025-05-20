@@ -45,7 +45,7 @@ class PathsServiceImpl(
 
     override val toolPath: File
         get() {
-            var toolPathParam = _parametersService.tryGetParameter(ParameterType.Runner, BazelConstants.TOOL_PATH)
+            val toolPathParam = _parametersService.tryGetParameter(ParameterType.Runner, BazelConstants.TOOL_PATH)
             if (toolPathParam == null) {
                 return File(_buildStepContext.runnerContext.getToolPath(BazelConstants.BAZEL_CONFIG_NAME))
             }

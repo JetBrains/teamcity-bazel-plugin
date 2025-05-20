@@ -4,23 +4,24 @@ package jetbrains.buildServer.bazel
 
 import jetbrains.buildServer.agent.BuildFinishedStatus
 import jetbrains.buildServer.agent.runner.CommandExecution
+import jetbrains.buildServer.agent.runner.CommandLineBuildService
 import jetbrains.buildServer.agent.runner.ProgramCommandLine
 import jetbrains.buildServer.agent.runner.TerminationAction
 import java.io.File
 
 class CommandExecutionAdapter(
-    private val _bazelRunnerBuildService: BazelRunnerBuildService,
+    private val _commandLineBuildService: CommandLineBuildService,
 ) : CommandExecution {
-    private val processListeners by lazy { _bazelRunnerBuildService.listeners }
+    private val processListeners by lazy { _commandLineBuildService.listeners }
 
     var result: BuildFinishedStatus? = null
         private set
 
-    override fun isCommandLineLoggingEnabled() = _bazelRunnerBuildService.isCommandLineLoggingEnabled
+    override fun isCommandLineLoggingEnabled() = _commandLineBuildService.isCommandLineLoggingEnabled
 
-    override fun makeProgramCommandLine(): ProgramCommandLine = _bazelRunnerBuildService.makeProgramCommandLine()
+    override fun makeProgramCommandLine(): ProgramCommandLine = _commandLineBuildService.makeProgramCommandLine()
 
-    override fun beforeProcessStarted() = _bazelRunnerBuildService.beforeProcessStarted()
+    override fun beforeProcessStarted() = _commandLineBuildService.beforeProcessStarted()
 
     override fun processStarted(
         programCommandLine: String,
@@ -35,19 +36,19 @@ class CommandExecutionAdapter(
 
     override fun onErrorOutput(text: String) = processListeners.forEach { it.onStandardOutput(text) }
 
-    override fun interruptRequested(): TerminationAction = _bazelRunnerBuildService.interrupt()
+    override fun interruptRequested(): TerminationAction = _commandLineBuildService.interrupt()
 
     override fun processFinished(exitCode: Int) {
-        _bazelRunnerBuildService.afterProcessFinished()
+        _commandLineBuildService.afterProcessFinished()
 
         processListeners.forEach {
             it.processFinished(exitCode)
         }
 
-        result = _bazelRunnerBuildService.getRunResult(exitCode)
+        result = _commandLineBuildService.getRunResult(exitCode)
 
         if (result == BuildFinishedStatus.FINISHED_SUCCESS) {
-            _bazelRunnerBuildService.afterProcessSuccessfullyFinished()
+            _commandLineBuildService.afterProcessSuccessfullyFinished()
         }
     }
 }

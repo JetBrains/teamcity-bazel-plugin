@@ -1,8 +1,8 @@
-
-
 package jetbrains.buildServer.bazel
 
 import jetbrains.buildServer.agent.BuildFinishedStatus
+import jetbrains.buildServer.agent.java.DockerJavaExecutableProvider
+import jetbrains.buildServer.agent.runner.BuildStepContext
 import jetbrains.buildServer.agent.runner.CommandExecution
 import jetbrains.buildServer.agent.runner.MultiCommandBuildSession
 
@@ -10,12 +10,23 @@ import jetbrains.buildServer.agent.runner.MultiCommandBuildSession
  * Bazel runner service.
  */
 class BazelCommandBuildSession(
-    private val _commandExecutionAdapter: CommandExecutionAdapter,
+    bazelRunnerBuildService: BazelRunnerBuildService,
+    private val _dockerJavaExecutableProvider: DockerJavaExecutableProvider,
+    private val _buildStepContext: BuildStepContext,
 ) : MultiCommandBuildSession {
     private var commandsIterator: Iterator<CommandExecution> = emptySequence<CommandExecution>().iterator()
+    private val commandExecutionAdapter = CommandExecutionAdapter(bazelRunnerBuildService)
+
+    private val isVirtualContext get() = _buildStepContext.runnerContext.isVirtualContext
 
     override fun sessionStarted() {
-        commandsIterator = sequenceOf(_commandExecutionAdapter).iterator()
+        commandsIterator =
+            sequence {
+                if (isVirtualContext) {
+                    yieldAll(_dockerJavaExecutableProvider.getCommandExecutionSequence())
+                }
+                yield(commandExecutionAdapter)
+            }.iterator()
     }
 
     override fun getNextCommand(): CommandExecution? {
@@ -26,5 +37,5 @@ class BazelCommandBuildSession(
         return null
     }
 
-    override fun sessionFinished(): BuildFinishedStatus? = _commandExecutionAdapter.result
+    override fun sessionFinished(): BuildFinishedStatus? = commandExecutionAdapter.result
 }
