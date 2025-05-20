@@ -20,7 +20,8 @@ class BazelEventConverter : Converter<BuildEventStreamProtos.BuildEvent, BazelCo
             source.hasUnstructuredCommandLine() ||
             source.hasExpanded() ||
             source.hasOptionsParsed() ||
-            source.hasStructuredCommandLine()
+            source.hasStructuredCommandLine() ||
+            source.hasTargetSummary()
         ) {
             return object : BazelContent {
                 override val id = id
@@ -65,8 +66,6 @@ class BazelEventConverter : Converter<BuildEventStreamProtos.BuildEvent, BazelCo
                 BuildMetadataHandler(),
                 // ConvenienceSymlinksIdentified convenience_symlinks_identified = 27;
                 ConvenienceSymlinksIdentifiedHandler(ConvenienceSymlinkConverter()),
-                // TargetSummary target_summary = 28;
-                TargetSummaryHandler(TestStatusConverter()),
                 // ExecRequestConstructed exec_request = 29;
                 ExecRequestConstructedHandler(),
                 // TestProgress test_progress = 30;
