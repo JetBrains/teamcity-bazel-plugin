@@ -5,6 +5,7 @@ package bazel.bazel.events
 import bazel.events.OrderedBuildEvent
 import bazel.events.StreamId
 import bazel.events.Timestamp
+import com.google.devtools.build.lib.buildeventstream.BuildEventStreamProtos
 
 data class BazelEvent(
     override val streamId: StreamId,
@@ -16,4 +17,5 @@ data class BazelEvent(
     // that is observed, is provided in the payload. More options for the payload
     // might be added in the future.
     val content: BazelContent,
+    val rawEvent: BuildEventStreamProtos.BuildEvent,
 ) : OrderedBuildEvent

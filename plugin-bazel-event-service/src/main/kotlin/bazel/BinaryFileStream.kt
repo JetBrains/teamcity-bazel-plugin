@@ -107,6 +107,7 @@ class BinaryFileStream(
                 sequenceNumber++,
                 Timestamp.zero, // timestamp is available only in OrderedBuildEvent (BES grpc mode)
                 _bazelEventConverter.convert(event),
+                event,
             )
     }
 
