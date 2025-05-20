@@ -27,7 +27,8 @@ class BazelEventConverter : Converter<BuildEventStreamProtos.BuildEvent, BazelCo
             source.hasCompleted() ||
             source.hasFetch() ||
             source.hasBuildToolLogs() ||
-            source.hasTestProgress()
+            source.hasTestProgress() ||
+            source.hasConfiguration()
         ) {
             return object : BazelContent {
                 override val id = id
@@ -46,8 +47,6 @@ class BazelEventConverter : Converter<BuildEventStreamProtos.BuildEvent, BazelCo
                 ProgressHandler(),
                 // BuildStarted started = 5;
                 BuildStartedHandler(),
-                // Configuration configuration = 17;
-                ConfigurationHandler(),
                 // TargetConfigured configured = 18;
                 TargetConfiguredHandler(TestSizeConverter()),
                 // ActionExecuted action = 7;

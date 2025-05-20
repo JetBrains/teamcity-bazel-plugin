@@ -1,12 +1,9 @@
-
-
 package bazel.messages.handlers
 
 import bazel.HandlerPriority
 import bazel.Verbosity
 import bazel.atLeast
 import bazel.bazel.events.BazelEvent
-import bazel.bazel.events.Configuration
 import bazel.messages.Color
 import bazel.messages.ServiceMessageContext
 import bazel.messages.apply
@@ -15,16 +12,19 @@ class ConfigurationHandler : EventHandler {
     override val priority: HandlerPriority
         get() = HandlerPriority.Medium
 
-    override fun handle(ctx: ServiceMessageContext) =
-        if (ctx.event.payload is BazelEvent && ctx.event.payload.content is Configuration) {
-            val event = ctx.event.payload.content
+    override fun handle(ctx: ServiceMessageContext): Boolean {
+        val payload = ctx.event.payload
+        return if (payload is BazelEvent && payload.rawEvent.hasConfiguration()) {
+            val event = payload.rawEvent.configuration
             if (ctx.verbosity.atLeast(Verbosity.Detailed)) {
                 ctx.onNext(
                     ctx.messageFactory.createMessage(
                         ctx
                             .buildMessage()
                             .append(
-                                listOf("platformName", event.platformName).joinToStringEscaped(" = ").apply(Color.Items),
+                                listOf("platformName", event.platformName)
+                                    .joinToStringEscaped(" = ")
+                                    .apply(Color.Items),
                             ).toString(),
                     ),
                 )
@@ -39,7 +39,10 @@ class ConfigurationHandler : EventHandler {
                 )
                 ctx.onNext(
                     ctx.messageFactory.createMessage(
-                        ctx.buildMessage().append(listOf("cpu", event.cpu).joinToStringEscaped(" = ").apply(Color.Items)).toString(),
+                        ctx
+                            .buildMessage()
+                            .append(listOf("cpu", event.cpu).joinToStringEscaped(" = ").apply(Color.Items))
+                            .toString(),
                     ),
                 )
 
@@ -49,8 +52,9 @@ class ConfigurationHandler : EventHandler {
                             ctx.messageFactory.createMessage(
                                 ctx
                                     .buildMessage()
-                                    .append(listOf(item.key, item.value).joinToStringEscaped(" = ").apply(Color.Items))
-                                    .toString(),
+                                    .append(
+                                        listOf(item.key, item.value).joinToStringEscaped(" = ").apply(Color.Items),
+                                    ).toString(),
                             ),
                         )
                     }
@@ -61,4 +65,5 @@ class ConfigurationHandler : EventHandler {
         } else {
             ctx.handlerIterator.next().handle(ctx)
         }
+    }
 }
