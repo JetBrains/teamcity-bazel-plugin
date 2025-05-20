@@ -1,36 +1,39 @@
-
-
 package bazel.messages.handlers
 
 import bazel.HandlerPriority
 import bazel.Verbosity
+import bazel.bazel.converters.TestStatusConverter
 import bazel.bazel.events.BazelEvent
-import bazel.bazel.events.TestSummary
 import bazel.messages.Color
 import bazel.messages.ServiceMessageContext
 import bazel.messages.apply
 
 class TestSummaryHandler : EventHandler {
-    override val priority: HandlerPriority
-        get() = HandlerPriority.Low
+    override val priority: HandlerPriority = HandlerPriority.Low
 
-    override fun handle(ctx: ServiceMessageContext) =
-        if (ctx.event.payload is BazelEvent && ctx.event.payload.content is TestSummary) {
-            val event = ctx.event.payload.content
+    private val testStatusConverter = TestStatusConverter()
+
+    override fun handle(ctx: ServiceMessageContext): Boolean {
+        val payload = ctx.event.payload
+        if (payload is BazelEvent && payload.rawEvent.hasTestSummary() && payload.rawEvent.id.hasTestSummary()) {
+            val summary = payload.rawEvent.testSummary
+            val label = payload.rawEvent.id.testSummary.label
+
+            val overallStatus = testStatusConverter.convert(summary.overallStatus)
             ctx.onNext(
                 ctx.messageFactory.createMessage(
                     ctx
                         .buildMessage()
-                        .append("${event.label} test summary:")
-                        .append(" ${event.overallStatus}".apply(event.overallStatus.toColor()))
-                        .append(", total run count: ${event.totalRunCount}", Verbosity.Detailed)
-                        .append(", total cached: ${event.totalNumCached}".apply(Color.Details), Verbosity.Verbose)
+                        .append("$label test summary:")
+                        .append(" ${overallStatus.name}".apply(overallStatus.toColor()))
+                        .append(", total run count: ${summary.totalRunCount}", Verbosity.Detailed)
+                        .append(", total cached: ${summary.totalNumCached}".apply(Color.Details), Verbosity.Verbose)
                         .toString(),
                 ),
             )
 
-            true
-        } else {
-            ctx.handlerIterator.next().handle(ctx)
+            return true
         }
+        return ctx.handlerIterator.next().handle(ctx)
+    }
 }
