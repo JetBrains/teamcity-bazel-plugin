@@ -2,12 +2,11 @@
 
 package bazel.bazel.converters
 
-import bazel.Converter
 import bazel.bazel.events.TestStatus
 import com.google.devtools.build.lib.buildeventstream.BuildEventStreamProtos
 
-class TestStatusConverter : Converter<BuildEventStreamProtos.TestStatus, TestStatus> {
-    override fun convert(source: BuildEventStreamProtos.TestStatus) =
+class TestStatusConverter {
+    fun convert(source: BuildEventStreamProtos.TestStatus) =
         when (source.number) {
             1 -> TestStatus.Passed
             2 -> TestStatus.Flaky

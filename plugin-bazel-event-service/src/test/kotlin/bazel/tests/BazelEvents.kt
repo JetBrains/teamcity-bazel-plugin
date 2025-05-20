@@ -10,18 +10,6 @@ import bazel.events.StreamId
 import bazel.events.Timestamp
 import com.google.devtools.build.lib.buildeventstream.BuildEventStreamProtos
 
-fun createEvent(content: BazelContent) =
-    Event<OrderedBuildEvent>(
-        "projectId",
-        BazelEvent(
-            StreamId("buildId", "1", BuildComponent.Tool),
-            1,
-            Timestamp.zero,
-            content,
-            BuildEventStreamProtos.BuildEvent.getDefaultInstance(),
-        ),
-    )
-
 fun createRawEvent(event: BuildEventStreamProtos.BuildEvent) =
     Event<OrderedBuildEvent>(
         "projectId",

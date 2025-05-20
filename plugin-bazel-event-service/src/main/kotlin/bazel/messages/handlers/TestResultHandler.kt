@@ -1,38 +1,48 @@
-
-
 package bazel.messages.handlers
 
 import bazel.FileSystemService
 import bazel.HandlerPriority
 import bazel.Verbosity
 import bazel.atLeast
+import bazel.bazel.converters.FileConverter
+import bazel.bazel.converters.TestStatusConverter
 import bazel.bazel.events.BazelEvent
-import bazel.bazel.events.TestResult
 import bazel.bazel.events.readLines
 import bazel.messages.Color
 import bazel.messages.ServiceMessageContext
 import bazel.messages.apply
 import java.io.OutputStreamWriter
+import java.time.Duration
 
 class TestResultHandler(
     private val _fileSystemService: FileSystemService,
 ) : EventHandler {
+    private val fileConverter = FileConverter()
+    private val testStatusConverter = TestStatusConverter()
+
     override val priority: HandlerPriority
         get() = HandlerPriority.High
 
-    override fun handle(ctx: ServiceMessageContext) =
-        if (ctx.event.payload is BazelEvent && ctx.event.payload.content is TestResult) {
-            val event = ctx.event.payload.content
+    override fun handle(ctx: ServiceMessageContext): Boolean {
+        val payload = ctx.event.payload
+        return if (ctx.event.payload is BazelEvent && payload.rawEvent.hasTestResult() && payload.rawEvent.hasTestResult()) {
+            val event = payload.rawEvent.testResult
+            val id = payload.rawEvent.id
             if (ctx.verbosity.atLeast(Verbosity.Detailed)) {
+                val status = testStatusConverter.convert(event.status)
+                val testAttemptDurationMillis =
+                    event.testAttemptDuration
+                        .let { Duration.ofSeconds(it.seconds, it.nanos.toLong()) }
+                        .toMillis()
                 ctx.onNext(
                     ctx.messageFactory.createMessage(
                         ctx
                             .buildMessage()
-                            .append("${event.label} test:")
-                            .append(" ${event.status} ".apply(event.status.toColor()))
+                            .append("${id.testResult.label} test:")
+                            .append(" $status ".apply(status.toColor()))
                             .append(", details: \"${event.statusDetails}\"".apply(Color.Details), Verbosity.Verbose)
                             .append(
-                                ", attempt: ${event.attempt}, runs: ${event.run}, shard: ${event.shard}, duration: ${event.testAttemptDurationMillis}(ms), cached locally: ${event.cachedLocally}"
+                                ", attempt: ${id.testResult.attempt}, runs: ${id.testResult.run}, shard: ${id.testResult.shard}, duration: $testAttemptDurationMillis(ms), cached locally: ${event.cachedLocally}"
                                     .apply(
                                         Color.Details,
                                     ),
@@ -42,8 +52,8 @@ class TestResultHandler(
                 )
             }
 
-            val hasNextAttempt = event.children.isNotEmpty()
-            for (test in event.testActionOutput) {
+            val hasNextAttempt = payload.rawEvent.childrenList.isNotEmpty()
+            for (test in event.testActionOutputList.map { fileConverter.convert(it) }) {
                 if (ctx.verbosity.atLeast(Verbosity.Verbose)) {
                     ctx.onNext(ctx.messageFactory.createMessage("$test".apply(Color.Items)))
                 }
@@ -93,6 +103,7 @@ class TestResultHandler(
         } else {
             ctx.handlerIterator.next().handle(ctx)
         }
+    }
 
     private fun traceFile(
         ctx: ServiceMessageContext,

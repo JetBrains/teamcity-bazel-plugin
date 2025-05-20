@@ -1,5 +1,3 @@
-
-
 package bazel.tests
 
 import bazel.Event
@@ -12,6 +10,8 @@ import bazel.messages.MessageFactory
 import bazel.messages.ServiceMessageContext
 import bazel.messages.handlers.EventHandler
 import bazel.messages.handlers.TestResultHandler
+import com.google.devtools.build.lib.buildeventstream.BuildEventStreamProtos
+import com.google.protobuf.ByteString
 import devteam.rx.*
 import devteam.rx.observer
 import io.mockk.MockKAnnotations
@@ -31,15 +31,17 @@ class TestResultHandlerTest {
     private lateinit var actualNotifications: MutableList<Notification<ServiceMessage>>
     private lateinit var subscription: Disposable
 
-    @MockK private lateinit var iterator: Iterator<EventHandler>
+    @MockK
+    private lateinit var iterator: Iterator<EventHandler>
 
-    @MockK private lateinit var messageFactory: MessageFactory
+    @MockK
+    private lateinit var messageFactory: MessageFactory
 
-    @MockK private lateinit var hierarchy: Hierarchy
+    @MockK
+    private lateinit var hierarchy: Hierarchy
 
-    @MockK private lateinit var fileSystemService: FileSystemService
-
-    @MockK private lateinit var file: File
+    @MockK
+    private lateinit var fileSystemService: FileSystemService
 
     @BeforeMethod
     fun setUp() {
@@ -79,22 +81,19 @@ class TestResultHandlerTest {
 
         // When
         val event: Event<OrderedBuildEvent> =
-            createEvent(
-                TestResult(
-                    Id(1),
-                    emptyList(),
-                    "label",
-                    1,
-                    1,
-                    1,
-                    TestStatus.Passed,
-                    "ok",
-                    true,
-                    1,
-                    1,
-                    listOf(file),
-                    emptyList(),
-                ),
+            createRawEvent(
+                BuildEventStreamProtos.BuildEvent
+                    .newBuilder()
+                    .setTestResult(
+                        BuildEventStreamProtos.TestResult
+                            .newBuilder()
+                            .addTestActionOutput(
+                                BuildEventStreamProtos.File
+                                    .newBuilder()
+                                    .setName("test.log")
+                                    .setContents(ByteString.copyFromUtf8("line 1\n##teamcity[line 2]")),
+                            ),
+                    ).build(),
             )
 
         val ctx = createContext(event, verbosity)
@@ -102,8 +101,6 @@ class TestResultHandlerTest {
         val message2 = Message("##teamcity[line 2]", "Normal", null)
         val message = Message("message", "Normal", null)
 
-        every { file.name } returns "test.log"
-        every { file.createStream() } returns listOf("line 1", "##teamcity[line 2]").joinToString(System.lineSeparator()).byteInputStream()
         every { messageFactory.createMessage(any()) } returns message
         every { messageFactory.createMessage("line 1") } returns message1
         every { messageFactory.createMessage("##teamcity[line 2]") } returns message2
@@ -112,7 +109,12 @@ class TestResultHandlerTest {
 
         // Then
         Assert.assertTrue(
-            actualNotifications.containsAll(listOf(NotificationNext<ServiceMessage>(message1), NotificationNext<ServiceMessage>(message2))),
+            actualNotifications.containsAll(
+                listOf(
+                    NotificationNext<ServiceMessage>(message1),
+                    NotificationNext<ServiceMessage>(message2),
+                ),
+            ),
         )
         Assert.assertFalse(message1.tags.contains("tc:parseServiceMessagesInside"))
         Assert.assertTrue(message2.tags.contains("tc:parseServiceMessagesInside"))
