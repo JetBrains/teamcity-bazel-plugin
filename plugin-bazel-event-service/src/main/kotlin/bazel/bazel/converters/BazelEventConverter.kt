@@ -19,7 +19,8 @@ class BazelEventConverter : Converter<BuildEventStreamProtos.BuildEvent, BazelCo
             source.hasWorkspaceInfo() ||
             source.hasUnstructuredCommandLine() ||
             source.hasExpanded() ||
-            source.hasOptionsParsed()
+            source.hasOptionsParsed() ||
+            source.hasStructuredCommandLine()
         ) {
             return object : BazelContent {
                 override val id = id
@@ -38,8 +39,6 @@ class BazelEventConverter : Converter<BuildEventStreamProtos.BuildEvent, BazelCo
                 ProgressHandler(),
                 // BuildStarted started = 5;
                 BuildStartedHandler(),
-                // command_line.CommandLine structured_command_line = 22;
-                StructuredCommandLineHandler(),
                 // Fetch fetch = 21;
                 FetchHandler(),
                 // Configuration configuration = 17;
