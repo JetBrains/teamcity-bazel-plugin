@@ -18,7 +18,6 @@ class ControllerSubject(
     private val verbosity: Verbosity,
     private val messageFactory: MessageFactory,
     private val hierarchy: Hierarchy,
-    private val streamSubjectFactory: () -> ServiceMessageSubject,
 ) : ServiceMessageSubject {
     private val controllerSubject = subjectOf<ServiceMessage>()
     private val streams = mutableMapOf<String, Stream>()
@@ -78,7 +77,7 @@ class ControllerSubject(
     }
 
     private fun createStreamSubject(): Stream {
-        val newStreamSubject = streamSubjectFactory()
+        val newStreamSubject = StreamSubject(verbosity, messageFactory, hierarchy)
         return Stream(newStreamSubject, newStreamSubject.subscribe(controllerSubject))
     }
 

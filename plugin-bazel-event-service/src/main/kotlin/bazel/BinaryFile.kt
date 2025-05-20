@@ -11,14 +11,7 @@ class BinaryFile(
     private val _binaryFileStream: BinaryFileStream,
 ) : Observable<String> {
     override fun subscribe(observer: Observer<String>): Disposable {
-        val controllerSubject =
-            ControllerSubject(_verbosity, _messageFactory, HierarchyImpl()) {
-                StreamSubject(
-                    _verbosity,
-                    _messageFactory,
-                    HierarchyImpl(),
-                )
-            }
+        val controllerSubject = ControllerSubject(_verbosity, _messageFactory, HierarchyImpl())
         val subscription =
             disposableOf(
                 controllerSubject.subscribe(
