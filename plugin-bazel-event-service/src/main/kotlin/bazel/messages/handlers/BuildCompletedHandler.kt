@@ -6,17 +6,17 @@ import bazel.HandlerPriority
 import bazel.Verbosity
 import bazel.atLeast
 import bazel.bazel.events.BazelEvent
-import bazel.bazel.events.BuildFinished
 import bazel.messages.ServiceMessageContext
 
 class BuildCompletedHandler : EventHandler {
     override val priority: HandlerPriority
         get() = HandlerPriority.Low
 
-    override fun handle(ctx: ServiceMessageContext) =
-        if (ctx.event.payload is BazelEvent && ctx.event.payload.content is BuildFinished) {
-            val event = ctx.event.payload.content
-            if (event.exitCode == 0) {
+    override fun handle(ctx: ServiceMessageContext): Boolean {
+        val payload = ctx.event.payload
+        return if (payload is BazelEvent && payload.rawEvent.hasFinished()) {
+            val event = payload.rawEvent.finished
+            if (event.exitCode.code == 0) {
                 if (ctx.verbosity.atLeast(Verbosity.Detailed)) {
                     ctx.onNext(
                         ctx.messageFactory.createMessage(
@@ -29,7 +29,7 @@ class BuildCompletedHandler : EventHandler {
                     )
                 }
             } else {
-                when (event.exitCode) {
+                when (event.exitCode.code) {
                     3 -> {
                         ctx.onNext(
                             ctx.messageFactory.createMessage(
@@ -41,6 +41,7 @@ class BuildCompletedHandler : EventHandler {
                             ),
                         )
                     }
+
                     4 -> {
                         ctx.onNext(
                             ctx.messageFactory.createMessage(
@@ -52,16 +53,17 @@ class BuildCompletedHandler : EventHandler {
                             ),
                         )
                     }
+
                     else -> {
                         ctx.onNext(
                             ctx.messageFactory.createBuildProblem(
                                 ctx
                                     .buildMessage(false)
-                                    .append("Build failed: ${event.exitCodeName}")
+                                    .append("Build failed: ${event.exitCode.name}")
                                     .append(", exit code ${event.exitCode}", Verbosity.Detailed)
                                     .toString(),
                                 ctx.event.projectId,
-                                event.exitCodeName,
+                                event.exitCode.name,
                             ),
                         )
                     }
@@ -72,4 +74,5 @@ class BuildCompletedHandler : EventHandler {
         } else {
             ctx.handlerIterator.next().handle(ctx)
         }
+    }
 }

@@ -33,7 +33,8 @@ class BazelEventConverter : Converter<BuildEventStreamProtos.BuildEvent, BazelCo
             source.hasExecRequest() ||
             source.hasBuildMetrics() ||
             source.hasBuildMetadata() ||
-            source.hasProgress()
+            source.hasProgress() ||
+            source.hasFinished()
         ) {
             return object : BazelContent {
                 override val id = id
@@ -56,8 +57,6 @@ class BazelEventConverter : Converter<BuildEventStreamProtos.BuildEvent, BazelCo
                 ActionExecutedHandler(FileConverter()),
                 // TestResult test_result = 10;
                 TestResultHandler(FileConverter(), TestStatusConverter()),
-                // BuildFinished finished = 14;
-                BuildFinishedHandler(),
                 // Unknown content.
                 UnknownContentHandler(),
             ).sortedBy { it.priority }.toList()
