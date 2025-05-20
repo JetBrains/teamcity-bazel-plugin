@@ -9,6 +9,7 @@ import bazel.messages.MessageFactory
 import bazel.messages.ServiceMessageContext
 import bazel.messages.handlers.EventHandler
 import bazel.messages.handlers.ProgressHandler
+import com.google.devtools.build.lib.buildeventstream.BuildEventStreamProtos
 import devteam.rx.*
 import devteam.rx.observer
 import io.mockk.MockKAnnotations
@@ -70,13 +71,11 @@ class ProgressHandlerTest {
 
         // When
         val event: Event<OrderedBuildEvent> =
-            createEvent(
-                Progress(
-                    Id(1),
-                    children = emptyList(),
-                    stdout = "",
-                    stderr = events,
-                ),
+            createRawEvent(
+                BuildEventStreamProtos.BuildEvent
+                    .newBuilder()
+                    .setProgress(BuildEventStreamProtos.Progress.newBuilder().setStderr(events))
+                    .build(),
             )
 
         val ctx = createContext(event)

@@ -32,7 +32,8 @@ class BazelEventConverter : Converter<BuildEventStreamProtos.BuildEvent, BazelCo
             source.hasConvenienceSymlinksIdentified() ||
             source.hasExecRequest() ||
             source.hasBuildMetrics() ||
-            source.hasBuildMetadata()
+            source.hasBuildMetadata() ||
+            source.hasProgress()
         ) {
             return object : BazelContent {
                 override val id = id
@@ -47,8 +48,6 @@ class BazelEventConverter : Converter<BuildEventStreamProtos.BuildEvent, BazelCo
     companion object {
         private val handlers =
             sequenceOf(
-                // Progress progress = 3;
-                ProgressHandler(),
                 // BuildStarted started = 5;
                 BuildStartedHandler(),
                 // TargetConfigured configured = 18;
