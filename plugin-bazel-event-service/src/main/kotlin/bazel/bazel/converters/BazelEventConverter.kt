@@ -17,7 +17,8 @@ class BazelEventConverter : Converter<BuildEventStreamProtos.BuildEvent, BazelCo
         if (source.hasAborted() ||
             source.hasWorkspaceStatus() ||
             source.hasWorkspaceInfo() ||
-            source.hasUnstructuredCommandLine()
+            source.hasUnstructuredCommandLine() ||
+            source.hasExpanded()
         ) {
             return object : BazelContent {
                 override val id = id
@@ -44,8 +45,6 @@ class BazelEventConverter : Converter<BuildEventStreamProtos.BuildEvent, BazelCo
                 FetchHandler(),
                 // Configuration configuration = 17;
                 ConfigurationHandler(),
-                // PatternExpanded expanded = 6;
-                PatternExpandedHandler(),
                 // TargetConfigured configured = 18;
                 TargetConfiguredHandler(TestSizeConverter()),
                 // ActionExecuted action = 7;
