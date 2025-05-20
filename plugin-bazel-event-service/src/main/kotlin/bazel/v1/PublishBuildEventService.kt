@@ -50,7 +50,7 @@ class PublishBuildEventService :
     override fun publishBuildToolEventStream(
         responseObserver: StreamObserver<PublishBuildToolEventStreamResponse>?,
     ): StreamObserver<PublishBuildToolEventStreamRequest> {
-        logger.log(Level.INFO, "publishBuildToolEventStream: $responseObserver")
+        logger.log(Level.FINE, "publishBuildToolEventStream: $responseObserver")
         val responses = responseObserver?.toObserver() ?: observer(onNext = {}, onError = {}, onComplete = {})
         return PublishEventObserver(projectId.get(), responses, eventSubject).toStreamObserver()
     }
