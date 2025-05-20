@@ -15,7 +15,8 @@ class BazelEventConverter : Converter<BuildEventStreamProtos.BuildEvent, BazelCo
         }
 
         if (source.hasAborted() ||
-            source.hasWorkspaceStatus()
+            source.hasWorkspaceStatus() ||
+            source.hasWorkspaceInfo()
         ) {
             return object : BazelContent {
                 override val id = id
@@ -64,8 +65,6 @@ class BazelEventConverter : Converter<BuildEventStreamProtos.BuildEvent, BazelCo
                 BuildToolLogsHandler(FileConverter()),
                 // BuildMetrics build_metrics = 24;
                 BuildMetricsHandler(),
-                // WorkspaceConfig workspace_info = 25;
-                WorkspaceConfigHandler(),
                 // BuildMetadata build_metadata = 26;
                 BuildMetadataHandler(),
                 // ConvenienceSymlinksIdentified convenience_symlinks_identified = 27;
