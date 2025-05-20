@@ -6,16 +6,17 @@ import bazel.HandlerPriority
 import bazel.Verbosity
 import bazel.atLeast
 import bazel.bazel.events.BazelEvent
-import bazel.bazel.events.BuildStarted
+import bazel.bazel.events.Id
 import bazel.messages.ServiceMessageContext
 
 class BuildStartedHandler : EventHandler {
     override val priority: HandlerPriority
         get() = HandlerPriority.Low
 
-    override fun handle(ctx: ServiceMessageContext) =
-        if (ctx.event.payload is BazelEvent && ctx.event.payload.content is BuildStarted) {
-            val event = ctx.event.payload.content
+    override fun handle(ctx: ServiceMessageContext): Boolean {
+        val payload = ctx.event.payload
+        return if (payload is BazelEvent && payload.rawEvent.hasStarted()) {
+            val event = payload.rawEvent.started
             val description = event.command
             val details =
                 ctx
@@ -28,7 +29,7 @@ class BuildStartedHandler : EventHandler {
 
             if (ctx.verbosity.atLeast(Verbosity.Normal)) {
                 ctx.onNext(ctx.messageFactory.createBlockOpened(description, details))
-                ctx.hierarchy.createNode(event.id, event.children, description) {
+                ctx.hierarchy.createNode(Id(payload.rawEvent.id), payload.rawEvent.childrenList.map { Id(it) }, description) {
                     it.onNext(it.messageFactory.createBlockClosed(description))
                 }
             }
@@ -37,4 +38,5 @@ class BuildStartedHandler : EventHandler {
         } else {
             ctx.handlerIterator.next().handle(ctx)
         }
+    }
 }
