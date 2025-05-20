@@ -112,6 +112,8 @@ class StreamSubject(
                 ConvenienceSymlinkHandler(),
                 // TargetSummary target_summary = 28;
                 TargetSummaryHandler(),
+                // ExecRequestConstructed exec_request = 29;
+                ExecRequestHandler(),
                 // TestProgress test_progress = 30;
                 TestProgressHandler(),
                 // Unknown

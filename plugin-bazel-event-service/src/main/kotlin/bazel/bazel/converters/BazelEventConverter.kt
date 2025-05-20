@@ -29,7 +29,8 @@ class BazelEventConverter : Converter<BuildEventStreamProtos.BuildEvent, BazelCo
             source.hasBuildToolLogs() ||
             source.hasTestProgress() ||
             source.hasConfiguration() ||
-            source.hasConvenienceSymlinksIdentified()
+            source.hasConvenienceSymlinksIdentified() ||
+            source.hasExecRequest()
         ) {
             return object : BazelContent {
                 override val id = id
@@ -60,8 +61,6 @@ class BazelEventConverter : Converter<BuildEventStreamProtos.BuildEvent, BazelCo
                 BuildMetricsHandler(),
                 // BuildMetadata build_metadata = 26;
                 BuildMetadataHandler(),
-                // ExecRequestConstructed exec_request = 29;
-                ExecRequestConstructedHandler(),
                 // Unknown content.
                 UnknownContentHandler(),
             ).sortedBy { it.priority }.toList()
