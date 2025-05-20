@@ -14,7 +14,9 @@ class BazelEventConverter : Converter<BuildEventStreamProtos.BuildEvent, BazelCo
             children.add(Id(source.getChildren(i)))
         }
 
-        if (source.hasAborted()) {
+        if (source.hasAborted() ||
+            source.hasWorkspaceStatus()
+        ) {
             return object : BazelContent {
                 override val id = id
                 override val children = children
@@ -38,8 +40,6 @@ class BazelEventConverter : Converter<BuildEventStreamProtos.BuildEvent, BazelCo
                 StructuredCommandLineHandler(),
                 // OptionsParsed options_parsed = 13;
                 OptionsParsedHandler(),
-                // WorkspaceStatus workspace_status = 16;
-                WorkspaceStatusHandler(),
                 // Fetch fetch = 21;
                 FetchHandler(),
                 // Configuration configuration = 17;
