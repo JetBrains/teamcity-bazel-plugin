@@ -1,5 +1,3 @@
-
-
 package bazel.bazel.converters
 
 import bazel.Converter
@@ -7,7 +5,6 @@ import bazel.bazel.events.BazelContent
 import bazel.bazel.events.Id
 import bazel.bazel.handlers.*
 import com.google.devtools.build.lib.buildeventstream.BuildEventStreamProtos
-import java.util.logging.Logger
 
 class BazelEventConverter : Converter<BuildEventStreamProtos.BuildEvent, BazelContent> {
     override fun convert(source: BuildEventStreamProtos.BuildEvent): BazelContent {
@@ -17,18 +14,22 @@ class BazelEventConverter : Converter<BuildEventStreamProtos.BuildEvent, BazelCo
             children.add(Id(source.getChildren(i)))
         }
 
+        if (source.hasAborted()) {
+            return object : BazelContent {
+                override val id = id
+                override val children = children
+            }
+        }
+
         val iterator = handlers.iterator()
         return iterator.next().handle(HandlerContext(iterator, id, children, source))
     }
 
     companion object {
-        private val logger = Logger.getLogger(BazelEventConverter::class.java.name)
         private val handlers =
             sequenceOf(
                 // Progress progress = 3;
                 ProgressHandler(),
-                // Aborted aborted = 4;
-                AbortedHandler(AbortReasonConverter()),
                 // BuildStarted started = 5;
                 BuildStartedHandler(),
                 // UnstructuredCommandLine unstructured_command_line = 12;
