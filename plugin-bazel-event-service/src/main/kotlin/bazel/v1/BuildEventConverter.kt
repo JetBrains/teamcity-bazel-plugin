@@ -25,7 +25,9 @@ class BuildEventConverter(
             val sequenceNumber = payload.sequenceNumber
             val eventTime = Timestamp(event.eventTime.seconds, event.eventTime.nanos)
 
-            if (event.hasBuildEnqueued()) {
+            if (event.hasBuildEnqueued() ||
+                event.hasInvocationAttemptStarted()
+            ) {
                 val orderedEvent =
                     object : OrderedBuildEvent {
                         override val streamId = streamId
@@ -51,9 +53,6 @@ class BuildEventConverter(
         private val logger = Logger.getLogger(BuildEventConverter::class.java.name)
         private val handlers =
             sequenceOf(
-                // An invocation attempt has started.
-                // invocation_attempt_started = 51
-                InvocationAttemptStartedHandler(),
                 // An invocation attempt has finished.
                 // invocation_attempt_finished = 52
                 InvocationAttemptFinishedHandler(BuildStatusConverter()),

@@ -1,11 +1,8 @@
-
-
 package bazel.messages.handlers
 
 import bazel.HandlerPriority
 import bazel.Verbosity
 import bazel.atLeast
-import bazel.events.InvocationAttemptStarted
 import bazel.messages.ServiceMessageContext
 
 class InvocationAttemptStartedHandler : EventHandler {
@@ -13,8 +10,8 @@ class InvocationAttemptStartedHandler : EventHandler {
         get() = HandlerPriority.Low
 
     override fun handle(ctx: ServiceMessageContext) =
-        if (ctx.event.payload is InvocationAttemptStarted) {
-            val invocationAttemptStarted = ctx.event.payload as InvocationAttemptStarted
+        if (ctx.event.rawEvent.hasInvocationAttemptStarted()) {
+            val invocationAttemptStarted = ctx.event.rawEvent.invocationAttemptStarted
             if (ctx.verbosity.atLeast(Verbosity.Detailed)) {
                 ctx.onNext(
                     ctx.messageFactory.createMessage(
@@ -26,11 +23,9 @@ class InvocationAttemptStartedHandler : EventHandler {
                 )
             }
 
+            val streamId = ctx.event.payload.streamId
             ctx.onNext(
-                ctx.messageFactory.createFlowStarted(
-                    invocationAttemptStarted.streamId.invocationId,
-                    invocationAttemptStarted.streamId.buildId,
-                ),
+                ctx.messageFactory.createFlowStarted(streamId.invocationId, streamId.buildId),
             )
             true
         } else {
