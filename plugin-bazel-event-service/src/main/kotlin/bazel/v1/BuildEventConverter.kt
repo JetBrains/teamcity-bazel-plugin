@@ -27,7 +27,8 @@ class BuildEventConverter(
 
             if (event.hasBuildEnqueued() ||
                 event.hasInvocationAttemptStarted() ||
-                event.hasInvocationAttemptFinished()
+                event.hasInvocationAttemptFinished() ||
+                event.hasBuildFinished()
             ) {
                 val orderedEvent =
                     object : OrderedBuildEvent {
@@ -54,9 +55,6 @@ class BuildEventConverter(
         private val logger = Logger.getLogger(BuildEventConverter::class.java.name)
         private val handlers =
             sequenceOf(
-                // The build has finished. Set when the build is terminated.
-                // build_finished = 55
-                BuildFinishedHandler(BuildStatusConverter()),
                 // An event containing printed text.
                 // console_output = 56
                 ConsoleOutputHandler(ConsoleOutputStreamConverter()),
