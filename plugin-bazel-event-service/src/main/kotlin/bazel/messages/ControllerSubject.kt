@@ -17,7 +17,6 @@ class ControllerSubject(
     private val hierarchy: Hierarchy,
 ) : ServiceMessageSubject {
     private val controllerSubject = subjectOf<ServiceMessage>()
-    private val streams = mutableMapOf<String, Stream>()
     private val disposed: AtomicBoolean = AtomicBoolean()
 
     override fun onNext(value: Event<OrderedBuildEvent>) {
@@ -45,16 +44,9 @@ class ControllerSubject(
                     if (verbosity.atLeast(Verbosity.Diagnostic)) {
                         subject.onNext(messageFactory.createTraceMessage(value.payload.toString()))
                     }
-
-                    if (value.rawEvent.hasInvocationAttemptFinished()) {
-                        streams.remove(invocationId)
-                    }
-
                     return
                 }
             }
-
-        streams.getOrPut(value.payload.streamId.invocationId) { createStreamSubject() }.subject.onNext(value)
     }
 
     override fun onError(error: Exception) = controllerSubject.onError(error)
@@ -65,28 +57,20 @@ class ControllerSubject(
 
     override fun subscribe(observer: Observer<ServiceMessage>): Disposable = controllerSubject.subscribe(observer)
 
-    private fun createStreamSubject(): Stream {
-        val newStreamSubject = StreamSubject(verbosity, messageFactory, hierarchy)
-        return Stream(newStreamSubject, newStreamSubject.subscribe(controllerSubject))
-    }
-
     private fun updateHeader(
         event: OrderedBuildEvent,
         message: ServiceMessage,
     ): ServiceMessage {
         if (message.flowId.isNullOrEmpty()) {
-            message.setFlowId(event.streamId.buildId)
+            if (event.streamId.invocationId.isNotEmpty()) {
+                message.setFlowId(event.streamId.invocationId)
+            } else {
+                message.setFlowId(event.streamId.buildId)
+            }
         }
 
         message.setTimestamp(event.eventTime.date)
         return message
-    }
-
-    private class Stream(
-        val subject: ServiceMessageSubject,
-        private val _subscription: Disposable,
-    ) : Disposable {
-        override fun dispose() = _subscription.dispose()
     }
 
     companion object {
@@ -95,6 +79,7 @@ class ControllerSubject(
                 BuildEnqueuedHandler(),
                 InvocationAttemptStartedHandler(),
                 InvocationAttemptFinishedHandler(),
+                RootBazelEventHandler(),
                 BuildFinishedHandler(),
                 ComponentStreamFinishedHandler(),
                 ConsoleOutputHandler(),

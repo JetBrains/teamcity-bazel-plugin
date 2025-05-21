@@ -10,7 +10,7 @@ import devteam.rx.Observer
 import jetbrains.buildServer.messages.serviceMessages.ServiceMessage
 
 open class ServiceMessageContext(
-    private val _observer: Observer<ServiceMessage>,
+    val observer: Observer<ServiceMessage>,
     val handlerIterator: Iterator<EventHandler>,
     val hierarchy: Hierarchy,
     override val event: Event<OrderedBuildEvent>,
@@ -18,20 +18,20 @@ open class ServiceMessageContext(
     override val verbosity: Verbosity,
 ) : Observer<ServiceMessage>,
     MessageBuilderContext {
-    override fun onNext(value: ServiceMessage) = _observer.onNext(value)
+    override fun onNext(value: ServiceMessage) = observer.onNext(value)
 
-    override fun onError(error: Exception) = _observer.onError(error)
+    override fun onError(error: Exception) = observer.onError(error)
 
-    override fun onComplete() = _observer.onComplete()
+    override fun onComplete() = observer.onComplete()
 }
 
 class BazelEventHandlerContext(
-    private val _observer: Observer<ServiceMessage>,
+    val observer: Observer<ServiceMessage>,
     val hierarchy: Hierarchy,
     val bazelEvent: BuildEventStreamProtos.BuildEvent,
     override val event: Event<OrderedBuildEvent>,
     override val messageFactory: MessageFactory,
     override val verbosity: Verbosity,
 ) : MessageBuilderContext {
-    fun onNext(value: ServiceMessage) = _observer.onNext(value)
+    fun onNext(value: ServiceMessage) = observer.onNext(value)
 }

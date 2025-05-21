@@ -1,80 +1,47 @@
-package bazel.messages
+package bazel.messages.handlers
 
-import bazel.Event
 import bazel.FileSystemServiceImpl
-import bazel.Verbosity
-import bazel.atLeast
-import bazel.bazel.events.BazelEvent
 import bazel.bazel.events.Id
-import bazel.events.OrderedBuildEvent
-import bazel.messages.handlers.*
-import devteam.rx.*
-import jetbrains.buildServer.messages.serviceMessages.ServiceMessage
+import bazel.messages.BazelEventHandlerContext
+import bazel.messages.ServiceMessageContext
+import com.google.devtools.build.lib.buildeventstream.BuildEventStreamProtos
+import java.util.logging.Level
+import java.util.logging.Logger
 
-class StreamSubject(
-    private val verbosity: Verbosity,
-    private val messageFactory: MessageFactory,
-    private val hierarchy: Hierarchy,
-) : ServiceMessageSubject {
-    private val messageSubject = subjectOf<ServiceMessage>()
-
-    override fun onNext(value: Event<OrderedBuildEvent>) {
-        if (value.payload !is BazelEvent) {
-            return
+class RootBazelEventHandler : EventHandler {
+    override fun handle(ctx: ServiceMessageContext): Boolean {
+        if (!ctx.event.rawEvent.hasBazelEvent()) {
+            return false
         }
 
-        val event = value.payload.event
-        val subject = subjectOf<ServiceMessage>()
+        val bazelEvent = ctx.event.rawEvent.bazelEvent
+        val bazelEventType = bazelEvent.typeUrl
+        if (bazelEventType != "type.googleapis.com/build_event_stream.BuildEvent") {
+            logger.log(Level.SEVERE, "Unknown bazel event: $bazelEventType")
+            return true
+        }
+        val event = bazelEvent.unpack(BuildEventStreamProtos.BuildEvent::class.java)
         val ctx =
             BazelEventHandlerContext(
-                subject,
-                hierarchy,
+                ctx.observer,
+                ctx.hierarchy,
                 event,
-                value,
-                messageFactory,
-                verbosity,
+                ctx.event,
+                ctx.messageFactory,
+                ctx.verbosity,
             )
-        subject
-            .subscribe(
-                observer(
-                    onNext = { messageSubject.onNext(updateHeader(value.payload, it)) },
-                    onError = { messageSubject.onError(it) },
-                    onComplete = { messageSubject.onComplete() },
-                ),
-            ).use {
-                handlers.firstOrNull { it.handle(ctx) } ?: UnknownEventHandler().handle(ctx)
+        handlers.firstOrNull { it.handle(ctx) } ?: UnknownEventHandler().handle(ctx)
 
-                if (verbosity.atLeast(Verbosity.Diagnostic)) {
-                    subject.onNext(messageFactory.createTraceMessage(value.payload.toString()))
-                }
+        val id = Id(event.id)
+        val children = event.childrenList.map { Id(it) }
+        ctx.hierarchy.createNode(id, children, "")
+        ctx.hierarchy.tryCloseNode(id)
 
-                val event = value.payload.event
-                val id = Id(event.id)
-                val children = event.childrenList.map { Id(it) }
-                hierarchy.createNode(id, children, "")
-                hierarchy.tryCloseNode(id)
-            }
-    }
-
-    override fun onError(error: Exception) = messageSubject.onError(error)
-
-    override fun onComplete() = messageSubject.onComplete()
-
-    override fun subscribe(observer: Observer<ServiceMessage>): Disposable = messageSubject.subscribe(observer)
-
-    private fun updateHeader(
-        event: OrderedBuildEvent,
-        message: ServiceMessage,
-    ): ServiceMessage {
-        if (message.flowId.isNullOrEmpty()) {
-            message.setFlowId(event.streamId.invocationId)
-        }
-
-        message.setTimestamp(event.eventTime.date)
-        return message
+        return true
     }
 
     companion object {
+        private val logger = Logger.getLogger(RootBazelEventHandler::class.java.name)
         private val handlers: List<BazelEventHandler> =
             listOf(
                 // Progress progress = 3;

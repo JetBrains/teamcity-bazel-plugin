@@ -2,12 +2,10 @@ package bazel.v1
 
 import bazel.Converter
 import bazel.Event
-import bazel.bazel.events.BazelEvent
 import bazel.events.OrderedBuildEvent
 import bazel.events.StreamId
 import bazel.events.Timestamp
 import bazel.events.UnknownEvent
-import com.google.devtools.build.lib.buildeventstream.BuildEventStreamProtos
 import com.google.devtools.build.v1.BuildEvent
 import java.util.logging.Level
 import java.util.logging.Logger
@@ -22,22 +20,6 @@ class BuildEventConverter(
             val event: BuildEvent = payload.event
             val sequenceNumber = payload.sequenceNumber
             val eventTime = Timestamp(event.eventTime.seconds, event.eventTime.nanos)
-
-            if (event.hasBazelEvent()) {
-                val bazelEventType = event.bazelEvent.typeUrl
-                if (bazelEventType != "type.googleapis.com/build_event_stream.BuildEvent") {
-                    logger.log(Level.SEVERE, "Unknown bazel event: $bazelEventType")
-                } else {
-                    val bazelEvent =
-                        BazelEvent(
-                            streamId,
-                            sequenceNumber,
-                            eventTime,
-                            event.bazelEvent.unpack(BuildEventStreamProtos.BuildEvent::class.java),
-                        )
-                    return Event(source.projectId, bazelEvent, event)
-                }
-            }
             val orderedEvent =
                 object : OrderedBuildEvent {
                     override val streamId = streamId
