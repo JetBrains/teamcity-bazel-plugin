@@ -1,6 +1,7 @@
 package bazel
 
 import bazel.messages.*
+import com.google.devtools.build.v1.BuildEvent
 import devteam.rx.*
 import java.nio.file.Path
 
@@ -23,7 +24,7 @@ class BinaryFile(
                 ),
                 _binaryFileStream.create(_eventFile).subscribe(
                     observer(
-                        onNext = { controllerSubject.onNext(Event("", it)) },
+                        onNext = { controllerSubject.onNext(Event("", it, BuildEvent.getDefaultInstance())) },
                         onError = { controllerSubject.onError(it) },
                         onComplete = { controllerSubject.onComplete() },
                     ),

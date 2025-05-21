@@ -35,7 +35,7 @@ class PublishBuildEventService :
         projectId.compareAndSet("", request?.projectId ?: "")
 
         if (request?.hasBuildEvent() == true) {
-            eventSubject.onNext(Event(projectId.get(), request.buildEvent))
+            eventSubject.onNext(Event(projectId.get(), request.buildEvent, request.buildEvent.event))
         }
 
         responseObserver?.let {
@@ -77,7 +77,7 @@ class PublishBuildEventService :
             )
 
             if (value.hasOrderedBuildEvent()) {
-                _eventObserver.onNext(Event(_projectId, value.orderedBuildEvent))
+                _eventObserver.onNext(Event(_projectId, value.orderedBuildEvent, value.orderedBuildEvent.event))
             } else {
                 logger.log(Level.SEVERE, "OrderedBuildEvent was not found.")
             }

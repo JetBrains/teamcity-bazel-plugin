@@ -7,6 +7,7 @@ import bazel.events.OrderedBuildEvent
 import bazel.events.StreamId
 import bazel.events.Timestamp
 import com.google.devtools.build.lib.buildeventstream.BuildEventStreamProtos
+import com.google.devtools.build.v1.BuildEvent
 
 fun createEvent(event: BuildEventStreamProtos.BuildEvent) =
     Event<OrderedBuildEvent>(
@@ -17,4 +18,5 @@ fun createEvent(event: BuildEventStreamProtos.BuildEvent) =
             Timestamp.zero,
             event,
         ),
+        BuildEvent.getDefaultInstance(),
     )

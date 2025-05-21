@@ -1,5 +1,3 @@
-
-
 package bazel.v1
 
 import bazel.Converter
@@ -12,6 +10,7 @@ import bazel.v1.converters.BuildStatusConverter
 import bazel.v1.converters.ConsoleOutputStreamConverter
 import bazel.v1.converters.FinishTypeConverter
 import bazel.v1.handlers.*
+import com.google.devtools.build.v1.BuildEvent
 import java.util.logging.Level
 import java.util.logging.Logger
 
@@ -22,19 +21,30 @@ class BuildEventConverter(
         val payload = source.payload
         val streamId = if (payload.hasStreamId()) _streamIdConverter.convert(payload.streamId) else StreamId.default
         if (payload.hasEvent()) {
-            val event = payload.event
+            val event: BuildEvent = payload.event
             val sequenceNumber = payload.sequenceNumber
             val eventTime = Timestamp(event.eventTime.seconds, event.eventTime.nanos)
+
+            if (event.hasBuildEnqueued()) {
+                val orderedEvent =
+                    object : OrderedBuildEvent {
+                        override val streamId = streamId
+                        override val sequenceNumber = sequenceNumber
+                        override val eventTime = eventTime
+                    }
+                return Event(source.projectId, orderedEvent, event)
+            }
+
             val handlersIterator = handlers.iterator()
             val convertedPayload =
                 handlersIterator.next().handle(
                     HandlerContext(handlersIterator, streamId, sequenceNumber, eventTime, event),
                 )
-            return Event(source.projectId, convertedPayload)
+            return Event(source.projectId, convertedPayload, event)
         }
 
         logger.log(Level.SEVERE, "Unknown event: $source")
-        return Event(source.projectId, UnknownEvent(streamId))
+        return Event(source.projectId, UnknownEvent(streamId), rawEvent = BuildEvent.getDefaultInstance())
     }
 
     companion object {
@@ -47,10 +57,6 @@ class BuildEventConverter(
                 // An invocation attempt has finished.
                 // invocation_attempt_finished = 52
                 InvocationAttemptFinishedHandler(BuildStatusConverter()),
-                // The build is enqueued (just inserted to the build queue or put back
-                // into the build queue due to a previous build failure).
-                // build_enqueued = 53
-                BuildEnqueuedHandler(),
                 // The build has finished. Set when the build is terminated.
                 // build_finished = 55
                 BuildFinishedHandler(BuildStatusConverter()),
