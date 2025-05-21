@@ -14,13 +14,8 @@ open class ServiceMessageContext(
     override val event: Event<OrderedBuildEvent>,
     override val messageFactory: MessageFactory,
     override val verbosity: Verbosity,
-) : Observer<ServiceMessage>,
-    MessageBuilderContext {
-    override fun onNext(value: ServiceMessage) = observer.onNext(value)
-
-    override fun onError(error: Exception) = observer.onError(error)
-
-    override fun onComplete() = observer.onComplete()
+) : MessageBuilderContext {
+    fun onNext(value: ServiceMessage) = observer.onNext(value)
 }
 
 class BazelEventHandlerContext(
