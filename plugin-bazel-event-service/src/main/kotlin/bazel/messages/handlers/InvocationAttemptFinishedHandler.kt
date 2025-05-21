@@ -20,9 +20,14 @@ class InvocationAttemptFinishedHandler : EventHandler {
             ctx.onNext(ctx.messageFactory.createFlowFinished(ctx.event.payload.streamId.invocationId))
 
             val invocationAttemptFinished = ctx.event.rawEvent.invocationAttemptFinished
-            val result = if (invocationAttemptFinished.hasInvocationStatus()) buildStatusConverter.convert(
-                invocationAttemptFinished.invocationStatus
-            ) else Result.default
+            val result =
+                if (invocationAttemptFinished.hasInvocationStatus()) {
+                    buildStatusConverter.convert(
+                        invocationAttemptFinished.invocationStatus,
+                    )
+                } else {
+                    Result.default
+                }
             if (result.status == BuildStatus.CommandSucceeded) {
                 if (ctx.verbosity.atLeast(Verbosity.Detailed)) {
                     ctx.onNext(

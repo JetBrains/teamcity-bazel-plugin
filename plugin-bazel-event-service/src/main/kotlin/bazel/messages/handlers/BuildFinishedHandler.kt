@@ -37,7 +37,7 @@ class BuildFinishedHandler : EventHandler {
                 BuildStatus.ResourceExhausted,
                 BuildStatus.InvocationDeadlineExceeded,
                 BuildStatus.RequestDeadlineExceeded,
-                    -> {
+                -> {
                     ctx.onNext(ctx.messageFactory.createErrorMessage(status))
                 }
 
