@@ -1,6 +1,5 @@
 package bazel.messages.handlers
 
-import bazel.HandlerPriority
 import bazel.Verbosity
 import bazel.atLeast
 import bazel.events.BuildStatus
@@ -12,8 +11,6 @@ import bazel.v1.converters.BuildStatusConverter
 
 class InvocationAttemptFinishedHandler : EventHandler {
     private val buildStatusConverter = BuildStatusConverter()
-    override val priority: HandlerPriority
-        get() = HandlerPriority.Low
 
     override fun handle(ctx: ServiceMessageContext) =
         if (ctx.event.rawEvent.hasInvocationAttemptFinished()) {

@@ -1,6 +1,5 @@
 package bazel.messages.handlers
 
-import bazel.HandlerPriority
 import bazel.Verbosity
 import bazel.atLeast
 import bazel.messages.Color
@@ -10,9 +9,6 @@ import com.google.devtools.build.v1.BuildEvent.BuildComponentStreamFinished.Fini
 import com.google.devtools.build.v1.BuildEvent.BuildComponentStreamFinished.FinishType.FINISHED
 
 class ComponentStreamFinishedHandler : EventHandler {
-    override val priority: HandlerPriority
-        get() = HandlerPriority.Low
-
     override fun handle(ctx: ServiceMessageContext) =
         if (ctx.event.rawEvent.hasComponentStreamFinished()) {
             val componentStreamFinished = ctx.event.rawEvent.componentStreamFinished

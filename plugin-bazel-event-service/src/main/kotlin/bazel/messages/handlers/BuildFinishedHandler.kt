@@ -1,6 +1,5 @@
 package bazel.messages.handlers
 
-import bazel.HandlerPriority
 import bazel.events.BuildStatus
 import bazel.messages.Color
 import bazel.messages.ServiceMessageContext
@@ -9,9 +8,6 @@ import bazel.v1.converters.BuildStatusConverter
 
 class BuildFinishedHandler : EventHandler {
     private val buildStatusConverter = BuildStatusConverter()
-
-    override val priority: HandlerPriority
-        get() = HandlerPriority.Low
 
     override fun handle(ctx: ServiceMessageContext) =
         if (ctx.event.rawEvent.hasBuildFinished()) {

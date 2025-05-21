@@ -1,14 +1,10 @@
 package bazel.messages.handlers
 
-import bazel.HandlerPriority
 import bazel.Verbosity
 import bazel.atLeast
 import bazel.messages.ServiceMessageContext
 
 class InvocationAttemptStartedHandler : EventHandler {
-    override val priority: HandlerPriority
-        get() = HandlerPriority.Low
-
     override fun handle(ctx: ServiceMessageContext) =
         if (ctx.event.rawEvent.hasInvocationAttemptStarted()) {
             val invocationAttemptStarted = ctx.event.rawEvent.invocationAttemptStarted

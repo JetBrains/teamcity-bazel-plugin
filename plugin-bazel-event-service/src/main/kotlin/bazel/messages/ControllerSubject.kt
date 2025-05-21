@@ -1,5 +1,3 @@
-
-
 package bazel.messages
 
 import bazel.Event
@@ -93,7 +91,7 @@ class ControllerSubject(
 
     companion object {
         private val handlers =
-            sequenceOf(
+            listOf(
                 BuildEnqueuedHandler(),
                 InvocationAttemptStartedHandler(),
                 InvocationAttemptFinishedHandler(),
@@ -101,7 +99,7 @@ class ControllerSubject(
                 ComponentStreamFinishedHandler(),
                 ConsoleOutputHandler(),
                 NotProcessedEventHandler(),
-            ).sortedBy { it.priority }.toList()
+            )
         private val logger = Logger.getLogger(ControllerSubject::class.java.name)
     }
 }
