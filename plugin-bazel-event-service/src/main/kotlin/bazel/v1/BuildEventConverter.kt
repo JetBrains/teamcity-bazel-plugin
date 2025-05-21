@@ -6,8 +6,6 @@ import bazel.events.OrderedBuildEvent
 import bazel.events.StreamId
 import bazel.events.Timestamp
 import bazel.events.UnknownEvent
-import bazel.v1.converters.BuildStatusConverter
-import bazel.v1.converters.ConsoleOutputStreamConverter
 import bazel.v1.converters.FinishTypeConverter
 import bazel.v1.handlers.*
 import com.google.devtools.build.v1.BuildEvent
@@ -28,7 +26,8 @@ class BuildEventConverter(
             if (event.hasBuildEnqueued() ||
                 event.hasInvocationAttemptStarted() ||
                 event.hasInvocationAttemptFinished() ||
-                event.hasBuildFinished()
+                event.hasBuildFinished() ||
+                event.hasConsoleOutput()
             ) {
                 val orderedEvent =
                     object : OrderedBuildEvent {
@@ -55,9 +54,6 @@ class BuildEventConverter(
         private val logger = Logger.getLogger(BuildEventConverter::class.java.name)
         private val handlers =
             sequenceOf(
-                // An event containing printed text.
-                // console_output = 56
-                ConsoleOutputHandler(ConsoleOutputStreamConverter()),
                 // Indicates the end of a build event stream (with the same StreamId) from
                 // a build component executing the requested build task.
                 // *** This field does not indicate the WatchBuild RPC is finished. ***

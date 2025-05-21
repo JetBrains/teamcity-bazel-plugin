@@ -99,6 +99,7 @@ class ControllerSubject(
                 InvocationAttemptFinishedHandler(),
                 BuildFinishedHandler(),
                 ComponentStreamFinishedHandler(),
+                ConsoleOutputHandler(),
                 NotProcessedEventHandler(),
             ).sortedBy { it.priority }.toList()
         private val logger = Logger.getLogger(ControllerSubject::class.java.name)
