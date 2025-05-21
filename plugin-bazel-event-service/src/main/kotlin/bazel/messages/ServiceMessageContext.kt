@@ -3,7 +3,6 @@ package bazel.messages
 import bazel.Event
 import bazel.Verbosity
 import bazel.events.OrderedBuildEvent
-import bazel.messages.handlers.EventHandler
 import bazel.messages.handlers.MessageBuilderContext
 import com.google.devtools.build.lib.buildeventstream.BuildEventStreamProtos
 import devteam.rx.Observer
@@ -11,7 +10,6 @@ import jetbrains.buildServer.messages.serviceMessages.ServiceMessage
 
 open class ServiceMessageContext(
     val observer: Observer<ServiceMessage>,
-    val handlerIterator: Iterator<EventHandler>,
     val hierarchy: Hierarchy,
     override val event: Event<OrderedBuildEvent>,
     override val messageFactory: MessageFactory,

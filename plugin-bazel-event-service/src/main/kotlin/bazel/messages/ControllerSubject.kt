@@ -24,12 +24,9 @@ class ControllerSubject(
             return
         }
 
-        val invocationId = value.payload.streamId.invocationId
-        val handlerIterator = handlers.iterator()
-
         // this subject is needed to wrap all onNext calls from handlers with updateHeader method
         val subject = subjectOf<ServiceMessage>()
-        val ctx = ServiceMessageContext(subject, handlerIterator, hierarchy, value, messageFactory, verbosity)
+        val ctx = ServiceMessageContext(subject, hierarchy, value, messageFactory, verbosity)
         subject
             .subscribe(
                 observer(
@@ -38,7 +35,7 @@ class ControllerSubject(
                     onComplete = { controllerSubject.onComplete() },
                 ),
             ).use {
-                val processed = handlerIterator.next().handle(ctx)
+                val processed = handlers.firstOrNull { it.handle(ctx) } != null
 
                 if (processed) {
                     if (verbosity.atLeast(Verbosity.Diagnostic)) {
