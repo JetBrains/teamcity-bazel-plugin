@@ -15,15 +15,14 @@ class BuildFinishedHandler : EventHandler {
         }
 
         val buildFinished = ctx.event.rawEvent.buildFinished
-        val result = buildStatusConverter.convert(buildFinished.status)
-        val status = result.status.description
-        when (result.status) {
+        val status = buildStatusConverter.convert(buildFinished.status)
+        when (status) {
             BuildStatus.CommandSucceeded -> {
                 ctx.onNext(
                     ctx.messageFactory.createMessage(
                         ctx
                             .buildMessage()
-                            .append(status.apply(Color.Success))
+                            .append(status.description.apply(Color.Success))
                             .toString(),
                     ),
                 )
@@ -37,7 +36,7 @@ class BuildFinishedHandler : EventHandler {
             BuildStatus.InvocationDeadlineExceeded,
             BuildStatus.RequestDeadlineExceeded,
             -> {
-                ctx.onNext(ctx.messageFactory.createErrorMessage(status))
+                ctx.onNext(ctx.messageFactory.createErrorMessage(status.description))
             }
 
             else -> {}

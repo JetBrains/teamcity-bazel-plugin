@@ -3,7 +3,6 @@ package bazel.messages.handlers
 import bazel.Verbosity
 import bazel.atLeast
 import bazel.events.BuildStatus
-import bazel.events.Result
 import bazel.messages.Color
 import bazel.messages.ServiceMessageContext
 import bazel.messages.apply
@@ -19,15 +18,15 @@ class InvocationAttemptFinishedHandler : EventHandler {
         ctx.onNext(ctx.messageFactory.createFlowFinished(ctx.event.payload.streamId.invocationId))
 
         val invocationAttemptFinished = ctx.event.rawEvent.invocationAttemptFinished
-        val result =
+        val status =
             if (invocationAttemptFinished.hasInvocationStatus()) {
                 buildStatusConverter.convert(
                     invocationAttemptFinished.invocationStatus,
                 )
             } else {
-                Result.default
+                BuildStatus.Unknown
             }
-        if (result.status == BuildStatus.CommandSucceeded) {
+        if (status == BuildStatus.CommandSucceeded) {
             if (ctx.verbosity.atLeast(Verbosity.Detailed)) {
                 ctx.onNext(
                     ctx.messageFactory.createMessage(
@@ -44,7 +43,7 @@ class InvocationAttemptFinishedHandler : EventHandler {
                     ctx
                         .buildMessage(false)
                         .append("Invocation attempt failed")
-                        .append(": \"${result.status.description}\"", Verbosity.Detailed)
+                        .append(": \"${status.description}\"", Verbosity.Detailed)
                         .toString(),
                 ),
             )

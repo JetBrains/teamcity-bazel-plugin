@@ -1,19 +1,19 @@
 package bazel.v1
 
-import bazel.Converter
 import bazel.Event
 import bazel.events.OrderedBuildEvent
 import bazel.events.StreamId
 import bazel.events.Timestamp
 import bazel.events.UnknownEvent
+import bazel.v1.converters.StreamIdConverter
 import com.google.devtools.build.v1.BuildEvent
 import java.util.logging.Level
 import java.util.logging.Logger
 
 class BuildEventConverter(
-    private val _streamIdConverter: Converter<com.google.devtools.build.v1.StreamId, StreamId>,
-) : Converter<Event<com.google.devtools.build.v1.OrderedBuildEvent>, Event<OrderedBuildEvent>> {
-    override fun convert(source: Event<com.google.devtools.build.v1.OrderedBuildEvent>): Event<OrderedBuildEvent> {
+    private val _streamIdConverter: StreamIdConverter,
+) {
+    fun convert(source: Event<com.google.devtools.build.v1.OrderedBuildEvent>): Event<OrderedBuildEvent> {
         val payload = source.payload
         val streamId = if (payload.hasStreamId()) _streamIdConverter.convert(payload.streamId) else StreamId.default
         if (payload.hasEvent()) {
