@@ -14,8 +14,8 @@ class BuildMetadataHandler : EventHandler {
 
     override fun handle(ctx: ServiceMessageContext): Boolean {
         val payload = ctx.event.payload
-        return if (payload is BazelEvent && payload.rawEvent.hasBuildMetadata()) {
-            val event = payload.rawEvent.buildMetadata
+        return if (payload is BazelEvent && payload.event.hasBuildMetadata()) {
+            val event = payload.event.buildMetadata
             if (ctx.verbosity.atLeast(Verbosity.Verbose)) {
                 for (item in event.metadataMap) {
                     ctx.onNext(

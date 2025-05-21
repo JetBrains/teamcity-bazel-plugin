@@ -13,8 +13,8 @@ class WorkspaceConfigHandler : EventHandler {
 
     override fun handle(ctx: ServiceMessageContext): Boolean {
         val payload = ctx.event.payload
-        if (payload is BazelEvent && payload.rawEvent.hasWorkspaceInfo()) {
-            val info = ctx.event.payload.rawEvent.workspaceInfo
+        if (payload is BazelEvent && payload.event.hasWorkspaceInfo()) {
+            val info = payload.event.workspaceInfo
 
             if (ctx.verbosity.atLeast(Verbosity.Detailed)) {
                 ctx.onNext(

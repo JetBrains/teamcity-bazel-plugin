@@ -13,8 +13,8 @@ class WorkspaceStatusHandler : EventHandler {
 
     override fun handle(ctx: ServiceMessageContext): Boolean {
         val payload = ctx.event.payload
-        if (payload is BazelEvent && payload.rawEvent.hasWorkspaceStatus()) {
-            val status = ctx.event.payload.rawEvent.workspaceStatus
+        if (payload is BazelEvent && payload.event.hasWorkspaceStatus()) {
+            val status = payload.event.workspaceStatus
 
             if (ctx.verbosity.atLeast(Verbosity.Verbose) && status.itemCount > 0) {
                 for (item in status.itemList) {

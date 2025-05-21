@@ -14,8 +14,8 @@ class ProgressHandler : EventHandler {
 
     override fun handle(ctx: ServiceMessageContext): Boolean {
         val payload = ctx.event.payload
-        return if (ctx.event.payload is BazelEvent && payload.rawEvent.hasProgress()) {
-            val event = payload.rawEvent.progress
+        return if (ctx.event.payload is BazelEvent && payload.event.hasProgress()) {
+            val event = payload.event.progress
             if (ctx.verbosity.atLeast(Verbosity.Normal) && event.stdout.isNotBlank()) {
                 ctx.onNext(
                     ctx.messageFactory.createMessage(

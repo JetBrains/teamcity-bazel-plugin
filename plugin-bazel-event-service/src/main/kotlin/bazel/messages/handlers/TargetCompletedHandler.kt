@@ -15,10 +15,10 @@ class TargetCompletedHandler : EventHandler {
 
     override fun handle(ctx: ServiceMessageContext): Boolean {
         val payload = ctx.event.payload
-        if (payload is BazelEvent && payload.rawEvent.hasCompleted()) {
-            val completed = payload.rawEvent.completed
+        if (payload is BazelEvent && payload.event.hasCompleted()) {
+            val completed = payload.event.completed
 
-            ctx.hierarchy.tryCloseNode(ctx, Id(payload.rawEvent.id))?.let {
+            ctx.hierarchy.tryCloseNode(ctx, Id(payload.event.id))?.let {
                 val description =
                     ctx
                         .buildMessage()

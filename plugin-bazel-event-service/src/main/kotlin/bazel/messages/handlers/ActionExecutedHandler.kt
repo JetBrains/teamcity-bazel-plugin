@@ -19,10 +19,10 @@ class ActionExecutedHandler : EventHandler {
 
     override fun handle(ctx: ServiceMessageContext): Boolean {
         val payload = ctx.event.payload
-        return if (ctx.event.payload is BazelEvent && payload.rawEvent.hasAction()) {
-            val event = payload.rawEvent.action
+        return if (ctx.event.payload is BazelEvent && payload.event.hasAction()) {
+            val event = payload.event.action
             val actionName = "Action \"${event.type}\""
-            ctx.hierarchy.createNode(Id(payload.rawEvent.id), payload.rawEvent.childrenList.map { Id(it) }, actionName)
+            ctx.hierarchy.createNode(Id(payload.event.id), payload.event.childrenList.map { Id(it) }, actionName)
 
             val details = StringBuilder()
             details.appendLine(event.commandLineList.joinToStringEscaped().trim())
@@ -77,7 +77,7 @@ class ActionExecutedHandler : EventHandler {
                     ctx.messageFactory.createBuildProblem(
                         error,
                         ctx.event.projectId,
-                        payload.rawEvent.id.toString(),
+                        payload.event.id.toString(),
                     ),
                 )
 

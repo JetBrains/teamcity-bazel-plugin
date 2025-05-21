@@ -14,8 +14,8 @@ class BuildMetricsHandler : EventHandler {
 
     override fun handle(ctx: ServiceMessageContext): Boolean {
         val payload = ctx.event.payload
-        return if (payload is BazelEvent && payload.rawEvent.hasBuildMetrics()) {
-            val event = payload.rawEvent.buildMetrics
+        return if (payload is BazelEvent && payload.event.hasBuildMetrics()) {
+            val event = payload.event.buildMetrics
             if (ctx.verbosity.atLeast(Verbosity.Verbose)) {
                 val actionsCreated = if (event.hasActionSummary()) event.actionSummary.actionsCreated else 0
                 val usedHeapSizePostBuild =

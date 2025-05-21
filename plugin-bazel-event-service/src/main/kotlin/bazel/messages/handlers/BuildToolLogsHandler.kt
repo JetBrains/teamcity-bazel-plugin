@@ -14,12 +14,12 @@ class BuildToolLogsHandler : EventHandler {
 
     override fun handle(ctx: ServiceMessageContext): Boolean {
         val payload = ctx.event.payload
-        if (payload is BazelEvent && payload.rawEvent.hasBuildToolLogs()) {
+        if (payload is BazelEvent && payload.event.hasBuildToolLogs()) {
             if (!ctx.verbosity.atLeast(Verbosity.Verbose)) {
                 return true
             }
 
-            val logs = payload.rawEvent.buildToolLogs.logList
+            val logs = payload.event.buildToolLogs.logList
             for (log in logs) {
                 if (log.name.isEmpty()) continue
 

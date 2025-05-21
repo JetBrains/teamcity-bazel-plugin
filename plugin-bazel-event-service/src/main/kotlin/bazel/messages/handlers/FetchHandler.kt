@@ -14,12 +14,12 @@ class FetchHandler : EventHandler {
 
     override fun handle(ctx: ServiceMessageContext): Boolean {
         val payload = ctx.event.payload
-        return if (payload is BazelEvent && payload.rawEvent.hasFetch()) {
-            val event = payload.rawEvent.fetch
+        return if (payload is BazelEvent && payload.event.hasFetch()) {
+            val event = payload.event.fetch
 
             val url =
-                if (payload.rawEvent.hasId() && payload.rawEvent.id.hasFetch()) {
-                    payload.rawEvent.id.fetch.url
+                if (payload.event.hasId() && payload.event.id.hasFetch()) {
+                    payload.event.id.fetch.url
                 } else {
                     "unknown url"
                 }

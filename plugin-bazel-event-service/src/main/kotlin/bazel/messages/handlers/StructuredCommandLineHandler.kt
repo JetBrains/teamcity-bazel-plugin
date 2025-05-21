@@ -12,11 +12,12 @@ class StructuredCommandLineHandler : EventHandler {
 
     override fun handle(ctx: ServiceMessageContext): Boolean {
         val payload = ctx.event.payload
-        if (payload is BazelEvent && payload.rawEvent.hasStructuredCommandLine()) {
+        if (payload is BazelEvent && payload.event.hasStructuredCommandLine()) {
             if (ctx.verbosity.atLeast(Verbosity.Detailed)) {
-                val label =
-                    ctx.event.payload.rawEvent.structuredCommandLine.commandLineLabel
-                        .takeIf { it.isNotEmpty() } ?: "tool"
+                val label = payload.event
+                    .structuredCommandLine
+                    .commandLineLabel
+                    .takeIf { it.isNotEmpty() } ?: "tool"
 
                 ctx.onNext(
                     ctx.messageFactory.createMessage(

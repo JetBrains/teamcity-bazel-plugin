@@ -15,10 +15,10 @@ class AbortedHandler : EventHandler {
 
     override fun handle(ctx: ServiceMessageContext): Boolean {
         val payload = ctx.event.payload
-        if (payload is BazelEvent && payload.rawEvent.hasAborted()) {
-            val aborted = payload.rawEvent.aborted
+        if (payload is BazelEvent && payload.event.hasAborted()) {
+            val aborted = payload.event.aborted
             val reason = formatAbortReason(aborted.reason)
-            ctx.hierarchy.tryAbortNode(ctx, Id(payload.rawEvent.id))?.let {
+            ctx.hierarchy.tryAbortNode(ctx, Id(payload.event.id))?.let {
                 if (it.description.isNotEmpty()) {
                     ctx.onNext(
                         ctx.messageFactory

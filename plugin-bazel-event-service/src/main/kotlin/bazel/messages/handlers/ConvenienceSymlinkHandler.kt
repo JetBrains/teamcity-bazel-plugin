@@ -14,11 +14,11 @@ class ConvenienceSymlinkHandler : EventHandler {
 
     override fun handle(ctx: ServiceMessageContext): Boolean {
         val payload = ctx.event.payload
-        if (payload is BazelEvent && payload.rawEvent.hasConvenienceSymlinksIdentified()) {
+        if (payload is BazelEvent && payload.event.hasConvenienceSymlinksIdentified()) {
             if (!ctx.verbosity.atLeast(Verbosity.Verbose)) {
                 return true
             }
-            val symlinks = payload.rawEvent.convenienceSymlinksIdentified.convenienceSymlinksList
+            val symlinks = payload.event.convenienceSymlinksIdentified.convenienceSymlinksList
             val summary =
                 symlinks.joinToString(", ") { symlink ->
                     "${symlink.path} → ${symlink.target}"

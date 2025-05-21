@@ -25,9 +25,9 @@ class TestResultHandler(
 
     override fun handle(ctx: ServiceMessageContext): Boolean {
         val payload = ctx.event.payload
-        return if (ctx.event.payload is BazelEvent && payload.rawEvent.hasTestResult() && payload.rawEvent.hasTestResult()) {
-            val event = payload.rawEvent.testResult
-            val id = payload.rawEvent.id
+        return if (ctx.event.payload is BazelEvent && payload.event.hasTestResult() && payload.event.hasTestResult()) {
+            val event = payload.event.testResult
+            val id = payload.event.id
             if (ctx.verbosity.atLeast(Verbosity.Detailed)) {
                 val status = testStatusConverter.convert(event.status)
                 val testAttemptDurationMillis =
@@ -52,7 +52,7 @@ class TestResultHandler(
                 )
             }
 
-            val hasNextAttempt = payload.rawEvent.childrenList.isNotEmpty()
+            val hasNextAttempt = payload.event.childrenList.isNotEmpty()
             for (test in event.testActionOutputList.map { fileConverter.convert(it) }) {
                 if (ctx.verbosity.atLeast(Verbosity.Verbose)) {
                     ctx.onNext(ctx.messageFactory.createMessage("$test".apply(Color.Items)))

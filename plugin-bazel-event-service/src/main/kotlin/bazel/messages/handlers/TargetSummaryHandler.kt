@@ -10,7 +10,7 @@ class TargetSummaryHandler : EventHandler {
 
     override fun handle(ctx: ServiceMessageContext): Boolean {
         val payload = ctx.event.payload
-        return if (payload is BazelEvent && payload.rawEvent.hasTargetSummary()) {
+        return if (payload is BazelEvent && payload.event.hasTargetSummary()) {
             true
         } else {
             ctx.handlerIterator.next().handle(ctx)

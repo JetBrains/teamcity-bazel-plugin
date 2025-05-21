@@ -12,8 +12,8 @@ class NamedSetOfFilesHandler : EventHandler {
 
     override fun handle(ctx: ServiceMessageContext): Boolean {
         val payload = ctx.event.payload
-        if (payload is BazelEvent && payload.rawEvent.hasNamedSetOfFiles()) {
-            val namedSet = payload.rawEvent.namedSetOfFiles
+        if (payload is BazelEvent && payload.event.hasNamedSetOfFiles()) {
+            val namedSet = payload.event.namedSetOfFiles
             if (!ctx.verbosity.atLeast(Verbosity.Detailed) || namedSet.filesCount == 0) {
                 return true
             }

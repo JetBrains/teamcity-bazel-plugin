@@ -15,9 +15,9 @@ class TestSummaryHandler : EventHandler {
 
     override fun handle(ctx: ServiceMessageContext): Boolean {
         val payload = ctx.event.payload
-        if (payload is BazelEvent && payload.rawEvent.hasTestSummary() && payload.rawEvent.id.hasTestSummary()) {
-            val summary = payload.rawEvent.testSummary
-            val label = payload.rawEvent.id.testSummary.label
+        if (payload is BazelEvent && payload.event.hasTestSummary() && payload.event.id.hasTestSummary()) {
+            val summary = payload.event.testSummary
+            val label = payload.event.id.testSummary.label
 
             val overallStatus = testStatusConverter.convert(summary.overallStatus)
             ctx.onNext(

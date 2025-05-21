@@ -37,7 +37,7 @@ class StreamSubject(
                 }
 
                 if (value.payload is BazelEvent) {
-                    val event = value.payload.rawEvent
+                    val event = value.payload.event
                     val id = Id(event.id)
                     val children = event.childrenList.map { Id(it) }
                     hierarchy.createNode(id, children, "")

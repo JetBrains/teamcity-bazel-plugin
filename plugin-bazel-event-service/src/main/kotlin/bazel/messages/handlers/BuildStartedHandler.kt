@@ -15,8 +15,8 @@ class BuildStartedHandler : EventHandler {
 
     override fun handle(ctx: ServiceMessageContext): Boolean {
         val payload = ctx.event.payload
-        return if (payload is BazelEvent && payload.rawEvent.hasStarted()) {
-            val event = payload.rawEvent.started
+        return if (payload is BazelEvent && payload.event.hasStarted()) {
+            val event = payload.event.started
             val description = event.command
             val details =
                 ctx
@@ -29,7 +29,7 @@ class BuildStartedHandler : EventHandler {
 
             if (ctx.verbosity.atLeast(Verbosity.Normal)) {
                 ctx.onNext(ctx.messageFactory.createBlockOpened(description, details))
-                ctx.hierarchy.createNode(Id(payload.rawEvent.id), payload.rawEvent.childrenList.map { Id(it) }, description) {
+                ctx.hierarchy.createNode(Id(payload.event.id), payload.event.childrenList.map { Id(it) }, description) {
                     it.onNext(it.messageFactory.createBlockClosed(description))
                 }
             }

@@ -15,16 +15,16 @@ class TargetConfiguredHandler : EventHandler {
 
     override fun handle(ctx: ServiceMessageContext): Boolean {
         val payload = ctx.event.payload
-        return if (payload is BazelEvent && payload.rawEvent.hasConfigured()) {
-            val event = payload.rawEvent.configured
-            val id = payload.rawEvent.id
+        return if (payload is BazelEvent && payload.event.hasConfigured()) {
+            val event = payload.event.configured
+            val id = payload.event.id
             val targetName =
                 ctx
                     .buildMessage(
                         false,
                     ).append("Target ${event.targetKind} \"${id.targetConfigured.label}\"".apply(Color.BuildStage))
                     .toString()
-            ctx.hierarchy.createNode(Id(id), payload.rawEvent.childrenList.map { Id(it) }, targetName)
+            ctx.hierarchy.createNode(Id(id), payload.event.childrenList.map { Id(it) }, targetName)
             if (ctx.verbosity.atLeast(Verbosity.Detailed)) {
                 ctx.onNext(
                     ctx.messageFactory.createMessage(

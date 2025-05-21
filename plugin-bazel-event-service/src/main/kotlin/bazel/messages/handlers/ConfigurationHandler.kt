@@ -14,8 +14,8 @@ class ConfigurationHandler : EventHandler {
 
     override fun handle(ctx: ServiceMessageContext): Boolean {
         val payload = ctx.event.payload
-        return if (payload is BazelEvent && payload.rawEvent.hasConfiguration()) {
-            val event = payload.rawEvent.configuration
+        return if (payload is BazelEvent && payload.event.hasConfiguration()) {
+            val event = payload.event.configuration
             if (ctx.verbosity.atLeast(Verbosity.Detailed)) {
                 ctx.onNext(
                     ctx.messageFactory.createMessage(

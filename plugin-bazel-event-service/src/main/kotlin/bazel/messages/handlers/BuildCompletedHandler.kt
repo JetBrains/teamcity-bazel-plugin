@@ -14,8 +14,8 @@ class BuildCompletedHandler : EventHandler {
 
     override fun handle(ctx: ServiceMessageContext): Boolean {
         val payload = ctx.event.payload
-        return if (payload is BazelEvent && payload.rawEvent.hasFinished()) {
-            val event = payload.rawEvent.finished
+        return if (payload is BazelEvent && payload.event.hasFinished()) {
+            val event = payload.event.finished
             if (event.exitCode.code == 0) {
                 if (ctx.verbosity.atLeast(Verbosity.Detailed)) {
                     ctx.onNext(

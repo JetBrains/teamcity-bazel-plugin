@@ -10,7 +10,7 @@ class TestProgressHandler : EventHandler {
 
     override fun handle(ctx: ServiceMessageContext): Boolean {
         val payload = ctx.event.payload
-        return if (payload is BazelEvent && payload.rawEvent.hasTestProgress()) {
+        return if (payload is BazelEvent && payload.event.hasTestProgress()) {
             true
         } else {
             ctx.handlerIterator.next().handle(ctx)

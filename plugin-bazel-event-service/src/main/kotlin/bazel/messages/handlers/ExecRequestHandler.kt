@@ -10,7 +10,7 @@ class ExecRequestHandler : EventHandler {
 
     override fun handle(ctx: ServiceMessageContext): Boolean {
         val payload = ctx.event.payload
-        return if (payload is BazelEvent && payload.rawEvent.hasExecRequest()) {
+        return if (payload is BazelEvent && payload.event.hasExecRequest()) {
             true
         } else {
             ctx.handlerIterator.next().handle(ctx)

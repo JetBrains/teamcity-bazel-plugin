@@ -16,8 +16,8 @@ class UnstructuredCommandLineHandler : EventHandler {
 
     override fun handle(ctx: ServiceMessageContext): Boolean {
         val payload = ctx.event.payload
-        return if (payload is BazelEvent && payload.rawEvent.hasUnstructuredCommandLine()) {
-            val commandLine = ctx.event.payload.rawEvent.unstructuredCommandLine
+        return if (payload is BazelEvent && payload.event.hasUnstructuredCommandLine()) {
+            val commandLine = payload.event.unstructuredCommandLine
             val cmd = commandLine.argsList.joinToStringEscaped()
             if (ctx.verbosity.atLeast(Verbosity.Detailed)) {
                 ctx.onNext(
