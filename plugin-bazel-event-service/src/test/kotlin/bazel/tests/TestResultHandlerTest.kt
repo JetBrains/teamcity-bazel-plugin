@@ -1,12 +1,10 @@
 package bazel.tests
 
-import bazel.Event
 import bazel.FileSystemService
 import bazel.Verbosity
-import bazel.events.OrderedBuildEvent
+import bazel.messages.BazelEventHandlerContext
 import bazel.messages.Hierarchy
 import bazel.messages.MessageFactory
-import bazel.messages.ServiceMessageContext
 import bazel.messages.handlers.EventHandler
 import bazel.messages.handlers.TestResultHandler
 import com.google.devtools.build.lib.buildeventstream.BuildEventStreamProtos
@@ -79,23 +77,21 @@ class TestResultHandlerTest {
         val handler = TestResultHandler(fileSystemService)
 
         // When
-        val event: Event<OrderedBuildEvent> =
-            createEvent(
-                BuildEventStreamProtos.BuildEvent
-                    .newBuilder()
-                    .setTestResult(
-                        BuildEventStreamProtos.TestResult
-                            .newBuilder()
-                            .addTestActionOutput(
-                                BuildEventStreamProtos.File
-                                    .newBuilder()
-                                    .setName("test.log")
-                                    .setContents(ByteString.copyFromUtf8("line 1\n##teamcity[line 2]")),
-                            ),
-                    ).build(),
-            )
+        val bazelEvent =
+            BuildEventStreamProtos.BuildEvent
+                .newBuilder()
+                .setTestResult(
+                    BuildEventStreamProtos.TestResult
+                        .newBuilder()
+                        .addTestActionOutput(
+                            BuildEventStreamProtos.File
+                                .newBuilder()
+                                .setName("test.log")
+                                .setContents(ByteString.copyFromUtf8("line 1\n##teamcity[line 2]")),
+                        ),
+                ).build()
 
-        val ctx = createContext(event, verbosity)
+        val ctx = createContext(bazelEvent, verbosity)
         val message1 = Message("line 1", "Normal", null)
         val message2 = Message("##teamcity[line 2]", "Normal", null)
         val message = Message("message", "Normal", null)
@@ -120,7 +116,7 @@ class TestResultHandlerTest {
     }
 
     private fun createContext(
-        event: Event<OrderedBuildEvent>,
+        event: BuildEventStreamProtos.BuildEvent,
         verbosity: Verbosity,
-    ) = ServiceMessageContext(subject, iterator, event, messageFactory, hierarchy, verbosity)
+    ) = BazelEventHandlerContext(subject, iterator, createEvent(event), messageFactory, hierarchy, verbosity, event)
 }

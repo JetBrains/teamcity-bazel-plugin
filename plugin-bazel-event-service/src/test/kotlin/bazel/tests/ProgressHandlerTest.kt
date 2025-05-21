@@ -1,11 +1,9 @@
 package bazel.tests
 
-import bazel.Event
 import bazel.Verbosity
-import bazel.events.OrderedBuildEvent
+import bazel.messages.BazelEventHandlerContext
 import bazel.messages.Hierarchy
 import bazel.messages.MessageFactory
-import bazel.messages.ServiceMessageContext
 import bazel.messages.handlers.EventHandler
 import bazel.messages.handlers.ProgressHandler
 import com.google.devtools.build.lib.buildeventstream.BuildEventStreamProtos
@@ -69,15 +67,13 @@ class ProgressHandlerTest {
             """.trimIndent()
 
         // When
-        val event: Event<OrderedBuildEvent> =
-            createEvent(
-                BuildEventStreamProtos.BuildEvent
-                    .newBuilder()
-                    .setProgress(BuildEventStreamProtos.Progress.newBuilder().setStderr(events))
-                    .build(),
-            )
+        val bazelEvent =
+            BuildEventStreamProtos.BuildEvent
+                .newBuilder()
+                .setProgress(BuildEventStreamProtos.Progress.newBuilder().setStderr(events))
+                .build()
 
-        val ctx = createContext(event)
+        val ctx = createContext(bazelEvent)
         val message = Message("message", "Warning", null)
 
         every { messageFactory.createWarningMessage(any()) } returns message
@@ -88,6 +84,6 @@ class ProgressHandlerTest {
         verify(exactly = 3) { messageFactory.createWarningMessage(any()) }
     }
 
-    private fun createContext(event: Event<OrderedBuildEvent>) =
-        ServiceMessageContext(subject, iterator, event, messageFactory, hierarchy, Verbosity.Normal)
+    private fun createContext(event: BuildEventStreamProtos.BuildEvent) =
+        BazelEventHandlerContext(subject, iterator, createEvent(event), messageFactory, hierarchy, Verbosity.Normal, event)
 }

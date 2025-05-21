@@ -1,44 +1,37 @@
 package bazel.messages.handlers
 
-import bazel.HandlerPriority
-import bazel.bazel.events.BazelEvent
 import bazel.bazel.events.Id
+import bazel.messages.BazelEventHandlerContext
 import bazel.messages.Color
-import bazel.messages.ServiceMessageContext
 import bazel.messages.apply
 import com.google.devtools.build.lib.buildeventstream.BuildEventStreamProtos
 import com.google.devtools.build.lib.buildeventstream.BuildEventStreamProtos.Aborted.AbortReason.*
 
-class AbortedHandler : EventHandler {
-    override val priority: HandlerPriority
-        get() = HandlerPriority.Low
-
-    override fun handle(ctx: ServiceMessageContext): Boolean {
-        val payload = ctx.event.payload
-        if (payload is BazelEvent && payload.event.hasAborted()) {
-            val aborted = payload.event.aborted
-            val reason = formatAbortReason(aborted.reason)
-            ctx.hierarchy.tryAbortNode(ctx, Id(payload.event.id))?.let {
-                if (it.description.isNotEmpty()) {
-                    ctx.onNext(
-                        ctx.messageFactory
-                            .createMessage(
-                                ctx
-                                    .buildMessage(false)
-                                    .append(it.description)
-                                    .append(" aborted.".apply(Color.Error))
-                                    .append(" $reason")
-                                    .append(if (aborted.description.isNotBlank()) ": ${aborted.description}" else ".")
-                                    .toString(),
-                            ),
-                    )
-                }
-            }
-
-            return true
-        } else {
-            return ctx.handlerIterator.next().handle(ctx)
+class AbortedHandler : BazelEventHandler {
+    override fun handle(ctx: BazelEventHandlerContext): Boolean {
+        if (!ctx.bazelEvent.hasAborted()) {
+            return false
         }
+        val aborted = ctx.bazelEvent.aborted
+        val reason = formatAbortReason(aborted.reason)
+        ctx.hierarchy.tryAbortNode(ctx, Id(ctx.bazelEvent.id))?.let {
+            if (it.description.isNotEmpty()) {
+                ctx.onNext(
+                    ctx.messageFactory
+                        .createMessage(
+                            ctx
+                                .buildMessage(false)
+                                .append(it.description)
+                                .append(" aborted.".apply(Color.Error))
+                                .append(" $reason")
+                                .append(if (aborted.description.isNotBlank()) ": ${aborted.description}" else ".")
+                                .toString(),
+                        ),
+                )
+            }
+        }
+
+        return true
     }
 
     private fun formatAbortReason(reason: BuildEventStreamProtos.Aborted.AbortReason?): String =

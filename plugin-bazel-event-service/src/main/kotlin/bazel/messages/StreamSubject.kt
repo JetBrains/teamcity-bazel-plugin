@@ -19,9 +19,22 @@ class StreamSubject(
     private val messageSubject = subjectOf<ServiceMessage>()
 
     override fun onNext(value: Event<OrderedBuildEvent>) {
-        val handlerIterator = handlers.iterator()
+        if (value.payload !is BazelEvent) {
+            return
+        }
+
+        val event = value.payload.event
         val subject = subjectOf<ServiceMessage>()
-        val ctx = ServiceMessageContext(subject, handlerIterator, value, messageFactory, hierarchy, verbosity)
+        val ctx =
+            BazelEventHandlerContext(
+                subject,
+                emptyList<EventHandler>().iterator(),
+                value,
+                messageFactory,
+                hierarchy,
+                verbosity,
+                event,
+            )
         subject
             .subscribe(
                 observer(
@@ -30,19 +43,17 @@ class StreamSubject(
                     onComplete = { messageSubject.onComplete() },
                 ),
             ).use {
-                handlerIterator.next().handle(ctx)
+                handlers.firstOrNull { it.handle(ctx) } ?: UnknownEventHandler().handle(ctx)
 
                 if (verbosity.atLeast(Verbosity.Diagnostic)) {
                     subject.onNext(messageFactory.createTraceMessage(value.payload.toString()))
                 }
 
-                if (value.payload is BazelEvent) {
-                    val event = value.payload.event
-                    val id = Id(event.id)
-                    val children = event.childrenList.map { Id(it) }
-                    hierarchy.createNode(id, children, "")
-                    hierarchy.tryCloseNode(ctx, id)
-                }
+                val event = value.payload.event
+                val id = Id(event.id)
+                val children = event.childrenList.map { Id(it) }
+                hierarchy.createNode(id, children, "")
+                hierarchy.tryCloseNode(ctx, id)
             }
     }
 
@@ -65,8 +76,8 @@ class StreamSubject(
     }
 
     companion object {
-        private val handlers =
-            sequenceOf(
+        private val handlers: List<BazelEventHandler> =
+            listOf(
                 // Progress progress = 3;
                 ProgressHandler(),
                 // Aborted aborted = 4;
@@ -117,8 +128,6 @@ class StreamSubject(
                 ExecRequestHandler(),
                 // TestProgress test_progress = 30;
                 TestProgressHandler(),
-                // Unknown
-                UnknownEventHandler(),
-            ).sortedBy { it.priority }.toList()
+            )
     }
 }

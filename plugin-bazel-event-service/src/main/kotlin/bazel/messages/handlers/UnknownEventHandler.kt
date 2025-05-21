@@ -1,18 +1,13 @@
-
-
 package bazel.messages.handlers
 
-import bazel.HandlerPriority
 import bazel.Verbosity
 import bazel.atLeast
+import bazel.messages.BazelEventHandlerContext
 import bazel.messages.Color
-import bazel.messages.ServiceMessageContext
 import bazel.messages.apply
 
-class UnknownEventHandler : EventHandler {
-    override val priority: HandlerPriority get() = HandlerPriority.Last
-
-    override fun handle(ctx: ServiceMessageContext): Boolean {
+class UnknownEventHandler : BazelEventHandler {
+    override fun handle(ctx: BazelEventHandlerContext): Boolean {
         if (ctx.verbosity.atLeast(Verbosity.Detailed)) {
             ctx.onNext(
                 ctx.messageFactory.createWarningMessage(

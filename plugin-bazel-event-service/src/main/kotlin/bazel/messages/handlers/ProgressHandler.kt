@@ -1,63 +1,57 @@
 package bazel.messages.handlers
 
-import bazel.HandlerPriority
 import bazel.Verbosity
 import bazel.atLeast
-import bazel.bazel.events.BazelEvent
+import bazel.messages.BazelEventHandlerContext
 import bazel.messages.Color
-import bazel.messages.ServiceMessageContext
 import bazel.messages.apply
 
-class ProgressHandler : EventHandler {
-    override val priority: HandlerPriority
-        get() = HandlerPriority.High
-
-    override fun handle(ctx: ServiceMessageContext): Boolean {
-        val payload = ctx.event.payload
-        return if (ctx.event.payload is BazelEvent && payload.event.hasProgress()) {
-            val event = payload.event.progress
-            if (ctx.verbosity.atLeast(Verbosity.Normal) && event.stdout.isNotBlank()) {
-                ctx.onNext(
-                    ctx.messageFactory.createMessage(
-                        ctx
-                            .buildMessage()
-                            .append(event.stdout)
-                            .toString(),
-                    ),
-                )
-            }
-
-            if (event.stderr.isNotBlank()) {
-                val decomposedMessages = decompose(event.stderr)
-                val mostSevereLevel =
-                    decomposedMessages
-                        .map { it.level }
-                        .maxByOrNull { it.value } ?: LogLevel.Normal
-
-                for (errItem in decomposedMessages) {
-                    val messageText =
-                        ctx
-                            .buildMessage()
-                            .append(errItem.text)
-                            .toString()
-
-                    val message =
-                        ctx.messageFactory.let {
-                            when (mostSevereLevel) {
-                                LogLevel.Error -> it.createErrorMessage(messageText)
-                                LogLevel.Warning -> it.createWarningMessage(messageText)
-                                LogLevel.Normal -> it.createMessage(messageText)
-                                LogLevel.Trace -> it.createTraceMessage(messageText)
-                            }
-                        }
-                    ctx.onNext(message)
-                }
-            }
-
-            true
-        } else {
-            ctx.handlerIterator.next().handle(ctx)
+class ProgressHandler : BazelEventHandler {
+    override fun handle(ctx: BazelEventHandlerContext): Boolean {
+        if (!ctx.bazelEvent.hasProgress()) {
+            return false
         }
+
+        val progress = ctx.bazelEvent.progress
+        if (ctx.verbosity.atLeast(Verbosity.Normal) && progress.stdout.isNotBlank()) {
+            ctx.onNext(
+                ctx.messageFactory.createMessage(
+                    ctx
+                        .buildMessage()
+                        .append(progress.stdout)
+                        .toString(),
+                ),
+            )
+        }
+
+        if (progress.stderr.isNotBlank()) {
+            val decomposedMessages = decompose(progress.stderr)
+            val mostSevereLevel =
+                decomposedMessages
+                    .map { it.level }
+                    .maxByOrNull { it.value } ?: LogLevel.Normal
+
+            for (errItem in decomposedMessages) {
+                val messageText =
+                    ctx
+                        .buildMessage()
+                        .append(errItem.text)
+                        .toString()
+
+                val message =
+                    ctx.messageFactory.let {
+                        when (mostSevereLevel) {
+                            LogLevel.Error -> it.createErrorMessage(messageText)
+                            LogLevel.Warning -> it.createWarningMessage(messageText)
+                            LogLevel.Normal -> it.createMessage(messageText)
+                            LogLevel.Trace -> it.createTraceMessage(messageText)
+                        }
+                    }
+                ctx.onNext(message)
+            }
+        }
+
+        return true
     }
 
     private fun decompose(text: String): List<MessageItem> = text.split('\n').map { toMessageItem(it) }

@@ -1,37 +1,32 @@
 package bazel.messages.handlers
 
-import bazel.HandlerPriority
 import bazel.Verbosity
 import bazel.atLeast
-import bazel.bazel.events.BazelEvent
-import bazel.messages.ServiceMessageContext
+import bazel.messages.BazelEventHandlerContext
 
-class StructuredCommandLineHandler : EventHandler {
-    override val priority: HandlerPriority
-        get() = HandlerPriority.Medium
-
-    override fun handle(ctx: ServiceMessageContext): Boolean {
-        val payload = ctx.event.payload
-        if (payload is BazelEvent && payload.event.hasStructuredCommandLine()) {
-            if (ctx.verbosity.atLeast(Verbosity.Detailed)) {
-                val label = payload.event
+class StructuredCommandLineHandler : BazelEventHandler {
+    override fun handle(ctx: BazelEventHandlerContext): Boolean {
+        if (!ctx.bazelEvent.hasStructuredCommandLine()) {
+            return false
+        }
+        if (ctx.verbosity.atLeast(Verbosity.Detailed)) {
+            val label =
+                ctx.bazelEvent
                     .structuredCommandLine
                     .commandLineLabel
                     .takeIf { it.isNotEmpty() } ?: "tool"
 
-                ctx.onNext(
-                    ctx.messageFactory.createMessage(
-                        ctx
-                            .buildMessage()
-                            .append("Run ")
-                            .append(label)
-                            .toString(),
-                    ),
-                )
-            }
-
-            return true
+            ctx.onNext(
+                ctx.messageFactory.createMessage(
+                    ctx
+                        .buildMessage()
+                        .append("Run ")
+                        .append(label)
+                        .toString(),
+                ),
+            )
         }
-        return ctx.handlerIterator.next().handle(ctx)
+
+        return true
     }
 }

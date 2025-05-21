@@ -89,10 +89,7 @@ class ControllerSubject(
         val subject: ServiceMessageSubject,
         private val _subscription: Disposable,
     ) : Disposable {
-        override fun dispose() {
-            _subscription.dispose()
-            subject.dispose()
-        }
+        override fun dispose() = _subscription.dispose()
     }
 
     companion object {

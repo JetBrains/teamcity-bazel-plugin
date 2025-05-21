@@ -1,34 +1,29 @@
 package bazel.messages.handlers
 
-import bazel.HandlerPriority
 import bazel.Verbosity
 import bazel.atLeast
-import bazel.bazel.events.BazelEvent
+import bazel.messages.BazelEventHandlerContext
 import bazel.messages.Color
-import bazel.messages.ServiceMessageContext
 import bazel.messages.apply
 
-class WorkspaceConfigHandler : EventHandler {
-    override val priority: HandlerPriority = HandlerPriority.Medium
-
-    override fun handle(ctx: ServiceMessageContext): Boolean {
-        val payload = ctx.event.payload
-        if (payload is BazelEvent && payload.event.hasWorkspaceInfo()) {
-            val info = payload.event.workspaceInfo
-
-            if (ctx.verbosity.atLeast(Verbosity.Detailed)) {
-                ctx.onNext(
-                    ctx.messageFactory.createMessage(
-                        ctx
-                            .buildMessage()
-                            .append("localExecRoot = ${info.localExecRoot}".apply(Color.Items))
-                            .toString(),
-                    ),
-                )
-            }
-
-            return true
+class WorkspaceConfigHandler : BazelEventHandler {
+    override fun handle(ctx: BazelEventHandlerContext): Boolean {
+        if (!ctx.bazelEvent.hasWorkspaceInfo()) {
+            return false
         }
-        return ctx.handlerIterator.next().handle(ctx)
+
+        val info = ctx.bazelEvent.workspaceInfo
+        if (ctx.verbosity.atLeast(Verbosity.Detailed)) {
+            ctx.onNext(
+                ctx.messageFactory.createMessage(
+                    ctx
+                        .buildMessage()
+                        .append("localExecRoot = ${info.localExecRoot}".apply(Color.Items))
+                        .toString(),
+                ),
+            )
+        }
+
+        return true
     }
 }
