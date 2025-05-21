@@ -52,8 +52,6 @@ class StreamSubject(
 
     override fun subscribe(observer: Observer<ServiceMessage>): Disposable = messageSubject.subscribe(observer)
 
-    override fun dispose() = Unit
-
     private fun updateHeader(
         event: OrderedBuildEvent,
         message: ServiceMessage,

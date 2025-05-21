@@ -68,14 +68,6 @@ class ControllerSubject(
 
     override fun subscribe(observer: Observer<ServiceMessage>): Disposable = controllerSubject.subscribe(observer)
 
-    override fun dispose() {
-        if (disposed.compareAndSet(false, true)) {
-            for (stream in streams.values) {
-                stream.dispose()
-            }
-        }
-    }
-
     private fun createStreamSubject(): Stream {
         val newStreamSubject = StreamSubject(verbosity, messageFactory, hierarchy)
         return Stream(newStreamSubject, newStreamSubject.subscribe(controllerSubject))
