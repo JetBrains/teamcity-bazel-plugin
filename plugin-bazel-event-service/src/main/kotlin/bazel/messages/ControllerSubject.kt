@@ -5,7 +5,6 @@ package bazel.messages
 import bazel.Event
 import bazel.Verbosity
 import bazel.atLeast
-import bazel.events.InvocationAttemptFinished
 import bazel.events.OrderedBuildEvent
 import bazel.messages.handlers.*
 import devteam.rx.*
@@ -49,7 +48,7 @@ class ControllerSubject(
                         subject.onNext(messageFactory.createTraceMessage(value.payload.toString()))
                     }
 
-                    if (value.payload is InvocationAttemptFinished) {
+                    if (value.rawEvent.hasInvocationAttemptFinished()) {
                         streams.remove(invocationId)
                     }
 

@@ -26,7 +26,8 @@ class BuildEventConverter(
             val eventTime = Timestamp(event.eventTime.seconds, event.eventTime.nanos)
 
             if (event.hasBuildEnqueued() ||
-                event.hasInvocationAttemptStarted()
+                event.hasInvocationAttemptStarted() ||
+                event.hasInvocationAttemptFinished()
             ) {
                 val orderedEvent =
                     object : OrderedBuildEvent {
@@ -53,9 +54,6 @@ class BuildEventConverter(
         private val logger = Logger.getLogger(BuildEventConverter::class.java.name)
         private val handlers =
             sequenceOf(
-                // An invocation attempt has finished.
-                // invocation_attempt_finished = 52
-                InvocationAttemptFinishedHandler(BuildStatusConverter()),
                 // The build has finished. Set when the build is terminated.
                 // build_finished = 55
                 BuildFinishedHandler(BuildStatusConverter()),
