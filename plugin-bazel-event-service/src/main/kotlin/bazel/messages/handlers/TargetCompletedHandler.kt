@@ -14,7 +14,7 @@ class TargetCompletedHandler : BazelEventHandler {
         }
 
         val completed = ctx.bazelEvent.completed
-        ctx.hierarchy.tryCloseNode(ctx, Id(ctx.bazelEvent.id))?.let {
+        ctx.hierarchy.tryCloseNode(Id(ctx.bazelEvent.id))?.let {
             val description =
                 ctx
                     .buildMessage()

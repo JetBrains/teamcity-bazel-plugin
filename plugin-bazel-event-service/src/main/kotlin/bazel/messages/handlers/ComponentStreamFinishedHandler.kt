@@ -17,7 +17,8 @@ class ComponentStreamFinishedHandler : EventHandler {
 
     override fun handle(ctx: ServiceMessageContext) =
         if (ctx.event.payload is ComponentStreamFinished) {
-            when (ctx.event.payload.finishType) {
+            val componentStreamFinished = ctx.event.payload as ComponentStreamFinished
+            when (componentStreamFinished.finishType) {
                 FinishType.Finished ->
                     if (ctx.verbosity.atLeast(Verbosity.Verbose)) {
                         val description = "Component \"${ctx.event.payload.streamId.component}\" stream finished"

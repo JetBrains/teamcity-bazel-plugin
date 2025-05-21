@@ -25,7 +25,7 @@ class BuildStartedHandler : BazelEventHandler {
         if (ctx.verbosity.atLeast(Verbosity.Normal)) {
             ctx.onNext(ctx.messageFactory.createBlockOpened(description, details))
             ctx.hierarchy.createNode(Id(ctx.bazelEvent.id), ctx.bazelEvent.childrenList.map { Id(it) }, description) {
-                it.onNext(it.messageFactory.createBlockClosed(description))
+                ctx.onNext(ctx.messageFactory.createBlockClosed(description))
             }
         }
 

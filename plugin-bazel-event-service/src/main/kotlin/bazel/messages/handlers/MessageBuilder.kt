@@ -1,14 +1,22 @@
 package bazel.messages.handlers
 
+import bazel.Event
 import bazel.Verbosity
 import bazel.atLeast
 import bazel.events.BuildComponent
+import bazel.events.OrderedBuildEvent
 import bazel.messages.Color
-import bazel.messages.ServiceMessageContext
+import bazel.messages.MessageFactory
 import bazel.messages.apply
 
+interface MessageBuilderContext {
+    val messageFactory: MessageFactory
+    val verbosity: Verbosity
+    val event: Event<OrderedBuildEvent>
+}
+
 class MessageBuilder(
-    private val serviceMessageContext: ServiceMessageContext,
+    private val serviceMessageContext: MessageBuilderContext,
 ) {
     private val text = StringBuilder()
 
@@ -52,5 +60,5 @@ class MessageBuilder(
     override fun toString(): String = text.toString()
 }
 
-fun ServiceMessageContext.buildMessage(improve: Boolean = true): MessageBuilder =
+fun MessageBuilderContext.buildMessage(improve: Boolean = true): MessageBuilder =
     MessageBuilder(this).also { if (improve) it.appendPrefix() }

@@ -4,6 +4,7 @@ import bazel.Event
 import bazel.Verbosity
 import bazel.events.OrderedBuildEvent
 import bazel.messages.handlers.EventHandler
+import bazel.messages.handlers.MessageBuilderContext
 import com.google.devtools.build.lib.buildeventstream.BuildEventStreamProtos
 import devteam.rx.Observer
 import jetbrains.buildServer.messages.serviceMessages.ServiceMessage
@@ -11,11 +12,12 @@ import jetbrains.buildServer.messages.serviceMessages.ServiceMessage
 open class ServiceMessageContext(
     private val _observer: Observer<ServiceMessage>,
     val handlerIterator: Iterator<EventHandler>,
-    val event: Event<OrderedBuildEvent>,
-    val messageFactory: MessageFactory,
     val hierarchy: Hierarchy,
-    val verbosity: Verbosity,
-) : Observer<ServiceMessage> {
+    override val event: Event<OrderedBuildEvent>,
+    override val messageFactory: MessageFactory,
+    override val verbosity: Verbosity,
+) : Observer<ServiceMessage>,
+    MessageBuilderContext {
     override fun onNext(value: ServiceMessage) = _observer.onNext(value)
 
     override fun onError(error: Exception) = _observer.onError(error)
@@ -24,11 +26,12 @@ open class ServiceMessageContext(
 }
 
 class BazelEventHandlerContext(
-    observer: Observer<ServiceMessage>,
-    handlerIterator: Iterator<EventHandler>,
-    event: Event<OrderedBuildEvent>,
-    messageFactory: MessageFactory,
-    hierarchy: Hierarchy,
-    verbosity: Verbosity,
+    private val _observer: Observer<ServiceMessage>,
+    val hierarchy: Hierarchy,
     val bazelEvent: BuildEventStreamProtos.BuildEvent,
-) : ServiceMessageContext(observer, handlerIterator, event, messageFactory, hierarchy, verbosity)
+    override val event: Event<OrderedBuildEvent>,
+    override val messageFactory: MessageFactory,
+    override val verbosity: Verbosity,
+) : MessageBuilderContext {
+    fun onNext(value: ServiceMessage) = _observer.onNext(value)
+}

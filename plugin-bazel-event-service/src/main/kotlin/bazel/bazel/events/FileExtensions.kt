@@ -4,10 +4,10 @@ package bazel.bazel.events
 
 import bazel.Verbosity
 import bazel.atLeast
-import bazel.messages.ServiceMessageContext
+import bazel.messages.BazelEventHandlerContext
 import java.io.InputStreamReader
 
-fun File.read(ctx: ServiceMessageContext): String {
+fun File.read(ctx: BazelEventHandlerContext): String {
     try {
         return InputStreamReader(this.createStream()).use { it.readText() }
     } catch (ex: Exception) {
@@ -16,7 +16,7 @@ fun File.read(ctx: ServiceMessageContext): String {
     }
 }
 
-fun File.readLines(ctx: ServiceMessageContext): List<String> {
+fun File.readLines(ctx: BazelEventHandlerContext): List<String> {
     try {
         return InputStreamReader(this.createStream()).use { it.readLines() }
     } catch (ex: Exception) {
@@ -25,7 +25,7 @@ fun File.readLines(ctx: ServiceMessageContext): List<String> {
     }
 }
 
-private fun ServiceMessageContext.logError(
+private fun BazelEventHandlerContext.logError(
     message: String,
     error: Exception,
 ) {

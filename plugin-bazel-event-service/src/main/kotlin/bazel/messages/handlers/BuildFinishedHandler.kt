@@ -15,8 +15,9 @@ class BuildFinishedHandler : EventHandler {
 
     override fun handle(ctx: ServiceMessageContext) =
         if (ctx.event.payload is BuildFinished) {
-            val status = ctx.event.payload.result.status.description
-            when (ctx.event.payload.result.status) {
+            val buildFinished = ctx.event.payload as BuildFinished
+            val status = buildFinished.result.status.description
+            when (buildFinished.result.status) {
                 BuildStatus.CommandSucceeded -> {
                     ctx.onNext(
                         ctx.messageFactory.createMessage(

@@ -11,7 +11,7 @@ class HierarchyImpl : Hierarchy {
         id: Id,
         children: List<Id>,
         description: String,
-        action: (ctx: ServiceMessageContext) -> Unit,
+        action: () -> Unit,
     ): Node =
         synchronized(nodes) {
             nodes.getOrPut(id) {
@@ -25,10 +25,7 @@ class HierarchyImpl : Hierarchy {
             }
         }
 
-    override fun tryCloseNode(
-        ctx: ServiceMessageContext,
-        id: Id,
-    ): Node? =
+    override fun tryCloseNode(id: Id): Node? =
         synchronized(nodes) {
             nodes[id]?.let {
                 val nodesToRemove = mutableListOf<MutableMap.MutableEntry<Id, NodeImpl>>()
@@ -41,7 +38,7 @@ class HierarchyImpl : Hierarchy {
 
                 for (node in nodesToRemove) {
                     nodes.remove(node.key)
-                    node.value.action(ctx)
+                    node.value.action()
                 }
 
                 if (it.children.isEmpty()) {
@@ -52,17 +49,14 @@ class HierarchyImpl : Hierarchy {
             }
         }
 
-    override fun tryAbortNode(
-        ctx: ServiceMessageContext,
-        id: Id,
-    ): Node? =
+    override fun tryAbortNode(id: Id): Node? =
         synchronized(nodes) {
             nodes[id]?.let {
                 for (child in it.children) {
-                    tryAbortNode(ctx, child.key)
+                    tryAbortNode(child.key)
                 }
 
-                tryCloseNode(ctx, id)
+                tryCloseNode(id)
 
                 it
             }
@@ -71,6 +65,6 @@ class HierarchyImpl : Hierarchy {
     private data class NodeImpl(
         override val description: String,
         val children: MutableMap<Id, Node>,
-        val action: (ctx: ServiceMessageContext) -> Unit,
+        val action: () -> Unit,
     ) : Node
 }

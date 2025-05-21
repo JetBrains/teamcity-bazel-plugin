@@ -33,7 +33,7 @@ class ControllerSubject(
 
         // this subject is needed to wrap all onNext calls from handlers with updateHeader method
         val subject = subjectOf<ServiceMessage>()
-        val ctx = ServiceMessageContext(subject, handlerIterator, value, messageFactory, hierarchy, verbosity)
+        val ctx = ServiceMessageContext(subject, handlerIterator, hierarchy, value, messageFactory, verbosity)
         subject
             .subscribe(
                 observer(

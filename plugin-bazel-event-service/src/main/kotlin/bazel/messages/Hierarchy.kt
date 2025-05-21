@@ -1,5 +1,3 @@
-
-
 package bazel.messages
 
 import bazel.bazel.events.Id
@@ -9,16 +7,10 @@ interface Hierarchy {
         id: Id,
         children: List<Id>,
         description: String,
-        action: (ctx: ServiceMessageContext) -> Unit = {},
+        action: () -> Unit = {},
     ): Node
 
-    fun tryCloseNode(
-        ctx: ServiceMessageContext,
-        id: Id,
-    ): Node?
+    fun tryCloseNode(id: Id): Node?
 
-    fun tryAbortNode(
-        ctx: ServiceMessageContext,
-        id: Id,
-    ): Node?
+    fun tryAbortNode(id: Id): Node?
 }

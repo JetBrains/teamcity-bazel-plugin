@@ -14,7 +14,7 @@ class AbortedHandler : BazelEventHandler {
         }
         val aborted = ctx.bazelEvent.aborted
         val reason = formatAbortReason(aborted.reason)
-        ctx.hierarchy.tryAbortNode(ctx, Id(ctx.bazelEvent.id))?.let {
+        ctx.hierarchy.tryAbortNode(Id(ctx.bazelEvent.id))?.let {
             if (it.description.isNotEmpty()) {
                 ctx.onNext(
                     ctx.messageFactory

@@ -5,7 +5,6 @@ import bazel.Verbosity
 import bazel.messages.BazelEventHandlerContext
 import bazel.messages.Hierarchy
 import bazel.messages.MessageFactory
-import bazel.messages.handlers.EventHandler
 import bazel.messages.handlers.TestResultHandler
 import com.google.devtools.build.lib.buildeventstream.BuildEventStreamProtos
 import com.google.protobuf.ByteString
@@ -27,9 +26,6 @@ class TestResultHandlerTest {
     private lateinit var subject: Subject<ServiceMessage>
     private lateinit var actualNotifications: MutableList<Notification<ServiceMessage>>
     private lateinit var subscription: Disposable
-
-    @MockK
-    private lateinit var iterator: Iterator<EventHandler>
 
     @MockK
     private lateinit var messageFactory: MessageFactory
@@ -118,5 +114,5 @@ class TestResultHandlerTest {
     private fun createContext(
         event: BuildEventStreamProtos.BuildEvent,
         verbosity: Verbosity,
-    ) = BazelEventHandlerContext(subject, iterator, createEvent(event), messageFactory, hierarchy, verbosity, event)
+    ) = BazelEventHandlerContext(subject, hierarchy, event, createEvent(event), messageFactory, verbosity)
 }

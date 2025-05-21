@@ -19,7 +19,8 @@ class InvocationAttemptFinishedHandler : EventHandler {
         if (ctx.event.payload is InvocationAttemptFinished) {
             ctx.onNext(ctx.messageFactory.createFlowFinished(ctx.event.payload.streamId.invocationId))
 
-            if (ctx.event.payload.invocationResult.status == BuildStatus.CommandSucceeded) {
+            val invocationAttemptFinished = ctx.event.payload as InvocationAttemptFinished
+            if (invocationAttemptFinished.invocationResult.status == BuildStatus.CommandSucceeded) {
                 if (ctx.verbosity.atLeast(Verbosity.Detailed)) {
                     ctx.onNext(
                         ctx.messageFactory.createMessage(
@@ -36,7 +37,7 @@ class InvocationAttemptFinishedHandler : EventHandler {
                         ctx
                             .buildMessage(false)
                             .append("Invocation attempt failed")
-                            .append(": \"${ctx.event.payload.invocationResult.status.description}\"", Verbosity.Detailed)
+                            .append(": \"${invocationAttemptFinished.invocationResult.status.description}\"", Verbosity.Detailed)
                             .toString(),
                     ),
                 )

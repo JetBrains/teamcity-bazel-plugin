@@ -28,12 +28,11 @@ class StreamSubject(
         val ctx =
             BazelEventHandlerContext(
                 subject,
-                emptyList<EventHandler>().iterator(),
+                hierarchy,
+                event,
                 value,
                 messageFactory,
-                hierarchy,
                 verbosity,
-                event,
             )
         subject
             .subscribe(
@@ -53,7 +52,7 @@ class StreamSubject(
                 val id = Id(event.id)
                 val children = event.childrenList.map { Id(it) }
                 hierarchy.createNode(id, children, "")
-                hierarchy.tryCloseNode(ctx, id)
+                hierarchy.tryCloseNode(id)
             }
     }
 

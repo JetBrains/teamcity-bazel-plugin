@@ -4,7 +4,6 @@ import bazel.Verbosity
 import bazel.messages.BazelEventHandlerContext
 import bazel.messages.Hierarchy
 import bazel.messages.MessageFactory
-import bazel.messages.handlers.EventHandler
 import bazel.messages.handlers.ProgressHandler
 import com.google.devtools.build.lib.buildeventstream.BuildEventStreamProtos
 import devteam.rx.*
@@ -23,9 +22,6 @@ class ProgressHandlerTest {
     private lateinit var subject: Subject<ServiceMessage>
     private lateinit var actualNotifications: MutableList<Notification<ServiceMessage>>
     private lateinit var subscription: Disposable
-
-    @MockK
-    private lateinit var iterator: Iterator<EventHandler>
 
     @MockK
     private lateinit var messageFactory: MessageFactory
@@ -85,5 +81,5 @@ class ProgressHandlerTest {
     }
 
     private fun createContext(event: BuildEventStreamProtos.BuildEvent) =
-        BazelEventHandlerContext(subject, iterator, createEvent(event), messageFactory, hierarchy, Verbosity.Normal, event)
+        BazelEventHandlerContext(subject, hierarchy, event, createEvent(event), messageFactory, Verbosity.Normal)
 }

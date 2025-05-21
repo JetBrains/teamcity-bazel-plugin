@@ -14,19 +14,23 @@ class InvocationAttemptStartedHandler : EventHandler {
 
     override fun handle(ctx: ServiceMessageContext) =
         if (ctx.event.payload is InvocationAttemptStarted) {
+            val invocationAttemptStarted = ctx.event.payload as InvocationAttemptStarted
             if (ctx.verbosity.atLeast(Verbosity.Detailed)) {
                 ctx.onNext(
                     ctx.messageFactory.createMessage(
                         ctx
                             .buildMessage()
-                            .append("Invocation attempt #${ctx.event.payload.attemptNumber} started")
+                            .append("Invocation attempt #${invocationAttemptStarted.attemptNumber} started")
                             .toString(),
                     ),
                 )
             }
 
             ctx.onNext(
-                ctx.messageFactory.createFlowStarted(ctx.event.payload.streamId.invocationId, ctx.event.payload.streamId.buildId),
+                ctx.messageFactory.createFlowStarted(
+                    invocationAttemptStarted.streamId.invocationId,
+                    invocationAttemptStarted.streamId.buildId,
+                ),
             )
             true
         } else {
