@@ -1,10 +1,7 @@
 package bazel
 
 import bazel.messages.MessageFactoryImpl
-import bazel.v1.BuildEventConverter
 import bazel.v1.PublishBuildEventService
-import bazel.v1.converters.BuildComponentConverter
-import bazel.v1.converters.StreamIdConverter
 import devteam.rx.observer
 import devteam.rx.use
 import java.io.File
@@ -79,7 +76,6 @@ fun main(args: Array<String>) {
             gRpcServer,
             verbosity,
             PublishBuildEventService(),
-            BuildEventConverter(StreamIdConverter(BuildComponentConverter())),
             messageFactory,
         ).subscribe(
             observer(

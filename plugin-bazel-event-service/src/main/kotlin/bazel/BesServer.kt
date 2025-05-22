@@ -1,7 +1,6 @@
 package bazel
 
 import bazel.messages.*
-import bazel.v1.BuildEventConverter
 import bazel.v1.PublishBuildEventService
 import devteam.rx.*
 
@@ -9,7 +8,6 @@ class BesServer(
     private val _gRpcServer: GRpcServer,
     private val _verbosity: Verbosity,
     private val _bindableEventService: PublishBuildEventService,
-    private val _buildEventConverter: BuildEventConverter,
     private val _messageFactory: MessageFactory,
 ) : Observable<String> {
     override fun subscribe(observer: Observer<String>): Disposable {
@@ -33,7 +31,7 @@ class BesServer(
                 // converting subscription
                 _bindableEventService.subscribe(
                     observer(
-                        onNext = { controllerSubject.onNext(_buildEventConverter.convert(it)) },
+                        onNext = { controllerSubject.onNext(it) },
                         onError = { controllerSubject.onError(it) },
                         onComplete = { controllerSubject.onComplete() },
                     ),
