@@ -1,8 +1,5 @@
 package bazel
 
-import bazel.bazel.events.BazelEvent
-import bazel.events.StreamId
-import bazel.events.Timestamp
 import com.google.devtools.build.lib.buildeventstream.BuildEventStreamProtos
 import devteam.rx.Disposable
 import devteam.rx.Observable
@@ -27,13 +24,18 @@ class BinaryFileStream {
         return Listener(binaryFile)
     }
 
+    data class Event(
+        val sequenceNumber: Long,
+        val event: BuildEventStreamProtos.BuildEvent,
+    )
+
     class Listener(
         private val binaryFile: Path,
-    ) : Observable<BazelEvent> {
+    ) : Observable<Event> {
         private val disposed = AtomicBoolean()
         private var sequenceNumber: Long = 0
 
-        override fun subscribe(observer: Observer<BazelEvent>): Disposable {
+        override fun subscribe(observer: Observer<Event>): Disposable {
             val thread = thread(name = "BazelEventStream") { readBazelStreamLoop(observer) }
             return disposableOf {
                 if (disposed.compareAndSet(false, true)) {
@@ -42,7 +44,7 @@ class BinaryFileStream {
             }
         }
 
-        private fun readBazelStreamLoop(observer: Observer<BazelEvent>) {
+        private fun readBazelStreamLoop(observer: Observer<Event>) {
             val watch = FileSystems.getDefault().newWatchService()
             var channel: FileChannel? = null
 
@@ -80,7 +82,7 @@ class BinaryFileStream {
         }
 
         private fun readBazelEvents(
-            observer: Observer<BazelEvent>,
+            observer: Observer<Event>,
             channel: FileChannel,
         ) {
             val input = Channels.newInputStream(channel)
@@ -93,17 +95,9 @@ class BinaryFileStream {
                     return
                 }
 
-                observer.onNext(convertBazelEvent(evt))
+                observer.onNext(Event(sequenceNumber++, evt))
             }
         }
-
-        private fun convertBazelEvent(event: BuildEventStreamProtos.BuildEvent): BazelEvent =
-            BazelEvent(
-                StreamId.default,
-                sequenceNumber++,
-                Timestamp.zero, // timestamp is available only in OrderedBuildEvent (BES grpc mode)
-                event,
-            )
     }
 
     companion object {

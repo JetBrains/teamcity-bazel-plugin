@@ -25,7 +25,7 @@ interface MessageFactory {
 
     fun createBuildProblem(
         description: String,
-        projectId: String,
+        projectId: String?,
         errorId: String,
     ): ServiceMessage
 

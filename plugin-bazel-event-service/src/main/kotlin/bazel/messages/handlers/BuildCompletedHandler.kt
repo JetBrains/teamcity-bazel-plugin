@@ -58,7 +58,7 @@ class BuildCompletedHandler : BazelEventHandler {
                             .append("Build failed: ${event.exitCode.name}")
                             .append(", exit code ${event.exitCode}", Verbosity.Detailed)
                             .toString(),
-                        ctx.event.projectId,
+                        ctx.projectId,
                         event.exitCode.name,
                     ),
                 )

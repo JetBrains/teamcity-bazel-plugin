@@ -3,10 +3,10 @@
 package bazel.messages.handlers
 
 import bazel.messages.BazelEventHandlerContext
-import bazel.messages.ServiceMessageContext
+import bazel.messages.BuildEventHandlerContext
 
 interface EventHandler {
-    fun handle(ctx: ServiceMessageContext): Boolean
+    fun handle(ctx: BuildEventHandlerContext): Boolean
 }
 
 interface BazelEventHandler {

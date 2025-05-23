@@ -1,7 +1,7 @@
 package bazel.messages.handlers
 
-import bazel.messages.ServiceMessageContext
+import bazel.messages.BuildEventHandlerContext
 
 class ConsoleOutputHandler : EventHandler {
-    override fun handle(ctx: ServiceMessageContext) = ctx.event.rawEvent.hasConsoleOutput()
+    override fun handle(ctx: BuildEventHandlerContext) = ctx.event.hasConsoleOutput()
 }

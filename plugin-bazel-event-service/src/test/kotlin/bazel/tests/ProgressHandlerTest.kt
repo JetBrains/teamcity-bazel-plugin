@@ -81,5 +81,13 @@ class ProgressHandlerTest {
     }
 
     private fun createContext(event: BuildEventStreamProtos.BuildEvent) =
-        BazelEventHandlerContext(subject, hierarchy, event, createEvent(event), messageFactory, Verbosity.Normal)
+        BazelEventHandlerContext(
+            messageFactory,
+            hierarchy,
+            Verbosity.Normal,
+            sequenceNumber = 42,
+            bazelEvent = event,
+        ) {
+            subject.onNext(it)
+        }
 }

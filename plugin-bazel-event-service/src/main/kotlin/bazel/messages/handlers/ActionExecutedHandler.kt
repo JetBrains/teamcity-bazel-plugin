@@ -73,7 +73,7 @@ class ActionExecutedHandler : BazelEventHandler {
             ctx.onNext(
                 ctx.messageFactory.createBuildProblem(
                     error,
-                    ctx.event.projectId,
+                    ctx.projectId,
                     ctx.bazelEvent.id.toString(),
                 ),
             )

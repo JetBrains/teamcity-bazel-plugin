@@ -30,10 +30,10 @@ class MessageFactoryImpl : MessageFactory {
 
     override fun createBuildProblem(
         description: String,
-        projectId: String,
+        projectId: String?,
         errorId: String,
     ): ServiceMessage {
-        val hash = Integer.toHexString(Pair(projectId, errorId).hashCode())
+        val hash = Integer.toHexString(Pair(projectId ?: "", errorId).hashCode())
         return BuildProblem(description.clean(), "$hash-$projectId-$errorId".take(60))
     }
 

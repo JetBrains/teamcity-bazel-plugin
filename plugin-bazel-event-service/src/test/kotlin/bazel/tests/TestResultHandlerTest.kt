@@ -114,5 +114,13 @@ class TestResultHandlerTest {
     private fun createContext(
         event: BuildEventStreamProtos.BuildEvent,
         verbosity: Verbosity,
-    ) = BazelEventHandlerContext(subject, hierarchy, event, createEvent(event), messageFactory, verbosity)
+    ) = BazelEventHandlerContext(
+        messageFactory,
+        hierarchy,
+        verbosity,
+        sequenceNumber = 42,
+        bazelEvent = event,
+    ) {
+        subject.onNext(it)
+    }
 }

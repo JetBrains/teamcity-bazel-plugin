@@ -3,21 +3,21 @@ package bazel.messages.handlers
 import bazel.Verbosity
 import bazel.atLeast
 import bazel.events.BuildStatus
+import bazel.messages.BuildEventHandlerContext
 import bazel.messages.Color
-import bazel.messages.ServiceMessageContext
 import bazel.messages.apply
 import bazel.v1.converters.BuildStatusConverter
 
 class InvocationAttemptFinishedHandler : EventHandler {
     private val buildStatusConverter = BuildStatusConverter()
 
-    override fun handle(ctx: ServiceMessageContext): Boolean {
-        if (!ctx.event.rawEvent.hasInvocationAttemptFinished()) {
+    override fun handle(ctx: BuildEventHandlerContext): Boolean {
+        if (!ctx.event.hasInvocationAttemptFinished()) {
             return false
         }
-        ctx.onNext(ctx.messageFactory.createFlowFinished(ctx.event.payload.streamId.invocationId))
+        ctx.onNext(ctx.messageFactory.createFlowFinished(ctx.streamId.invocationId))
 
-        val invocationAttemptFinished = ctx.event.rawEvent.invocationAttemptFinished
+        val invocationAttemptFinished = ctx.event.invocationAttemptFinished
         val status =
             if (invocationAttemptFinished.hasInvocationStatus()) {
                 buildStatusConverter.convert(

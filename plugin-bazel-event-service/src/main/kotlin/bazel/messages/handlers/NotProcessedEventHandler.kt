@@ -2,12 +2,12 @@
 
 package bazel.messages.handlers
 
-import bazel.messages.ServiceMessageContext
+import bazel.messages.BuildEventHandlerContext
 import java.util.logging.Level
 import java.util.logging.Logger
 
 class NotProcessedEventHandler : EventHandler {
-    override fun handle(ctx: ServiceMessageContext): Boolean {
+    override fun handle(ctx: BuildEventHandlerContext): Boolean {
         logger.log(Level.SEVERE, "Unknown event type: ${ctx.event}")
         return false
     }

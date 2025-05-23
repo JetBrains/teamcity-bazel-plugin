@@ -1,20 +1,20 @@
 package bazel.messages.handlers
 
 import bazel.events.BuildStatus
+import bazel.messages.BuildEventHandlerContext
 import bazel.messages.Color
-import bazel.messages.ServiceMessageContext
 import bazel.messages.apply
 import bazel.v1.converters.BuildStatusConverter
 
 class BuildFinishedHandler : EventHandler {
     private val buildStatusConverter = BuildStatusConverter()
 
-    override fun handle(ctx: ServiceMessageContext): Boolean {
-        if (!ctx.event.rawEvent.hasBuildFinished()) {
+    override fun handle(ctx: BuildEventHandlerContext): Boolean {
+        if (!ctx.event.hasBuildFinished()) {
             return false
         }
 
-        val buildFinished = ctx.event.rawEvent.buildFinished
+        val buildFinished = ctx.event.buildFinished
         val status = buildStatusConverter.convert(buildFinished.status)
         when (status) {
             BuildStatus.CommandSucceeded -> {

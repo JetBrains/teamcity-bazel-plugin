@@ -1,8 +1,5 @@
-
-
 package bazel.v1
 
-import bazel.Event
 import bazel.toObserver
 import bazel.toStreamObserver
 import com.google.devtools.build.v1.*
@@ -19,11 +16,11 @@ import java.util.logging.Logger
 
 class PublishBuildEventService :
     PublishBuildEventGrpc.PublishBuildEventImplBase(),
-    Observable<Event<OrderedBuildEvent>> {
-    private val eventSubject = subjectOf<Event<OrderedBuildEvent>>()
-    private val projectId = AtomicReference<String>("")
+    Observable<PublishBuildEventService.Event> {
+    private val eventSubject = subjectOf<Event>()
+    private val projectId = AtomicReference("")
 
-    override fun subscribe(observer: Observer<Event<OrderedBuildEvent>>): Disposable = eventSubject.subscribe(observer)
+    override fun subscribe(observer: Observer<Event>): Disposable = eventSubject.subscribe(observer)
 
     // BuildEvents are used to declare the beginning and end of major portions of a Build
     override fun publishLifecycleEvent(
@@ -35,7 +32,14 @@ class PublishBuildEventService :
         projectId.compareAndSet("", request?.projectId ?: "")
 
         if (request?.hasBuildEvent() == true) {
-            eventSubject.onNext(Event(projectId.get(), request.buildEvent, request.buildEvent.event))
+            eventSubject.onNext(
+                Event(
+                    projectId.get(),
+                    request.buildEvent.sequenceNumber,
+                    request.buildEvent.streamId,
+                    request.buildEvent.event,
+                ),
+            )
         }
 
         responseObserver?.let {
@@ -59,10 +63,17 @@ class PublishBuildEventService :
         private val logger = Logger.getLogger(PublishBuildEventService::class.java.name)
     }
 
+    data class Event(
+        val projectId: String,
+        val sequenceNumber: Long,
+        val streamId: StreamId,
+        val event: BuildEvent,
+    )
+
     private class PublishEventObserver(
         private val _projectId: String,
         private val _responseObserver: Observer<PublishBuildToolEventStreamResponse>,
-        private val _eventObserver: Observer<Event<OrderedBuildEvent>>,
+        private val _eventObserver: Observer<Event>,
     ) : Observer<PublishBuildToolEventStreamRequest> {
         override fun onNext(value: PublishBuildToolEventStreamRequest) {
             logger.log(Level.FINE, "onNext: $value")
@@ -76,8 +87,15 @@ class PublishBuildEventService :
                     .build(),
             )
 
-            if (value.hasOrderedBuildEvent()) {
-                _eventObserver.onNext(Event(_projectId, value.orderedBuildEvent, value.orderedBuildEvent.event))
+            if (value.hasOrderedBuildEvent() && value.orderedBuildEvent.hasEvent()) {
+                _eventObserver.onNext(
+                    Event(
+                        _projectId,
+                        value.orderedBuildEvent.sequenceNumber,
+                        value.orderedBuildEvent.streamId,
+                        value.orderedBuildEvent.event,
+                    ),
+                )
             } else {
                 logger.log(Level.SEVERE, "OrderedBuildEvent was not found.")
             }

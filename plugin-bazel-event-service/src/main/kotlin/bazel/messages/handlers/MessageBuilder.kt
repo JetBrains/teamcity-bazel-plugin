@@ -1,31 +1,24 @@
 package bazel.messages.handlers
 
-import bazel.Event
 import bazel.Verbosity
 import bazel.atLeast
-import bazel.events.BuildComponent
-import bazel.events.OrderedBuildEvent
 import bazel.messages.Color
-import bazel.messages.MessageFactory
+import bazel.messages.HandlerContext
 import bazel.messages.apply
-
-interface MessageBuilderContext {
-    val messageFactory: MessageFactory
-    val verbosity: Verbosity
-    val event: Event<OrderedBuildEvent>
-}
+import com.google.devtools.build.v1.StreamId
+import com.google.devtools.build.v1.StreamId.BuildComponent.*
 
 class MessageBuilder(
-    private val serviceMessageContext: MessageBuilderContext,
+    private val context: HandlerContext,
 ) {
     private val text = StringBuilder()
 
     fun append(
         text: String,
-        verbosity: Verbosity = serviceMessageContext.verbosity,
+        verbosity: Verbosity = context.verbosity,
         condition: () -> Boolean = { true },
     ): MessageBuilder {
-        if (condition() && serviceMessageContext.verbosity.atLeast(verbosity)) {
+        if (condition() && context.verbosity.atLeast(verbosity)) {
             this.text.append(text)
         }
 
@@ -33,23 +26,22 @@ class MessageBuilder(
     }
 
     fun appendPrefix() {
-        if (serviceMessageContext.verbosity.atLeast(Verbosity.Diagnostic)) {
-            val payload = serviceMessageContext.event.payload
-            val streamId = payload.streamId
-
+        if (context.verbosity.atLeast(Verbosity.Diagnostic)) {
             val message =
                 buildString {
-                    append("%8d".format(payload.sequenceNumber))
+                    append("%8d".format(context.sequenceNumber))
                     append(' ')
-                    if (streamId.component != BuildComponent.UnknownComponent) {
-                        append(streamId.component)
+
+                    context.streamId?.let { streamId ->
+                        append(formatComponent(streamId.component))
                         append(' ')
+                        append(streamId.buildId.take(8))
+                        if (streamId.invocationId.isNotEmpty()) {
+                            append(':')
+                            append(streamId.invocationId.take(8))
+                        }
                     }
-                    append(streamId.buildId.take(8))
-                    if (streamId.invocationId.isNotEmpty()) {
-                        append(':')
-                        append(streamId.invocationId.take(8))
-                    }
+
                     append(' ')
                 }
 
@@ -57,8 +49,15 @@ class MessageBuilder(
         }
     }
 
+    private fun formatComponent(component: StreamId.BuildComponent) =
+        when (component) {
+            CONTROLLER -> "Controller"
+            WORKER -> "Worker"
+            TOOL -> "Tool"
+            else -> "UnknownComponent"
+        }
+
     override fun toString(): String = text.toString()
 }
 
-fun MessageBuilderContext.buildMessage(improve: Boolean = true): MessageBuilder =
-    MessageBuilder(this).also { if (improve) it.appendPrefix() }
+fun HandlerContext.buildMessage(improve: Boolean = true): MessageBuilder = MessageBuilder(this).also { if (improve) it.appendPrefix() }

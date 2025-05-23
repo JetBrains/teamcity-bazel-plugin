@@ -13,7 +13,7 @@ class UnknownEventHandler : BazelEventHandler {
                 ctx.messageFactory.createWarningMessage(
                     ctx
                         .buildMessage()
-                        .append("Unknown event: ${ctx.event}".apply(Color.Warning))
+                        .append("Unknown event: ${ctx.bazelEvent}".apply(Color.Warning))
                         .toString(),
                 ),
             )
