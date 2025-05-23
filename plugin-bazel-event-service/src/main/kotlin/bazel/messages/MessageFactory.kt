@@ -40,4 +40,8 @@ interface MessageFactory {
         type: String,
         path: String,
     ): ServiceMessage
+
+    fun createCompilationStarted(compiler: String): ServiceMessage
+
+    fun createCompilationFinished(compiler: String): ServiceMessage
 }

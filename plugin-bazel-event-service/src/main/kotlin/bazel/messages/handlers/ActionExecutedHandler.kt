@@ -1,5 +1,3 @@
-
-
 package bazel.messages.handlers
 
 import bazel.HandlerPriority
@@ -70,16 +68,7 @@ class ActionExecutedHandler : EventHandler {
                         .append(actionName)
                         .append(" failed to execute.")
                         .toString()
-
-                ctx.onNext(
-                    ctx.messageFactory.createBuildProblem(
-                        error,
-                        ctx.event.projectId,
-                        ctx.event.payload.content.id
-                            .toString(),
-                    ),
-                )
-
+                ctx.onNext(ctx.messageFactory.createCompilationStarted(error))
                 ctx.onNext(
                     ctx.messageFactory.createErrorMessage(
                         ctx
@@ -88,6 +77,7 @@ class ActionExecutedHandler : EventHandler {
                             .toString(),
                     ),
                 )
+                ctx.onNext(ctx.messageFactory.createCompilationFinished(error))
             }
 
             true

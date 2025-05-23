@@ -54,14 +54,12 @@ class BuildCompletedHandler : EventHandler {
                     }
                     else -> {
                         ctx.onNext(
-                            ctx.messageFactory.createBuildProblem(
+                            ctx.messageFactory.createErrorMessage(
                                 ctx
                                     .buildMessage(false)
                                     .append("Build failed: ${event.exitCodeName}")
                                     .append(", exit code ${event.exitCode}", Verbosity.Detailed)
                                     .toString(),
-                                ctx.event.projectId,
-                                event.exitCodeName,
                             ),
                         )
                     }

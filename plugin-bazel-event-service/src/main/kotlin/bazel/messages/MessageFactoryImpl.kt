@@ -5,6 +5,8 @@ package bazel.messages
 import bazel.messages.handlers.clean
 import jetbrains.buildServer.messages.serviceMessages.BlockClosed
 import jetbrains.buildServer.messages.serviceMessages.BlockOpened
+import jetbrains.buildServer.messages.serviceMessages.CompilationFinished
+import jetbrains.buildServer.messages.serviceMessages.CompilationStarted
 import jetbrains.buildServer.messages.serviceMessages.ServiceMessage
 
 class MessageFactoryImpl : MessageFactory {
@@ -48,6 +50,10 @@ class MessageFactoryImpl : MessageFactory {
         type: String,
         path: String,
     ): ServiceMessage = ImportData(type, path)
+
+    override fun createCompilationStarted(compiler: String) = CompilationStarted(compiler)
+
+    override fun createCompilationFinished(compiler: String) = CompilationFinished(compiler)
 
     companion object {
         private const val NORMAL = "NORMAL"
