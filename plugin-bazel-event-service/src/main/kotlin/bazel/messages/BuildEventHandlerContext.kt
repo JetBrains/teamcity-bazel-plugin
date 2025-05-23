@@ -11,7 +11,6 @@ interface HandlerContext {
     val hierarchy: Hierarchy
     val verbosity: Verbosity
     val sequenceNumber: Long
-    val projectId: String?
     val streamId: StreamId?
     val onNext: (ServiceMessage) -> Unit
 }
@@ -21,7 +20,6 @@ data class BuildEventHandlerContext(
     override val hierarchy: Hierarchy,
     override val verbosity: Verbosity,
     override val sequenceNumber: Long,
-    override val projectId: String,
     override val streamId: StreamId,
     val event: BuildEvent,
     override val onNext: (ServiceMessage) -> Unit,
@@ -32,7 +30,6 @@ data class BazelEventHandlerContext(
     override val hierarchy: Hierarchy,
     override val verbosity: Verbosity,
     override val sequenceNumber: Long,
-    override val projectId: String? = null,
     override val streamId: StreamId? = null,
     val bazelEvent: BuildEventStreamProtos.BuildEvent,
     override val onNext: (ServiceMessage) -> Unit,
@@ -46,7 +43,6 @@ data class BazelEventHandlerContext(
             ctx.hierarchy,
             ctx.verbosity,
             ctx.sequenceNumber,
-            ctx.projectId,
             ctx.streamId,
             bazelEvent,
             ctx.onNext,

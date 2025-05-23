@@ -25,7 +25,6 @@ class BesServer(
                                 _hierarchy,
                                 _verbosity,
                                 it.sequenceNumber,
-                                it.projectId,
                                 it.streamId,
                                 it.event,
                             ) { serviceMessage ->
