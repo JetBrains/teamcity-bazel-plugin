@@ -69,15 +69,7 @@ class ActionExecutedHandler : BazelEventHandler {
                     .append(actionName)
                     .append(" failed to execute.")
                     .toString()
-
-            ctx.onNext(
-                ctx.messageFactory.createBuildProblem(
-                    error,
-                    ctx.projectId,
-                    ctx.bazelEvent.id.toString(),
-                ),
-            )
-
+            ctx.onNext(ctx.messageFactory.createCompilationStarted(error))
             ctx.onNext(
                 ctx.messageFactory.createErrorMessage(
                     ctx
@@ -86,6 +78,8 @@ class ActionExecutedHandler : BazelEventHandler {
                         .toString(),
                 ),
             )
+            ctx.onNext(ctx.messageFactory.createCompilationFinished(error))
+
         }
 
         return true
