@@ -6,6 +6,7 @@ import bazel.atLeast
 import bazel.bazel.converters.FileConverter
 import bazel.bazel.converters.TestStatusConverter
 import bazel.bazel.events.readLines
+import bazel.bazel.events.toColor
 import bazel.messages.BazelEventHandlerContext
 import bazel.messages.Color
 import bazel.messages.apply
