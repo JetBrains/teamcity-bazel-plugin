@@ -2,22 +2,16 @@ package bazel.v1
 
 import com.google.devtools.build.v1.*
 import com.google.protobuf.Empty
-import devteam.rx.Disposable
-import devteam.rx.Observable
 import devteam.rx.Observer
-import devteam.rx.subjectOf
 import io.grpc.stub.StreamObserver
 import java.util.concurrent.atomic.AtomicReference
 import java.util.logging.Level
 import java.util.logging.Logger
 
-class PublishBuildEventService :
-    PublishBuildEventGrpc.PublishBuildEventImplBase(),
-    Observable<PublishBuildEventService.Event> {
-    private val eventSubject = subjectOf<Event>()
+class PublishBuildEventService(
+    private val observer: Observer<Event>,
+) : PublishBuildEventGrpc.PublishBuildEventImplBase() {
     private val projectId = AtomicReference("")
-
-    override fun subscribe(observer: Observer<Event>): Disposable = eventSubject.subscribe(observer)
 
     // BuildEvents are used to declare the beginning and end of major portions of a Build
     override fun publishLifecycleEvent(
@@ -29,7 +23,7 @@ class PublishBuildEventService :
         projectId.compareAndSet("", request?.projectId ?: "")
 
         if (request?.hasBuildEvent() == true) {
-            eventSubject.onNext(
+            observer.onNext(
                 Event(
                     projectId.get(),
                     request.buildEvent.sequenceNumber,
@@ -52,7 +46,7 @@ class PublishBuildEventService :
         responseObserver: StreamObserver<PublishBuildToolEventStreamResponse>,
     ): StreamObserver<PublishBuildToolEventStreamRequest> {
         logger.log(Level.FINE, "publishBuildToolEventStream: $responseObserver")
-        return PublishEventObserver(projectId.get(), responseObserver, eventSubject)
+        return PublishEventObserver(projectId.get(), responseObserver, observer)
     }
 
     companion object {

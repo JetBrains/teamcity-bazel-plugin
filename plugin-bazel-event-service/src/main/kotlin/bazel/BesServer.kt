@@ -9,14 +9,13 @@ import java.util.Date
 class BesServer(
     private val _gRpcServer: GRpcServer,
     private val _verbosity: Verbosity,
-    private val _bindableEventService: PublishBuildEventService,
     private val _messageFactory: MessageFactory,
     private val _hierarchy: Hierarchy,
     private val _buildEventHandler: RootBuildEventHandler,
 ) : Observable<String> {
     override fun subscribe(observer: Observer<String>): Disposable {
-        val subscription =
-            _bindableEventService.subscribe(
+        val eventService =
+            PublishBuildEventService(
                 observer(
                     onNext = {
                         val ctx =
@@ -41,10 +40,9 @@ class BesServer(
                     onComplete = { observer.onComplete() },
                 ),
             )
+        _gRpcServer.start(eventService)
 
-        // gRpc server token
-        val gRpcServerToken = _gRpcServer.start(_bindableEventService)
-        return disposableOf(gRpcServerToken, subscription)
+        return disposableOf { _gRpcServer.stop() }
     }
 
     private fun updateHeader(

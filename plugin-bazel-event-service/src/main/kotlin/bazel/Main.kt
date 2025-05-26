@@ -4,7 +4,6 @@ import bazel.messages.Hierarchy
 import bazel.messages.MessageFactoryImpl
 import bazel.messages.RootBuildEventHandler
 import bazel.messages.handlers.RootBazelEventHandler
-import bazel.v1.PublishBuildEventService
 import devteam.rx.observer
 import devteam.rx.use
 import java.io.IOException
@@ -29,13 +28,14 @@ fun main(args: Array<String>) {
     }
 
     val messageFactory = MessageFactoryImpl()
-    val bazelRunner = BazelRunner(
-        messageFactory,
-        options.verbosity,
-        options.bazelCommandlineFile!!,
-        options.port,
-        options.eventFile,
-    )
+    val bazelRunner =
+        BazelRunner(
+            messageFactory,
+            options.verbosity,
+            options.bazelCommandlineFile!!,
+            options.port,
+            options.eventFile,
+        )
     val commandLine = bazelRunner.args.joinToString(" ") { if (it.contains(' ')) "\"$it\"" else it }
     println("Starting: $commandLine")
     println("in directory: ${bazelRunner.workingDirectory}")
@@ -78,7 +78,6 @@ fun main(args: Array<String>) {
         BesServer(
             gRpcServer,
             options.verbosity,
-            PublishBuildEventService(),
             messageFactory,
             Hierarchy(),
             RootBuildEventHandler(),

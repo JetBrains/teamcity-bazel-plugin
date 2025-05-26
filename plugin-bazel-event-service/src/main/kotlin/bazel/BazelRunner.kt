@@ -3,8 +3,6 @@
 package bazel
 
 import bazel.messages.MessageFactory
-import devteam.rx.Disposable
-import devteam.rx.use
 import java.io.BufferedReader
 import java.io.File
 import java.nio.file.Path
@@ -87,7 +85,9 @@ class BazelRunner(
                     println(messageFactory.createTraceMessage(line))
                 }
             }
-        stdOutReader.use { stdErrReader.use {} }
+
+        stdOutReader.thread.join()
+        stdErrReader.thread.join()
 
         process.waitFor()
         val exitCode = process.exitValue()
@@ -102,24 +102,20 @@ class BazelRunner(
     private class ActiveReader(
         reader: BufferedReader,
         action: (line: String) -> Unit,
-    ) : Disposable {
-        private val thread: Thread =
-            object : Thread() {
-                override fun run() {
-                    do {
-                        val line = reader.readLine()
-                        if (!line.isNullOrBlank()) {
-                            action(line)
-                        }
-                    } while (line != null)
-                }
+    ) {
+        val thread =
+            Thread {
+                do {
+                    val line = reader.readLine()
+                    if (!line.isNullOrBlank()) {
+                        action(line)
+                    }
+                } while (line != null)
             }
 
         init {
             thread.start()
         }
-
-        override fun dispose() = thread.join()
     }
 
     data class Result(

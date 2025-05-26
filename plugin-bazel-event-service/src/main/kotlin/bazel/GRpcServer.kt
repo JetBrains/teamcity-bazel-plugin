@@ -1,9 +1,5 @@
-
-
 package bazel
 
-import devteam.rx.Disposable
-import devteam.rx.disposableOf
 import io.grpc.Attributes
 import io.grpc.ServerBuilder
 import io.grpc.ServerTransportFilter
@@ -19,7 +15,7 @@ class GRpcServer(
 
     val port: Int get() = server!!.port
 
-    fun start(bindableService: io.grpc.BindableService): Disposable {
+    fun start(bindableService: io.grpc.BindableService) {
         server =
             ServerBuilder
                 .forPort(_port)
@@ -29,28 +25,26 @@ class GRpcServer(
                 .build()
                 .start()
 
-        logger.log(Level.INFO, "Server started, listening on {0}", _port)
-        return disposableOf {
-            logger.log(Level.INFO, "Initiating server termination..")
-            shutdown()
-            server?.awaitTermination()
-            logger.log(Level.INFO, "Server is shutdown")
-        }
+        logger.log(Level.INFO, "Server started, listening on {0}", port)
+    }
+
+    fun stop() {
+        logger.log(Level.INFO, "Initiating server termination..")
+        shutdown()
+        server?.awaitTermination()
+        logger.log(Level.INFO, "Server is shutdown")
     }
 
     fun shutdown() {
-        val shutdownTread =
-            object : Thread() {
-                override fun run() {
-                    server?.let {
-                        logger.log(Level.INFO, "Server is shutting down")
-                        it.shutdownNow()
-                    }
-                }
+        Thread {
+            server?.let {
+                logger.log(Level.INFO, "Server is shutting down")
+                it.shutdownNow()
             }
-
-        shutdownTread.start()
-        shutdownTread.join()
+        }.apply {
+            start()
+            join()
+        }
     }
 
     override fun transportReady(transportAttrs: Attributes?): Attributes {
