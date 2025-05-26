@@ -1,6 +1,4 @@
-
-
-package bazel.bazel.events
+package bazel.events
 
 import java.io.ByteArrayInputStream
 import java.io.InputStream

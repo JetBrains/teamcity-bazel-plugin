@@ -3,10 +3,11 @@ package bazel.messages.handlers
 import bazel.FileSystemService
 import bazel.Verbosity
 import bazel.atLeast
-import bazel.bazel.converters.FileConverter
-import bazel.bazel.converters.TestStatusConverter
-import bazel.bazel.events.readLines
-import bazel.bazel.events.toColor
+import bazel.events.File
+import bazel.events.FileConverter
+import bazel.events.TestStatusConverter
+import bazel.events.readLines
+import bazel.events.toColor
 import bazel.messages.BazelEventHandlerContext
 import bazel.messages.Color
 import bazel.messages.apply
@@ -102,7 +103,7 @@ class TestResultHandler(
 
     private fun traceFile(
         ctx: BazelEventHandlerContext,
-        file: bazel.bazel.events.File,
+        file: File,
         content: List<String>,
     ) {
         if (ctx.verbosity.atLeast(Verbosity.Diagnostic)) {

@@ -1,8 +1,5 @@
-package bazel.bazel.converters
+package bazel.events
 
-import bazel.bazel.events.FileEmpty
-import bazel.bazel.events.FileFromUri
-import bazel.bazel.events.FileInMemory
 import com.google.devtools.build.lib.buildeventstream.BuildEventStreamProtos
 
 class FileConverter {

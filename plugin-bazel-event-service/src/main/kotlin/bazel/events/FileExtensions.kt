@@ -1,6 +1,4 @@
-
-
-package bazel.bazel.events
+package bazel.events
 
 import bazel.Verbosity
 import bazel.atLeast
