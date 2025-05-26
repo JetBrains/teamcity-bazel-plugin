@@ -2,7 +2,6 @@ package bazel
 
 import bazel.messages.*
 import bazel.v1.PublishBuildEventService
-import devteam.rx.*
 import jetbrains.buildServer.messages.serviceMessages.ServiceMessage
 import java.util.Date
 
@@ -15,45 +14,49 @@ class BesServer(
 ) {
     var hasStarted = false
 
-    fun start(): AutoCloseable =
-        GRpcServer(port).start(
-            PublishBuildEventService(
-                observer(
-                    onNext = {
-                        val ctx =
-                            BuildEventHandlerContext(
-                                _messageFactory,
-                                _hierarchy,
-                                _verbosity,
-                                it.sequenceNumber,
-                                it.streamId,
-                                it.event,
-                            ) { serviceMessage ->
-                                hasStarted = true
-                                printMessage(updateHeader(it, serviceMessage))
-                            }
-                        val processed = _buildEventHandler.handle(ctx)
-                        if (processed) {
-                            if (_verbosity.atLeast(Verbosity.Diagnostic)) {
-                                printMessage(_messageFactory.createTraceMessage(ctx.event.toString()))
-                            }
-                        }
-                    },
-                    onError = {
-                        val error = _messageFactory.createErrorMessage("BES Server onError", it.toString())
-                        printMessage(error)
-                    },
-                    onComplete = { },
-                ),
-            ),
-        )
+    fun start() =
+        GRpcServer(port)
+            .start(
+                PublishBuildEventService {
+                    when (it) {
+                        is PublishBuildEventService.Result.Event -> onEvent(it)
+                        is PublishBuildEventService.Result.Error -> onError(it.throwable)
+                    }
+                },
+            )
+
+    private fun onError(err: Throwable) {
+        val error = _messageFactory.createErrorMessage("BES Server onError", err.toString())
+        printMessage(error)
+    }
+
+    private fun onEvent(event: PublishBuildEventService.Result.Event) {
+        val ctx =
+            BuildEventHandlerContext(
+                _messageFactory,
+                _hierarchy,
+                _verbosity,
+                event.sequenceNumber,
+                event.streamId,
+                event.event,
+            ) { serviceMessage ->
+                hasStarted = true
+                printMessage(updateHeader(event, serviceMessage))
+            }
+        val processed = _buildEventHandler.handle(ctx)
+        if (processed) {
+            if (_verbosity.atLeast(Verbosity.Diagnostic)) {
+                printMessage(_messageFactory.createTraceMessage(ctx.event.toString()))
+            }
+        }
+    }
 
     private fun printMessage(message: ServiceMessage) {
         println(message.asString())
     }
 
     private fun updateHeader(
-        event: PublishBuildEventService.Event,
+        event: PublishBuildEventService.Result.Event,
         message: ServiceMessage,
     ): ServiceMessage {
         if (message.flowId.isNullOrEmpty()) {

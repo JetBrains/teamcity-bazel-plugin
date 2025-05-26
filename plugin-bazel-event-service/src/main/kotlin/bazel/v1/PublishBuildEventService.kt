@@ -2,15 +2,27 @@ package bazel.v1
 
 import com.google.devtools.build.v1.*
 import com.google.protobuf.Empty
-import devteam.rx.Observer
 import io.grpc.stub.StreamObserver
 import java.util.concurrent.atomic.AtomicReference
 import java.util.logging.Level
 import java.util.logging.Logger
 
 class PublishBuildEventService(
-    private val observer: Observer<Event>,
+    private val onEvent: (Result) -> Unit,
 ) : PublishBuildEventGrpc.PublishBuildEventImplBase() {
+    sealed interface Result {
+        data class Event(
+            val projectId: String,
+            val sequenceNumber: Long,
+            val streamId: StreamId,
+            val event: BuildEvent,
+        ) : Result
+
+        data class Error(
+            val throwable: Throwable,
+        ) : Result
+    }
+
     private val projectId = AtomicReference("")
 
     // BuildEvents are used to declare the beginning and end of major portions of a Build
@@ -23,8 +35,8 @@ class PublishBuildEventService(
         projectId.compareAndSet("", request?.projectId ?: "")
 
         if (request?.hasBuildEvent() == true) {
-            observer.onNext(
-                Event(
+            onEvent(
+                Result.Event(
                     projectId.get(),
                     request.buildEvent.sequenceNumber,
                     request.buildEvent.streamId,
@@ -46,24 +58,17 @@ class PublishBuildEventService(
         responseObserver: StreamObserver<PublishBuildToolEventStreamResponse>,
     ): StreamObserver<PublishBuildToolEventStreamRequest> {
         logger.log(Level.FINE, "publishBuildToolEventStream: $responseObserver")
-        return PublishEventObserver(projectId.get(), responseObserver, observer)
+        return PublishEventObserver(projectId.get(), responseObserver, onEvent)
     }
 
     companion object {
         private val logger = Logger.getLogger(PublishBuildEventService::class.java.name)
     }
 
-    data class Event(
-        val projectId: String,
-        val sequenceNumber: Long,
-        val streamId: StreamId,
-        val event: BuildEvent,
-    )
-
     private class PublishEventObserver(
         private val _projectId: String,
         private val _responseObserver: StreamObserver<PublishBuildToolEventStreamResponse>,
-        private val _eventObserver: Observer<Event>,
+        private val onEvent: (Result) -> Unit,
     ) : StreamObserver<PublishBuildToolEventStreamRequest> {
         override fun onNext(value: PublishBuildToolEventStreamRequest) {
             logger.log(Level.FINE, "onNext: $value")
@@ -78,8 +83,8 @@ class PublishBuildEventService(
             )
 
             if (value.hasOrderedBuildEvent() && value.orderedBuildEvent.hasEvent()) {
-                _eventObserver.onNext(
-                    Event(
+                onEvent(
+                    Result.Event(
                         _projectId,
                         value.orderedBuildEvent.sequenceNumber,
                         value.orderedBuildEvent.streamId,
@@ -99,14 +104,11 @@ class PublishBuildEventService(
 
         override fun onError(error: Throwable) {
             logger.log(Level.SEVERE, "onError: $error")
-            if (error is Exception) {
-                _eventObserver.onError(error)
-            }
+            onEvent(Result.Error(error))
         }
 
         override fun onCompleted() {
             logger.log(Level.INFO, "onComplete")
-            _eventObserver.onComplete()
         }
 
         companion object {

@@ -51,7 +51,6 @@ class MainKtTest {
     @Test
     fun shouldSubscribeToBuildEventServer() {
         mockkConstructor(GRpcServer::class)
-        every { anyConstructed<GRpcServer>().port } returns 1234
         val disposed = AtomicBoolean(false)
 
         mockkConstructor(BesServer::class)

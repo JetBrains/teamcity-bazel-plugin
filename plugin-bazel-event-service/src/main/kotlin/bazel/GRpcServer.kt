@@ -10,13 +10,10 @@ import java.util.logging.Logger
 class GRpcServer(
     private val _port: Int,
 ) : ServerTransportFilter() {
-    private var server: io.grpc.Server? = null
     private val connectionCounter = AtomicInteger()
 
-    val port: Int get() = server!!.port
-
     fun start(bindableService: io.grpc.BindableService): AutoCloseable {
-        server =
+        val server =
             ServerBuilder
                 .forPort(_port)
                 .addTransportFilter(this)
@@ -25,26 +22,14 @@ class GRpcServer(
                 .build()
                 .start()
 
-        logger.log(Level.INFO, "Server started, listening on {0}", port)
-        return AutoCloseable(::stop)
-    }
-
-    private fun stop() {
-        logger.log(Level.INFO, "Initiating server termination..")
-        shutdown()
-        server?.awaitTermination()
-        logger.log(Level.INFO, "Server is shutdown")
-    }
-
-    fun shutdown() {
-        Thread {
-            server?.let {
-                logger.log(Level.INFO, "Server is shutting down")
+        logger.log(Level.INFO, "Server started, listening on {0}", server.port.toString())
+        return AutoCloseable {
+            logger.log(Level.INFO, "Initiating server termination..")
+            server.let {
                 it.shutdownNow()
+                it.awaitTermination()
             }
-        }.apply {
-            start()
-            join()
+            logger.log(Level.INFO, "Server is shutdown")
         }
     }
 

@@ -1,7 +1,6 @@
 package bazel
 
 import com.google.devtools.build.lib.buildeventstream.BuildEventStreamProtos
-import devteam.rx.Observer
 import java.nio.channels.Channels
 import java.nio.channels.FileChannel
 import java.nio.file.FileSystems
@@ -21,10 +20,16 @@ class BinaryFileStream {
         return Listener(binaryFile)
     }
 
-    data class Event(
-        val sequenceNumber: Long,
-        val event: BuildEventStreamProtos.BuildEvent,
-    )
+    sealed interface Result {
+        data class Event(
+            val sequenceNumber: Long,
+            val event: BuildEventStreamProtos.BuildEvent,
+        ) : Result
+
+        data class Error(
+            val throwable: Throwable,
+        ) : Result
+    }
 
     class Listener(
         private val binaryFile: Path,
@@ -32,16 +37,16 @@ class BinaryFileStream {
         private val disposed = AtomicBoolean()
         private var sequenceNumber: Long = 0
 
-        fun start(observer: Observer<Event>): AutoCloseable {
-            val thread = thread(name = "BazelEventStream") { readBazelStreamLoop(observer) }
+        fun start(onEvent: (Result) -> Unit): AutoCloseable {
+            val thread = thread(name = "BazelEventStream") { readBazelStreamLoop(onEvent) }
             return AutoCloseable {
                 if (disposed.compareAndSet(false, true)) {
-                    thread?.join()
+                    thread.join()
                 }
             }
         }
 
-        private fun readBazelStreamLoop(observer: Observer<Event>) {
+        private fun readBazelStreamLoop(onEvent: (Result) -> Unit) {
             val watch = FileSystems.getDefault().newWatchService()
             var channel: FileChannel? = null
 
@@ -53,7 +58,7 @@ class BinaryFileStream {
                         logger.info("Opening \"$binaryFile\" for reading...")
                         channel = FileChannel.open(binaryFile, StandardOpenOption.READ)
                     } else if (channel != null) {
-                        readBazelEvents(observer, channel)
+                        readBazelEvents(onEvent, channel)
                     }
 
                     watch.poll(200, TimeUnit.MILLISECONDS)?.let {
@@ -62,8 +67,7 @@ class BinaryFileStream {
                     }
                 } while (!disposed.get())
 
-                channel?.let { readBazelEvents(observer, it) }
-                observer.onComplete()
+                channel?.let { readBazelEvents(onEvent, it) }
 
                 if (channel == null) {
                     logger.warning("Bazel event file was not found or is not readable.")
@@ -71,7 +75,7 @@ class BinaryFileStream {
                     logger.info("Bazel event stream has been completed")
                 }
             } catch (ex: Exception) {
-                observer.onError(ex)
+                onEvent(Result.Error(ex))
             } finally {
                 runCatching { channel?.close() }
                 runCatching { watch.close() }
@@ -79,7 +83,7 @@ class BinaryFileStream {
         }
 
         private fun readBazelEvents(
-            observer: Observer<Event>,
+            onEvent: (Result) -> Unit,
             channel: FileChannel,
         ) {
             val input = Channels.newInputStream(channel)
@@ -92,7 +96,7 @@ class BinaryFileStream {
                     return
                 }
 
-                observer.onNext(Event(sequenceNumber++, evt))
+                onEvent(Result.Event(sequenceNumber++, evt))
             }
         }
     }

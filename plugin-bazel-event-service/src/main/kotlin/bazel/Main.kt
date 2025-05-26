@@ -1,6 +1,7 @@
 package bazel
 
 import bazel.messages.Hierarchy
+import bazel.messages.MessageFactory
 import bazel.messages.MessageFactoryImpl
 import bazel.messages.RootBuildEventHandler
 import bazel.messages.handlers.RootBazelEventHandler
@@ -12,7 +13,7 @@ import kotlin.system.exitProcess
 fun main(args: Array<String>) {
     redirectLogsToStdout()
 
-    var options: BazelOptions? = null
+    var options: BazelOptions?
     try {
         options = BazelOptions(args)
     } catch (ex: Exception) {
@@ -24,46 +25,31 @@ fun main(args: Array<String>) {
     }
 
     val messageFactory = MessageFactoryImpl()
-    val bazelRunner =
-        BazelRunner(
-            messageFactory,
-            options.verbosity,
-            options.bazelCommandlineFile!!,
-            options.port,
-            options.eventFile,
-        )
-    val commandLine = bazelRunner.args.joinToString(" ") { if (it.contains(' ')) "\"$it\"" else it }
-    println("Starting: $commandLine")
-    println("in directory: ${bazelRunner.workingDirectory}")
-    if (options.eventFile != null) {
-        runBinaryFileMode(options, messageFactory, bazelRunner)
+    if (options.eventFile != null && options.bazelCommandlineFile != null) {
+        runBinaryFileMode(options, messageFactory)
     } else {
-        runBesServerMode(options, messageFactory, bazelRunner)
+        runBesServerMode(options, messageFactory)
     }
 }
 
 private fun runBinaryFileMode(
     options: BazelOptions,
-    messageFactory: MessageFactoryImpl,
-    bazelRunner: BazelRunner,
+    messageFactory: MessageFactory,
 ) {
     var finalExitCode = 0
-    if (options.bazelCommandlineFile != null) {
-        val file =
-            BinaryFile(
-                options.eventFile!!,
-                options.verbosity,
-                messageFactory,
-                Hierarchy(),
-                BinaryFileStream(),
-                RootBazelEventHandler(),
-            )
-        file.read().use {
-            val result = bazelRunner.run()
-            finalExitCode = result.exitCode
-            for (error in result.errors) {
-                println(messageFactory.createErrorMessage(error).asString())
-            }
+    BinaryFile(
+        options.eventFile!!,
+        options.verbosity,
+        messageFactory,
+        Hierarchy(),
+        BinaryFileStream(),
+        RootBazelEventHandler(),
+    ).read().use {
+        val bazelRunner = createBazelRunner(options, messageFactory)
+        val result = bazelRunner.run()
+        finalExitCode = result.exitCode
+        for (error in result.errors) {
+            println(messageFactory.createErrorMessage(error).asString())
         }
     }
     exit(finalExitCode)
@@ -71,8 +57,7 @@ private fun runBinaryFileMode(
 
 private fun runBesServerMode(
     options: BazelOptions,
-    messageFactory: MessageFactoryImpl,
-    bazelRunner: BazelRunner,
+    messageFactory: MessageFactory,
 ) {
     var finalExitCode = 0
     val server =
@@ -83,9 +68,11 @@ private fun runBesServerMode(
             Hierarchy(),
             RootBuildEventHandler(),
         )
+
     try {
-        server.start().use {
-            if (options.bazelCommandlineFile != null) {
+        if (options.bazelCommandlineFile != null) {
+            server.start().use {
+                val bazelRunner = createBazelRunner(options, messageFactory)
                 val result = bazelRunner.run()
                 finalExitCode = result.exitCode
 
@@ -95,6 +82,11 @@ private fun runBesServerMode(
                     }
                 }
             }
+        } else {
+            server.start().use {
+                println("Running, press Enter to exit...")
+                java.util.Scanner(System.`in`).nextLine()
+            }
         }
     } catch (ex: Exception) {
         println(messageFactory.createErrorMessage(ex.message ?: ex.toString()).asString())
@@ -102,6 +94,24 @@ private fun runBesServerMode(
     }
 
     exit(finalExitCode)
+}
+
+private fun createBazelRunner(
+    options: BazelOptions,
+    messageFactory: MessageFactory,
+): BazelRunner {
+    val runner =
+        BazelRunner(
+            messageFactory,
+            options.verbosity,
+            options.bazelCommandlineFile!!,
+            options.port,
+            options.eventFile,
+        )
+    val commandLine = runner.args.joinToString(" ") { if (it.contains(' ')) "\"$it\"" else it }
+    println("Starting: $commandLine")
+    println("in directory: ${runner.workingDirectory}")
+    return runner
 }
 
 fun exit(status: Int): Unit = exitProcess(status)
