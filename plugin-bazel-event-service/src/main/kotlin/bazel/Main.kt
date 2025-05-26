@@ -7,9 +7,7 @@ import bazel.messages.handlers.RootBazelEventHandler
 import bazel.v1.PublishBuildEventService
 import devteam.rx.observer
 import devteam.rx.use
-import java.io.File
 import java.io.IOException
-import java.nio.file.Path
 import java.util.logging.ConsoleHandler
 import java.util.logging.LogManager
 import java.util.logging.Logger
@@ -19,30 +17,34 @@ import kotlin.system.exitProcess
 fun main(args: Array<String>) {
     redirectLogsToStdout()
 
-    val logger = Logger.getLogger("main")
-    val port: Int
-    val eventFile: Path?
-    val verbosity: Verbosity
-    val bazelCommandlineFile: File?
+    var options: BazelOptions? = null
     try {
-        val bazelOptions = BazelOptions(args)
-        port = bazelOptions.port
-        eventFile = bazelOptions.eventFile
-        verbosity = bazelOptions.verbosity
-        bazelCommandlineFile = bazelOptions.bazelCommandlineFile
+        options = BazelOptions(args)
     } catch (ex: Exception) {
+        val logger = Logger.getLogger("main")
         logger.severe(ex.message)
         BazelOptions.printHelp()
         exit(1)
+        return
     }
 
     val messageFactory = MessageFactoryImpl()
+    val bazelRunner = BazelRunner(
+        messageFactory,
+        options.verbosity,
+        options.bazelCommandlineFile!!,
+        options.port,
+        options.eventFile,
+    )
+    val commandLine = bazelRunner.args.joinToString(" ") { if (it.contains(' ')) "\"$it\"" else it }
+    println("Starting: $commandLine")
+    println("in directory: ${bazelRunner.workingDirectory}")
 
-    if (eventFile != null && bazelCommandlineFile != null) {
+    if (options.eventFile != null && options.bazelCommandlineFile != null) {
         var finalExitCode = 0
         BinaryFile(
-            eventFile,
-            verbosity,
+            options.eventFile!!,
+            options.verbosity,
             messageFactory,
             Hierarchy(),
             BinaryFileStream(),
@@ -58,10 +60,6 @@ fun main(args: Array<String>) {
                 onComplete = {},
             ),
         ).use {
-            val bazelRunner = BazelRunner(messageFactory, verbosity, bazelCommandlineFile, 0, eventFile)
-            val commandLine = bazelRunner.args.joinToString(" ") { if (it.contains(' ')) "\"$it\"" else it }
-            println("Starting: $commandLine")
-            println("in directory: ${bazelRunner.workingDirectory}")
             val result = bazelRunner.run()
             finalExitCode = result.exitCode
             for (error in result.errors) {
@@ -72,14 +70,14 @@ fun main(args: Array<String>) {
         exit(finalExitCode)
     }
 
-    val gRpcServer = GRpcServer(port)
+    val gRpcServer = GRpcServer(options.port)
     var besIsActive = false
 
     try {
         var finalExitCode = 0
         BesServer(
             gRpcServer,
-            verbosity,
+            options.verbosity,
             PublishBuildEventService(),
             messageFactory,
             Hierarchy(),
@@ -97,27 +95,18 @@ fun main(args: Array<String>) {
             ),
         ).use {
             // when has no bazel command and port is Auto
-            if (bazelCommandlineFile == null && port == 0) {
-                println("BES Port: ${gRpcServer.port}")
-            }
+            if (options.bazelCommandlineFile != null) {
+                val result = bazelRunner.run()
+                finalExitCode = result.exitCode
 
-            if (bazelCommandlineFile != null) {
-                try {
-                    val bazelRunner = BazelRunner(messageFactory, verbosity, bazelCommandlineFile, gRpcServer.port)
-                    val commandLine = bazelRunner.args.joinToString(" ") { if (it.contains(' ')) "\"$it\"" else it }
-                    println("Starting: $commandLine")
-                    println("in directory: ${bazelRunner.workingDirectory}")
-                    val result = bazelRunner.run()
-                    finalExitCode = result.exitCode
-
-                    if (!besIsActive) {
-                        for (error in result.errors) {
-                            println(messageFactory.createErrorMessage(error).asString())
-                        }
+                if (!besIsActive) {
+                    for (error in result.errors) {
+                        println(messageFactory.createErrorMessage(error).asString())
                     }
-                } catch (ex: Exception) {
-                    gRpcServer.shutdown()
-                    throw ex
+                }
+            } else {
+                if (options.port == 0) {
+                    println("BES Port: ${gRpcServer.port}")
                 }
             }
         }
@@ -128,13 +117,9 @@ fun main(args: Array<String>) {
     }
 }
 
-fun exit(status: Int): Nothing {
-    exitProcess(status)
-}
+fun exit(status: Int): Unit = exitProcess(status)
 
-private fun println(line: String) {
-    kotlin.io.println(line)
-}
+private fun println(line: String) = kotlin.io.println(line)
 
 private fun redirectLogsToStdout() {
     // Redirect java.util.logging output to System.out
