@@ -1,13 +1,10 @@
 package bazel.v1
 
-import bazel.toObserver
-import bazel.toStreamObserver
 import com.google.devtools.build.v1.*
 import com.google.protobuf.Empty
 import devteam.rx.Disposable
 import devteam.rx.Observable
 import devteam.rx.Observer
-import devteam.rx.observer
 import devteam.rx.subjectOf
 import io.grpc.stub.StreamObserver
 import java.util.concurrent.atomic.AtomicReference
@@ -52,11 +49,10 @@ class PublishBuildEventService :
     // This is a bidirectional streaming RPC, server responds to each one with an acknowledgment.
     // NOTE: only single stream can be opened during the build
     override fun publishBuildToolEventStream(
-        responseObserver: StreamObserver<PublishBuildToolEventStreamResponse>?,
+        responseObserver: StreamObserver<PublishBuildToolEventStreamResponse>,
     ): StreamObserver<PublishBuildToolEventStreamRequest> {
         logger.log(Level.FINE, "publishBuildToolEventStream: $responseObserver")
-        val responses = responseObserver?.toObserver() ?: observer(onNext = {}, onError = {}, onComplete = {})
-        return PublishEventObserver(projectId.get(), responses, eventSubject).toStreamObserver()
+        return PublishEventObserver(projectId.get(), responseObserver, eventSubject)
     }
 
     companion object {
@@ -72,9 +68,9 @@ class PublishBuildEventService :
 
     private class PublishEventObserver(
         private val _projectId: String,
-        private val _responseObserver: Observer<PublishBuildToolEventStreamResponse>,
+        private val _responseObserver: StreamObserver<PublishBuildToolEventStreamResponse>,
         private val _eventObserver: Observer<Event>,
-    ) : Observer<PublishBuildToolEventStreamRequest> {
+    ) : StreamObserver<PublishBuildToolEventStreamRequest> {
         override fun onNext(value: PublishBuildToolEventStreamRequest) {
             logger.log(Level.FINE, "onNext: $value")
 
@@ -103,16 +99,18 @@ class PublishBuildEventService :
             if (value.orderedBuildEvent.event.hasComponentStreamFinished()) {
                 // send onCompleted
                 logger.log(Level.INFO, "The ComponentStreamFinished event was received.")
-                _responseObserver.onComplete()
+                _responseObserver.onCompleted()
             }
         }
 
-        override fun onError(error: Exception) {
+        override fun onError(error: Throwable) {
             logger.log(Level.SEVERE, "onError: $error")
-            _eventObserver.onError(error)
+            if (error is Exception) {
+                _eventObserver.onError(error)
+            }
         }
 
-        override fun onComplete() {
+        override fun onCompleted() {
             logger.log(Level.INFO, "onComplete")
             _eventObserver.onComplete()
         }
