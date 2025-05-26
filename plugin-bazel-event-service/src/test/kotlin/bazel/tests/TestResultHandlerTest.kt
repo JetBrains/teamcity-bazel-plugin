@@ -8,24 +8,19 @@ import bazel.messages.MessageFactory
 import bazel.messages.handlers.TestResultHandler
 import com.google.devtools.build.lib.buildeventstream.BuildEventStreamProtos
 import com.google.protobuf.ByteString
-import devteam.rx.*
-import devteam.rx.observer
 import io.mockk.MockKAnnotations
 import io.mockk.every
 import io.mockk.impl.annotations.MockK
 import jetbrains.buildServer.messages.serviceMessages.Message
 import jetbrains.buildServer.messages.serviceMessages.ServiceMessage
 import org.testng.Assert
-import org.testng.annotations.AfterMethod
 import org.testng.annotations.BeforeMethod
 import org.testng.annotations.DataProvider
 import org.testng.annotations.Test
 
 @Suppress("UNCHECKED_CAST")
 class TestResultHandlerTest {
-    private lateinit var subject: Subject<ServiceMessage>
-    private lateinit var actualNotifications: MutableList<Notification<ServiceMessage>>
-    private lateinit var subscription: Disposable
+    private val serviceMessages = mutableListOf<ServiceMessage>()
 
     @MockK
     private lateinit var messageFactory: MessageFactory
@@ -39,23 +34,7 @@ class TestResultHandlerTest {
     @BeforeMethod
     fun setUp() {
         MockKAnnotations.init(this)
-        subject = subjectOf<ServiceMessage>()
-        actualNotifications = mutableListOf<Notification<ServiceMessage>>()
-        subscription =
-            subject
-                .materialize()
-                .subscribe(
-                    observer(
-                        onNext = { it -> actualNotifications.add(it) },
-                        onError = { },
-                        onComplete = {},
-                    ),
-                )
-    }
-
-    @AfterMethod
-    fun tearDown() {
-        subscription.dispose()
+        serviceMessages.clear()
     }
 
     @DataProvider
@@ -99,14 +78,7 @@ class TestResultHandlerTest {
         handler.handle(ctx)
 
         // Then
-        Assert.assertTrue(
-            actualNotifications.containsAll(
-                listOf(
-                    NotificationNext<ServiceMessage>(message1),
-                    NotificationNext<ServiceMessage>(message2),
-                ),
-            ),
-        )
+        Assert.assertTrue(serviceMessages.containsAll(listOf(message1, message2)))
         Assert.assertFalse(message1.tags.contains("tc:parseServiceMessagesInside"))
         Assert.assertTrue(message2.tags.contains("tc:parseServiceMessagesInside"))
     }
@@ -121,6 +93,6 @@ class TestResultHandlerTest {
         sequenceNumber = 42,
         bazelEvent = event,
     ) {
-        subject.onNext(it)
+        serviceMessages.add(it)
     }
 }

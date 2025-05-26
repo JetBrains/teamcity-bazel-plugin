@@ -6,22 +6,17 @@ import bazel.messages.Hierarchy
 import bazel.messages.MessageFactory
 import bazel.messages.handlers.ProgressHandler
 import com.google.devtools.build.lib.buildeventstream.BuildEventStreamProtos
-import devteam.rx.*
-import devteam.rx.observer
 import io.mockk.MockKAnnotations
 import io.mockk.every
 import io.mockk.impl.annotations.MockK
 import io.mockk.verify
 import jetbrains.buildServer.messages.serviceMessages.Message
 import jetbrains.buildServer.messages.serviceMessages.ServiceMessage
-import org.testng.annotations.AfterMethod
 import org.testng.annotations.BeforeMethod
 import org.testng.annotations.Test
 
 class ProgressHandlerTest {
-    private lateinit var subject: Subject<ServiceMessage>
-    private lateinit var actualNotifications: MutableList<Notification<ServiceMessage>>
-    private lateinit var subscription: Disposable
+    private val serviceMessages = mutableListOf<ServiceMessage>()
 
     @MockK
     private lateinit var messageFactory: MessageFactory
@@ -32,23 +27,7 @@ class ProgressHandlerTest {
     @BeforeMethod
     fun setUp() {
         MockKAnnotations.init(this)
-        subject = subjectOf()
-        actualNotifications = mutableListOf()
-        subscription =
-            subject
-                .materialize()
-                .subscribe(
-                    observer(
-                        onNext = { it: Notification<ServiceMessage> -> actualNotifications.add(it) },
-                        onError = { },
-                        onComplete = {},
-                    ),
-                )
-    }
-
-    @AfterMethod
-    fun tearDown() {
-        subscription.dispose()
+        serviceMessages.clear()
     }
 
     @Test
@@ -88,6 +67,6 @@ class ProgressHandlerTest {
             sequenceNumber = 42,
             bazelEvent = event,
         ) {
-            subject.onNext(it)
+            serviceMessages.add(it)
         }
 }
