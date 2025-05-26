@@ -1,7 +1,6 @@
 package bazel.messages.handlers
 
 import bazel.FileSystemServiceImpl
-import bazel.bazel.events.Id
 import bazel.messages.BazelEventHandlerContext
 
 class RootBazelEventHandler : BazelEventHandler {
@@ -9,10 +8,8 @@ class RootBazelEventHandler : BazelEventHandler {
         val event = ctx.bazelEvent
         handlers.firstOrNull { it.handle(ctx) } ?: UnknownEventHandler().handle(ctx)
 
-        val id = Id(event.id)
-        val children = event.childrenList.map { Id(it) }
-        ctx.hierarchy.createNode(id, children, "")
-        ctx.hierarchy.tryCloseNode(id)
+        ctx.hierarchy.createNode(event.id, event.childrenList, "")
+        ctx.hierarchy.tryCloseNode(event.id)
 
         return true
     }

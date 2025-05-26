@@ -2,7 +2,6 @@ package bazel.messages.handlers
 
 import bazel.Verbosity
 import bazel.atLeast
-import bazel.bazel.events.Id
 import bazel.messages.BazelEventHandlerContext
 import bazel.messages.Color
 import bazel.messages.apply
@@ -14,7 +13,7 @@ class TargetCompletedHandler : BazelEventHandler {
         }
 
         val completed = ctx.bazelEvent.completed
-        ctx.hierarchy.tryCloseNode(Id(ctx.bazelEvent.id))?.let {
+        ctx.hierarchy.tryCloseNode(ctx.bazelEvent.id)?.let {
             val description =
                 ctx
                     .buildMessage()

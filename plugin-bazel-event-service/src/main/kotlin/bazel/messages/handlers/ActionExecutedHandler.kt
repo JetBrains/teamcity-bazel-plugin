@@ -3,7 +3,6 @@ package bazel.messages.handlers
 import bazel.Verbosity
 import bazel.atLeast
 import bazel.bazel.converters.FileConverter
-import bazel.bazel.events.Id
 import bazel.bazel.events.read
 import bazel.messages.BazelEventHandlerContext
 import bazel.messages.Color
@@ -19,7 +18,7 @@ class ActionExecutedHandler : BazelEventHandler {
 
         val event = ctx.bazelEvent.action
         val actionName = "Action \"${event.type}\""
-        ctx.hierarchy.createNode(Id(ctx.bazelEvent.id), ctx.bazelEvent.childrenList.map { Id(it) }, actionName)
+        ctx.hierarchy.createNode(ctx.bazelEvent.id, ctx.bazelEvent.childrenList, actionName)
 
         val details = StringBuilder()
         details.appendLine(event.commandLineList.joinToStringEscaped().trim())
@@ -79,7 +78,6 @@ class ActionExecutedHandler : BazelEventHandler {
                 ),
             )
             ctx.onNext(ctx.messageFactory.createCompilationFinished(error))
-
         }
 
         return true

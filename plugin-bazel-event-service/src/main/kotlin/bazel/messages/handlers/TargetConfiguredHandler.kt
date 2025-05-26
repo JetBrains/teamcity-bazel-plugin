@@ -2,7 +2,6 @@ package bazel.messages.handlers
 
 import bazel.Verbosity
 import bazel.atLeast
-import bazel.bazel.events.Id
 import bazel.messages.BazelEventHandlerContext
 import bazel.messages.Color
 import bazel.messages.apply
@@ -19,7 +18,7 @@ class TargetConfiguredHandler : BazelEventHandler {
                 .buildMessage(false)
                 .append("Target ${event.targetKind} \"${id.targetConfigured.label}\"".apply(Color.BuildStage))
                 .toString()
-        ctx.hierarchy.createNode(Id(id), ctx.bazelEvent.childrenList.map { Id(it) }, targetName)
+        ctx.hierarchy.createNode(id, ctx.bazelEvent.childrenList, targetName)
         if (ctx.verbosity.atLeast(Verbosity.Detailed)) {
             ctx.onNext(
                 ctx.messageFactory.createMessage(

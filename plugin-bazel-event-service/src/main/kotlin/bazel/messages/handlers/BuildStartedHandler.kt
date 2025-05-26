@@ -2,7 +2,6 @@ package bazel.messages.handlers
 
 import bazel.Verbosity
 import bazel.atLeast
-import bazel.bazel.events.Id
 import bazel.messages.BazelEventHandlerContext
 
 class BuildStartedHandler : BazelEventHandler {
@@ -24,7 +23,7 @@ class BuildStartedHandler : BazelEventHandler {
 
         if (ctx.verbosity.atLeast(Verbosity.Normal)) {
             ctx.onNext(ctx.messageFactory.createBlockOpened(description, details))
-            ctx.hierarchy.createNode(Id(ctx.bazelEvent.id), ctx.bazelEvent.childrenList.map { Id(it) }, description) {
+            ctx.hierarchy.createNode(ctx.bazelEvent.id, ctx.bazelEvent.childrenList, description) {
                 ctx.onNext(ctx.messageFactory.createBlockClosed(description))
             }
         }

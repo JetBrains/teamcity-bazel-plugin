@@ -1,6 +1,6 @@
 package bazel
 
-import bazel.messages.HierarchyImpl
+import bazel.messages.Hierarchy
 import bazel.messages.MessageFactoryImpl
 import bazel.messages.RootBuildEventHandler
 import bazel.messages.handlers.RootBazelEventHandler
@@ -44,7 +44,7 @@ fun main(args: Array<String>) {
             eventFile,
             verbosity,
             messageFactory,
-            HierarchyImpl(),
+            Hierarchy(),
             BinaryFileStream(),
             RootBazelEventHandler(),
         ).subscribe(
@@ -82,7 +82,7 @@ fun main(args: Array<String>) {
             verbosity,
             PublishBuildEventService(),
             messageFactory,
-            HierarchyImpl(),
+            Hierarchy(),
             RootBuildEventHandler(),
         ).subscribe(
             observer(
