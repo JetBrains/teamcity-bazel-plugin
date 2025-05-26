@@ -7,14 +7,16 @@ import jetbrains.buildServer.messages.serviceMessages.ServiceMessage
 import java.util.Date
 
 class BesServer(
-    private val _gRpcServer: GRpcServer,
+    private val port: Int,
     private val _verbosity: Verbosity,
     private val _messageFactory: MessageFactory,
     private val _hierarchy: Hierarchy,
     private val _buildEventHandler: RootBuildEventHandler,
-) : Observable<String> {
-    override fun subscribe(observer: Observer<String>): Disposable {
-        val eventService =
+) {
+    var hasStarted = false
+
+    fun start(): AutoCloseable =
+        GRpcServer(port).start(
             PublishBuildEventService(
                 observer(
                     onNext = {
@@ -27,22 +29,27 @@ class BesServer(
                                 it.streamId,
                                 it.event,
                             ) { serviceMessage ->
-                                observer.onNext(updateHeader(it, serviceMessage).asString())
+                                hasStarted = true
+                                printMessage(updateHeader(it, serviceMessage))
                             }
                         val processed = _buildEventHandler.handle(ctx)
                         if (processed) {
                             if (_verbosity.atLeast(Verbosity.Diagnostic)) {
-                                ctx.onNext(_messageFactory.createTraceMessage(ctx.event.toString()))
+                                printMessage(_messageFactory.createTraceMessage(ctx.event.toString()))
                             }
                         }
                     },
-                    onError = { observer.onError(it) },
-                    onComplete = { observer.onComplete() },
+                    onError = {
+                        val error = _messageFactory.createErrorMessage("BES Server onError", it.toString())
+                        printMessage(error)
+                    },
+                    onComplete = { },
                 ),
-            )
-        _gRpcServer.start(eventService)
+            ),
+        )
 
-        return disposableOf { _gRpcServer.stop() }
+    private fun printMessage(message: ServiceMessage) {
+        println(message.asString())
     }
 
     private fun updateHeader(

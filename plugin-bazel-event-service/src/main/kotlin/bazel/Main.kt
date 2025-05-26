@@ -4,15 +4,11 @@ import bazel.messages.Hierarchy
 import bazel.messages.MessageFactoryImpl
 import bazel.messages.RootBuildEventHandler
 import bazel.messages.handlers.RootBazelEventHandler
-import devteam.rx.observer
-import devteam.rx.use
-import java.io.IOException
 import java.util.logging.ConsoleHandler
 import java.util.logging.LogManager
 import java.util.logging.Logger
 import kotlin.system.exitProcess
 
-@Throws(IOException::class, InterruptedException::class)
 fun main(args: Array<String>) {
     redirectLogsToStdout()
 
@@ -39,81 +35,73 @@ fun main(args: Array<String>) {
     val commandLine = bazelRunner.args.joinToString(" ") { if (it.contains(' ')) "\"$it\"" else it }
     println("Starting: $commandLine")
     println("in directory: ${bazelRunner.workingDirectory}")
+    if (options.eventFile != null) {
+        runBinaryFileMode(options, messageFactory, bazelRunner)
+    } else {
+        runBesServerMode(options, messageFactory, bazelRunner)
+    }
+}
 
-    if (options.eventFile != null && options.bazelCommandlineFile != null) {
-        var finalExitCode = 0
-        BinaryFile(
-            options.eventFile!!,
-            options.verbosity,
-            messageFactory,
-            Hierarchy(),
-            BinaryFileStream(),
-            RootBazelEventHandler(),
-        ).subscribe(
-            observer(
-                onNext = { println(it) },
-                onError = {
-                    println(
-                        messageFactory.createErrorMessage("Error during binary file read", it.toString()).asString(),
-                    )
-                },
-                onComplete = {},
-            ),
-        ).use {
+private fun runBinaryFileMode(
+    options: BazelOptions,
+    messageFactory: MessageFactoryImpl,
+    bazelRunner: BazelRunner,
+) {
+    var finalExitCode = 0
+    if (options.bazelCommandlineFile != null) {
+        val file =
+            BinaryFile(
+                options.eventFile!!,
+                options.verbosity,
+                messageFactory,
+                Hierarchy(),
+                BinaryFileStream(),
+                RootBazelEventHandler(),
+            )
+        file.read().use {
             val result = bazelRunner.run()
             finalExitCode = result.exitCode
             for (error in result.errors) {
                 println(messageFactory.createErrorMessage(error).asString())
             }
         }
-
-        exit(finalExitCode)
     }
+    exit(finalExitCode)
+}
 
-    val gRpcServer = GRpcServer(options.port)
-    var besIsActive = false
-
-    try {
-        var finalExitCode = 0
+private fun runBesServerMode(
+    options: BazelOptions,
+    messageFactory: MessageFactoryImpl,
+    bazelRunner: BazelRunner,
+) {
+    var finalExitCode = 0
+    val server =
         BesServer(
-            gRpcServer,
+            options.port,
             options.verbosity,
             messageFactory,
             Hierarchy(),
             RootBuildEventHandler(),
-        ).subscribe(
-            observer(
-                onNext = { it ->
-                    besIsActive = true
-                    println(it)
-                },
-                onError = {
-                    println(messageFactory.createErrorMessage("BES Server onError", it.toString()).asString())
-                },
-                onComplete = {},
-            ),
-        ).use {
-            // when has no bazel command and port is Auto
+        )
+    try {
+        server.start().use {
             if (options.bazelCommandlineFile != null) {
                 val result = bazelRunner.run()
                 finalExitCode = result.exitCode
 
-                if (!besIsActive) {
+                if (!server.hasStarted) {
                     for (error in result.errors) {
                         println(messageFactory.createErrorMessage(error).asString())
                     }
                 }
-            } else {
-                if (options.port == 0) {
-                    println("BES Port: ${gRpcServer.port}")
-                }
             }
         }
-        exit(finalExitCode)
     } catch (ex: Exception) {
         println(messageFactory.createErrorMessage(ex.message ?: ex.toString()).asString())
         exit(1)
     }
+
+    exit(finalExitCode)
 }
 
 fun exit(status: Int): Unit = exitProcess(status)

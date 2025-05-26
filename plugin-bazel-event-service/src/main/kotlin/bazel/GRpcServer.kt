@@ -15,7 +15,7 @@ class GRpcServer(
 
     val port: Int get() = server!!.port
 
-    fun start(bindableService: io.grpc.BindableService) {
+    fun start(bindableService: io.grpc.BindableService): AutoCloseable {
         server =
             ServerBuilder
                 .forPort(_port)
@@ -26,9 +26,10 @@ class GRpcServer(
                 .start()
 
         logger.log(Level.INFO, "Server started, listening on {0}", port)
+        return AutoCloseable(::stop)
     }
 
-    fun stop() {
+    private fun stop() {
         logger.log(Level.INFO, "Initiating server termination..")
         shutdown()
         server?.awaitTermination()

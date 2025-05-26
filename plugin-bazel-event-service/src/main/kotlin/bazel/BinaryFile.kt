@@ -3,6 +3,7 @@ package bazel
 import bazel.messages.*
 import bazel.messages.handlers.RootBazelEventHandler
 import devteam.rx.*
+import jetbrains.buildServer.messages.serviceMessages.ServiceMessage
 import java.nio.file.Path
 
 class BinaryFile(
@@ -10,11 +11,11 @@ class BinaryFile(
     private val _verbosity: Verbosity,
     private val _messageFactory: MessageFactory,
     private val _hierarchy: Hierarchy,
-    private val _binaryFileStream: BinaryFileStream,
+    private val _binaryStream: BinaryFileStream,
     private val _rootBazelEventHandler: RootBazelEventHandler,
-) : Observable<String> {
-    override fun subscribe(observer: Observer<String>): Disposable =
-        _binaryFileStream.create(_eventFile).subscribe(
+) {
+    fun read() =
+        _binaryStream.create(_eventFile).start(
             observer(
                 onNext = {
                     val ctx =
@@ -25,17 +26,24 @@ class BinaryFile(
                             it.sequenceNumber,
                             bazelEvent = it.event,
                         ) { serviceMessage ->
-                            observer.onNext(serviceMessage.toString())
+                            printMessage(serviceMessage)
                         }
                     val processed = _rootBazelEventHandler.handle(ctx)
                     if (processed) {
                         if (_verbosity.atLeast(Verbosity.Diagnostic)) {
-                            ctx.onNext(_messageFactory.createTraceMessage(ctx.bazelEvent.toString()))
+                            printMessage(_messageFactory.createTraceMessage(ctx.bazelEvent.toString()))
                         }
                     }
                 },
-                onError = { observer.onError(it) },
-                onComplete = { observer.onComplete() },
+                onError = {
+                    val error = _messageFactory.createErrorMessage("Error during binary file read", it.toString())
+                    printMessage(error)
+                },
+                onComplete = { },
             ),
         )
+
+    private fun printMessage(message: ServiceMessage) {
+        println(message.asString())
+    }
 }

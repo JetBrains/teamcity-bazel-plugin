@@ -1,10 +1,7 @@
 package bazel
 
 import com.google.devtools.build.lib.buildeventstream.BuildEventStreamProtos
-import devteam.rx.Disposable
-import devteam.rx.Observable
 import devteam.rx.Observer
-import devteam.rx.disposableOf
 import java.nio.channels.Channels
 import java.nio.channels.FileChannel
 import java.nio.file.FileSystems
@@ -31,15 +28,15 @@ class BinaryFileStream {
 
     class Listener(
         private val binaryFile: Path,
-    ) : Observable<Event> {
+    ) {
         private val disposed = AtomicBoolean()
         private var sequenceNumber: Long = 0
 
-        override fun subscribe(observer: Observer<Event>): Disposable {
+        fun start(observer: Observer<Event>): AutoCloseable {
             val thread = thread(name = "BazelEventStream") { readBazelStreamLoop(observer) }
-            return disposableOf {
+            return AutoCloseable {
                 if (disposed.compareAndSet(false, true)) {
-                    thread.join()
+                    thread?.join()
                 }
             }
         }
