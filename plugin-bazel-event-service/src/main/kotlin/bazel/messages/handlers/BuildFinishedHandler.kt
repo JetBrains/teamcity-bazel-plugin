@@ -1,42 +1,39 @@
 package bazel.messages.handlers
 
-import bazel.events.BuildStatus
 import bazel.messages.BuildEventHandlerContext
 import bazel.messages.Color
 import bazel.messages.apply
-import bazel.v1.converters.BuildStatusConverter
+import com.google.devtools.build.v1.BuildStatus.Result.*
 
 class BuildFinishedHandler : EventHandler {
-    private val buildStatusConverter = BuildStatusConverter()
-
     override fun handle(ctx: BuildEventHandlerContext): Boolean {
         if (!ctx.event.hasBuildFinished()) {
             return false
         }
 
         val buildFinished = ctx.event.buildFinished
-        val status = buildStatusConverter.convert(buildFinished.status)
-        when (status) {
-            BuildStatus.CommandSucceeded -> {
+        val description = BuildStatusFormatter.format(buildFinished.status.result)
+        when (buildFinished.status.result) {
+            COMMAND_SUCCEEDED -> {
                 ctx.onNext(
                     ctx.messageFactory.createMessage(
                         ctx
                             .buildMessage()
-                            .append(status.description.apply(Color.Success))
+                            .append(description.apply(Color.Success))
                             .toString(),
                     ),
                 )
             }
 
-            BuildStatus.Cancelled,
-            BuildStatus.CommandFailed,
-            BuildStatus.SystemError,
-            BuildStatus.UserError,
-            BuildStatus.ResourceExhausted,
-            BuildStatus.InvocationDeadlineExceeded,
-            BuildStatus.RequestDeadlineExceeded,
+            CANCELLED,
+            COMMAND_FAILED,
+            SYSTEM_ERROR,
+            USER_ERROR,
+            RESOURCE_EXHAUSTED,
+            INVOCATION_DEADLINE_EXCEEDED,
+            REQUEST_DEADLINE_EXCEEDED,
             -> {
-                ctx.onNext(ctx.messageFactory.createErrorMessage(status.description))
+                ctx.onNext(ctx.messageFactory.createErrorMessage(description))
             }
 
             else -> {}

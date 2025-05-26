@@ -1,6 +1,11 @@
-package bazel.v1
+package bazel
 
-import com.google.devtools.build.v1.*
+import com.google.devtools.build.v1.BuildEvent
+import com.google.devtools.build.v1.PublishBuildEventGrpc
+import com.google.devtools.build.v1.PublishBuildToolEventStreamRequest
+import com.google.devtools.build.v1.PublishBuildToolEventStreamResponse
+import com.google.devtools.build.v1.PublishLifecycleEventRequest
+import com.google.devtools.build.v1.StreamId
 import com.google.protobuf.Empty
 import io.grpc.stub.StreamObserver
 import java.util.concurrent.atomic.AtomicReference

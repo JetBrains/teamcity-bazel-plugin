@@ -2,15 +2,12 @@ package bazel.messages.handlers
 
 import bazel.Verbosity
 import bazel.atLeast
-import bazel.events.BuildStatus
 import bazel.messages.BuildEventHandlerContext
 import bazel.messages.Color
 import bazel.messages.apply
-import bazel.v1.converters.BuildStatusConverter
+import com.google.devtools.build.v1.BuildStatus
 
 class InvocationAttemptFinishedHandler : EventHandler {
-    private val buildStatusConverter = BuildStatusConverter()
-
     override fun handle(ctx: BuildEventHandlerContext): Boolean {
         if (!ctx.event.hasInvocationAttemptFinished()) {
             return false
@@ -20,13 +17,11 @@ class InvocationAttemptFinishedHandler : EventHandler {
         val invocationAttemptFinished = ctx.event.invocationAttemptFinished
         val status =
             if (invocationAttemptFinished.hasInvocationStatus()) {
-                buildStatusConverter.convert(
-                    invocationAttemptFinished.invocationStatus,
-                )
+                invocationAttemptFinished.invocationStatus.result
             } else {
-                BuildStatus.Unknown
+                BuildStatus.Result.UNKNOWN_STATUS
             }
-        if (status == BuildStatus.CommandSucceeded) {
+        if (status == BuildStatus.Result.COMMAND_SUCCEEDED) {
             if (ctx.verbosity.atLeast(Verbosity.Detailed)) {
                 ctx.onNext(
                     ctx.messageFactory.createMessage(
@@ -38,12 +33,13 @@ class InvocationAttemptFinishedHandler : EventHandler {
                 )
             }
         } else {
+            val description = BuildStatusFormatter.format(status)
             ctx.onNext(
                 ctx.messageFactory.createErrorMessage(
                     ctx
                         .buildMessage(false)
                         .append("Invocation attempt failed")
-                        .append(": \"${status.description}\"", Verbosity.Detailed)
+                        .append(": \"$description\"", Verbosity.Detailed)
                         .toString(),
                 ),
             )

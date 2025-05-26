@@ -1,7 +1,6 @@
 package bazel
 
 import bazel.messages.*
-import bazel.v1.PublishBuildEventService
 import jetbrains.buildServer.messages.serviceMessages.ServiceMessage
 import java.util.Date
 
