@@ -1,7 +1,7 @@
 package bazel
 
 import bazel.messages.Message
-import bazel.messages.MessageFactoryImpl
+import bazel.messages.MessageFactory
 import io.mockk.*
 import org.testng.Assert
 import org.testng.annotations.BeforeMethod
@@ -23,8 +23,8 @@ class MainKtTest {
         every { anyConstructed<BazelRunner>().args } returns sequenceOf("foo", "bar")
         every { anyConstructed<BazelRunner>().run() } returns BazelRunner.Result(57, emptyList())
 
-        mockkConstructor(MessageFactoryImpl::class)
-        every { anyConstructed<MessageFactoryImpl>().createErrorMessage(any()) } returns
+        mockkConstructor(MessageFactory::class)
+        every { anyConstructed<MessageFactory>().createErrorMessage(any()) } returns
             Message(
                 "caught ExitException",
                 "Normal",

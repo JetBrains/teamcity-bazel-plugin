@@ -1,10 +1,9 @@
 package bazel
 
+import bazel.handlers.BepEventHandlerChain
+import bazel.handlers.BesEventHandlerChain
 import bazel.messages.Hierarchy
 import bazel.messages.MessageFactory
-import bazel.messages.MessageFactoryImpl
-import bazel.messages.RootBuildEventHandler
-import bazel.messages.handlers.RootBazelEventHandler
 import java.util.logging.ConsoleHandler
 import java.util.logging.LogManager
 import java.util.logging.Logger
@@ -24,7 +23,7 @@ fun main(args: Array<String>) {
         return
     }
 
-    val messageFactory = MessageFactoryImpl()
+    val messageFactory = MessageFactory()
     if (options.eventFile != null && options.bazelCommandlineFile != null) {
         runBinaryFileMode(options, messageFactory)
     } else {
@@ -42,8 +41,8 @@ private fun runBinaryFileMode(
         options.verbosity,
         messageFactory,
         Hierarchy(),
-        BinaryFileStream(),
-        RootBazelEventHandler(),
+        BinaryFileEventStream(),
+        BepEventHandlerChain(),
     ).read().use {
         val bazelRunner = createBazelRunner(options, messageFactory)
         val result = bazelRunner.run()
@@ -66,7 +65,7 @@ private fun runBesServerMode(
             options.verbosity,
             messageFactory,
             Hierarchy(),
-            RootBuildEventHandler(),
+            BesEventHandlerChain(),
         )
 
     try {

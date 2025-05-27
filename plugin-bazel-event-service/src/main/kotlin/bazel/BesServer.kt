@@ -1,5 +1,7 @@
 package bazel
 
+import bazel.handlers.BesEventHandlerChain
+import bazel.handlers.BesEventHandlerContext
 import bazel.messages.*
 import jetbrains.buildServer.messages.serviceMessages.ServiceMessage
 import java.util.Date
@@ -9,17 +11,17 @@ class BesServer(
     private val _verbosity: Verbosity,
     private val _messageFactory: MessageFactory,
     private val _hierarchy: Hierarchy,
-    private val _buildEventHandler: RootBuildEventHandler,
+    private val _buildEventHandler: BesEventHandlerChain,
 ) {
     var hasStarted = false
 
     fun start() =
         GRpcServer(port)
             .start(
-                PublishBuildEventService {
+                BesServerEventStream {
                     when (it) {
-                        is PublishBuildEventService.Result.Event -> onEvent(it)
-                        is PublishBuildEventService.Result.Error -> onError(it.throwable)
+                        is BesServerEventStream.Result.Event -> onEvent(it)
+                        is BesServerEventStream.Result.Error -> onError(it.throwable)
                     }
                 },
             )
@@ -29,14 +31,13 @@ class BesServer(
         printMessage(error)
     }
 
-    private fun onEvent(event: PublishBuildEventService.Result.Event) {
+    private fun onEvent(event: BesServerEventStream.Result.Event) {
         val ctx =
-            BuildEventHandlerContext(
-                _messageFactory,
-                _hierarchy,
+            BesEventHandlerContext(
                 _verbosity,
                 event.sequenceNumber,
                 event.streamId,
+                _messageFactory,
                 event.event,
             ) { serviceMessage ->
                 hasStarted = true
@@ -55,7 +56,7 @@ class BesServer(
     }
 
     private fun updateHeader(
-        event: PublishBuildEventService.Result.Event,
+        event: BesServerEventStream.Result.Event,
         message: ServiceMessage,
     ): ServiceMessage {
         if (message.flowId.isNullOrEmpty()) {

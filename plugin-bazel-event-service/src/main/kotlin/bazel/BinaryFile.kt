@@ -1,7 +1,8 @@
 package bazel
 
+import bazel.handlers.BepEventHandlerChain
+import bazel.handlers.BepEventHandlerContext
 import bazel.messages.*
-import bazel.messages.handlers.RootBazelEventHandler
 import jetbrains.buildServer.messages.serviceMessages.ServiceMessage
 import java.nio.file.Path
 
@@ -10,14 +11,14 @@ class BinaryFile(
     private val _verbosity: Verbosity,
     private val _messageFactory: MessageFactory,
     private val _hierarchy: Hierarchy,
-    private val _binaryStream: BinaryFileStream,
-    private val _rootBazelEventHandler: RootBazelEventHandler,
+    private val _binaryStream: BinaryFileEventStream,
+    private val _bepEventHandlerChain: BepEventHandlerChain,
 ) {
     fun read(): AutoCloseable =
         _binaryStream.create(_eventFile).start {
             when (it) {
-                is BinaryFileStream.Result.Error -> onError(it.throwable)
-                is BinaryFileStream.Result.Event -> onEvent(it)
+                is BinaryFileEventStream.Result.Error -> onError(it.throwable)
+                is BinaryFileEventStream.Result.Event -> onEvent(it)
             }
         }
 
@@ -26,21 +27,21 @@ class BinaryFile(
         printMessage(error)
     }
 
-    private fun onEvent(event: BinaryFileStream.Result.Event) {
+    private fun onEvent(event: BinaryFileEventStream.Result.Event) {
         val ctx =
-            BazelEventHandlerContext(
-                _messageFactory,
-                _hierarchy,
+            BepEventHandlerContext(
                 _verbosity,
                 event.sequenceNumber,
-                bazelEvent = event.event,
+                messageFactory = _messageFactory,
+                hierarchy = _hierarchy,
+                event = event.event,
             ) { serviceMessage ->
                 printMessage(serviceMessage)
             }
-        val processed = _rootBazelEventHandler.handle(ctx)
+        val processed = _bepEventHandlerChain.handle(ctx)
         if (processed) {
             if (_verbosity.atLeast(Verbosity.Diagnostic)) {
-                printMessage(_messageFactory.createTraceMessage(ctx.bazelEvent.toString()))
+                printMessage(_messageFactory.createTraceMessage(ctx.event.toString()))
             }
         }
     }

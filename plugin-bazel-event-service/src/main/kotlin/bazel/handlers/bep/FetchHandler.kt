@@ -1,0 +1,47 @@
+package bazel.handlers.bep
+
+import bazel.Verbosity
+import bazel.atLeast
+import bazel.handlers.BepEventHandler
+import bazel.handlers.BepEventHandlerContext
+import bazel.messages.Color
+import bazel.messages.apply
+import bazel.messages.buildMessage
+
+class FetchHandler : BepEventHandler {
+    override fun handle(ctx: BepEventHandlerContext): Boolean {
+        if (!ctx.event.hasFetch()) {
+            return false
+        }
+        val event = ctx.event.fetch
+
+        val url =
+            if (ctx.event.hasId() && ctx.event.id.hasFetch()) {
+                ctx.event.id.fetch.url
+            } else {
+                "unknown url"
+            }
+
+        if (event.success && ctx.verbosity.atLeast(Verbosity.Detailed)) {
+            ctx.onNext(
+                ctx.messageFactory.createMessage(
+                    ctx
+                        .buildMessage()
+                        .append("Fetch \"${url}\"")
+                        .toString(),
+                ),
+            )
+        } else if (!event.success && ctx.verbosity.atLeast(Verbosity.Normal)) {
+            ctx.onNext(
+                ctx.messageFactory.createWarningMessage(
+                    ctx
+                        .buildMessage()
+                        .append("Fetch \"${url}\" - unsuccessful".apply(Color.Error))
+                        .toString(),
+                ),
+            )
+        }
+
+        return true
+    }
+}

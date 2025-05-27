@@ -1,6 +1,6 @@
 package bazel
 
-import bazel.messages.MessageFactoryImpl
+import bazel.messages.MessageFactory
 import io.mockk.*
 import org.testng.Assert
 import org.testng.annotations.BeforeMethod
@@ -36,7 +36,7 @@ class BazelRunnerTest {
         val eventFile = tempDir.toPath().resolve("events")
         val fixture =
             BazelRunner(
-                MessageFactoryImpl(),
+                MessageFactory(),
                 Verbosity.Normal,
                 commandFile,
                 0,

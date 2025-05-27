@@ -1,10 +1,10 @@
 package bazel.tests
 
 import bazel.Verbosity
-import bazel.messages.BazelEventHandlerContext
+import bazel.handlers.BepEventHandlerContext
+import bazel.handlers.bep.ProgressHandler
 import bazel.messages.Hierarchy
 import bazel.messages.MessageFactory
-import bazel.messages.handlers.ProgressHandler
 import com.google.devtools.build.lib.buildeventstream.BuildEventStreamProtos
 import io.mockk.MockKAnnotations
 import io.mockk.every
@@ -60,12 +60,12 @@ class ProgressHandlerTest {
     }
 
     private fun createContext(event: BuildEventStreamProtos.BuildEvent) =
-        BazelEventHandlerContext(
-            messageFactory,
-            hierarchy,
+        BepEventHandlerContext(
             Verbosity.Normal,
             sequenceNumber = 42,
-            bazelEvent = event,
+            messageFactory = messageFactory,
+            hierarchy = hierarchy,
+            event = event,
         ) {
             serviceMessages.add(it)
         }

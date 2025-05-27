@@ -1,11 +1,11 @@
 package bazel.tests
 
-import bazel.FileSystemService
 import bazel.Verbosity
-import bazel.messages.BazelEventHandlerContext
+import bazel.file.FileSystemService
+import bazel.handlers.BepEventHandlerContext
+import bazel.handlers.bep.TestResultHandler
 import bazel.messages.Hierarchy
 import bazel.messages.MessageFactory
-import bazel.messages.handlers.TestResultHandler
 import com.google.devtools.build.lib.buildeventstream.BuildEventStreamProtos
 import com.google.protobuf.ByteString
 import io.mockk.MockKAnnotations
@@ -86,12 +86,12 @@ class TestResultHandlerTest {
     private fun createContext(
         event: BuildEventStreamProtos.BuildEvent,
         verbosity: Verbosity,
-    ) = BazelEventHandlerContext(
-        messageFactory,
-        hierarchy,
+    ) = BepEventHandlerContext(
         verbosity,
         sequenceNumber = 42,
-        bazelEvent = event,
+        messageFactory = messageFactory,
+        hierarchy = hierarchy,
+        event = event,
     ) {
         serviceMessages.add(it)
     }
