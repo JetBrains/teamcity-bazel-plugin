@@ -107,9 +107,6 @@ private fun createBazelRunner(
             options.port,
             options.eventFile,
         )
-    val commandLine = runner.args.joinToString(" ") { if (it.contains(' ')) "\"$it\"" else it }
-    println("Starting: $commandLine")
-    println("in directory: ${runner.workingDirectory}")
     return runner
 }
 

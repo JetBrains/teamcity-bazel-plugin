@@ -60,6 +60,10 @@ class BazelRunner(
     val workingDirectory: File = File(".").absoluteFile
 
     fun run(): Result {
+        val commandLine = args.joinToString(" ") { if (it.contains(' ')) "\"$it\"" else it }
+        println("Starting: $commandLine")
+        println("in directory: $workingDirectory")
+
         val process =
             ProcessBuilder(args.toList())
                 .directory(workingDirectory)
