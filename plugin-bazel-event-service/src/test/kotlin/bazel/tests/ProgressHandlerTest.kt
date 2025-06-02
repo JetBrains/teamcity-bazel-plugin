@@ -1,8 +1,8 @@
 package bazel.tests
 
 import bazel.Verbosity
-import bazel.handlers.BepEventHandlerContext
-import bazel.handlers.bep.ProgressHandler
+import bazel.handlers.BuildEventHandlerContext
+import bazel.handlers.build.ProgressHandler
 import bazel.messages.Hierarchy
 import bazel.messages.MessageFactory
 import com.google.devtools.build.lib.buildeventstream.BuildEventStreamProtos
@@ -60,7 +60,7 @@ class ProgressHandlerTest {
     }
 
     private fun createContext(event: BuildEventStreamProtos.BuildEvent) =
-        BepEventHandlerContext(
+        BuildEventHandlerContext(
             Verbosity.Normal,
             sequenceNumber = 42,
             messageFactory = messageFactory,

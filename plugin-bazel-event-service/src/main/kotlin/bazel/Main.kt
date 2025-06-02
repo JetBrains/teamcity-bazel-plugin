@@ -1,6 +1,6 @@
 package bazel
 
-import bazel.handlers.BepEventHandlerChain
+import bazel.handlers.BuildEventHandlerChain
 import bazel.handlers.GrpcEventHandlerChain
 import bazel.messages.Hierarchy
 import bazel.messages.MessageFactory
@@ -42,7 +42,7 @@ private fun runBinaryFileMode(
         messageFactory,
         Hierarchy(),
         BinaryFileEventStream(),
-        BepEventHandlerChain(),
+        BuildEventHandlerChain(),
     ).read().use {
         val bazelRunner = createBazelRunner(options, messageFactory)
         val result = bazelRunner.run()

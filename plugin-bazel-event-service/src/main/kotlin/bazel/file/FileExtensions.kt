@@ -2,10 +2,10 @@ package bazel.file
 
 import bazel.Verbosity
 import bazel.atLeast
-import bazel.handlers.BepEventHandlerContext
+import bazel.handlers.BuildEventHandlerContext
 import java.io.InputStreamReader
 
-fun File.read(ctx: BepEventHandlerContext): String {
+fun File.read(ctx: BuildEventHandlerContext): String {
     try {
         return InputStreamReader(this.createStream()).use { it.readText() }
     } catch (ex: Exception) {
@@ -14,7 +14,7 @@ fun File.read(ctx: BepEventHandlerContext): String {
     }
 }
 
-fun File.readLines(ctx: BepEventHandlerContext): List<String> {
+fun File.readLines(ctx: BuildEventHandlerContext): List<String> {
     try {
         return InputStreamReader(this.createStream()).use { it.readLines() }
     } catch (ex: Exception) {
@@ -23,7 +23,7 @@ fun File.readLines(ctx: BepEventHandlerContext): List<String> {
     }
 }
 
-private fun BepEventHandlerContext.logError(
+private fun BuildEventHandlerContext.logError(
     message: String,
     error: Exception,
 ) {

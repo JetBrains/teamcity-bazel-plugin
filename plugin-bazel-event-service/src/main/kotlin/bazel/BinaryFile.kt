@@ -1,7 +1,7 @@
 package bazel
 
-import bazel.handlers.BepEventHandlerChain
-import bazel.handlers.BepEventHandlerContext
+import bazel.handlers.BuildEventHandlerChain
+import bazel.handlers.BuildEventHandlerContext
 import bazel.messages.*
 import jetbrains.buildServer.messages.serviceMessages.ServiceMessage
 import java.nio.file.Path
@@ -12,7 +12,7 @@ class BinaryFile(
     private val _messageFactory: MessageFactory,
     private val _hierarchy: Hierarchy,
     private val _binaryStream: BinaryFileEventStream,
-    private val _bepEventHandlerChain: BepEventHandlerChain,
+    private val _buildEventHandlerChain: BuildEventHandlerChain,
 ) {
     fun read(): AutoCloseable =
         _binaryStream.create(_eventFile).start {
@@ -29,7 +29,7 @@ class BinaryFile(
 
     private fun onEvent(event: BinaryFileEventStream.Result.Event) {
         val ctx =
-            BepEventHandlerContext(
+            BuildEventHandlerContext(
                 _verbosity,
                 event.sequenceNumber,
                 messageFactory = _messageFactory,
@@ -38,7 +38,7 @@ class BinaryFile(
             ) { serviceMessage ->
                 printMessage(serviceMessage)
             }
-        val processed = _bepEventHandlerChain.handle(ctx)
+        val processed = _buildEventHandlerChain.handle(ctx)
         if (processed) {
             if (_verbosity.atLeast(Verbosity.Diagnostic)) {
                 printMessage(_messageFactory.createTraceMessage(ctx.event.toString()))

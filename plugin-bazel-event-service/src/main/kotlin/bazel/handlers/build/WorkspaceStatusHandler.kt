@@ -1,24 +1,23 @@
-package bazel.handlers.bep
+package bazel.handlers.build
 
 import bazel.Verbosity
 import bazel.atLeast
-import bazel.handlers.BepEventHandler
-import bazel.handlers.BepEventHandlerContext
+import bazel.handlers.BuildEventHandler
+import bazel.handlers.BuildEventHandlerContext
 import bazel.messages.Color
 import bazel.messages.apply
 import bazel.messages.buildMessage
 import bazel.messages.joinToStringEscaped
-import kotlin.collections.iterator
 
-class BuildMetadataHandler : BepEventHandler {
-    override fun handle(ctx: BepEventHandlerContext): Boolean {
-        if (!ctx.event.hasBuildMetadata()) {
+class WorkspaceStatusHandler : BuildEventHandler {
+    override fun handle(ctx: BuildEventHandlerContext): Boolean {
+        if (!ctx.event.hasWorkspaceStatus()) {
             return false
         }
 
-        val event = ctx.event.buildMetadata
-        if (ctx.verbosity.atLeast(Verbosity.Verbose)) {
-            for (item in event.metadataMap) {
+        val status = ctx.event.workspaceStatus
+        if (ctx.verbosity.atLeast(Verbosity.Verbose) && status.itemCount > 0) {
+            for (item in status.itemList) {
                 ctx.onNext(
                     ctx.messageFactory.createMessage(
                         ctx

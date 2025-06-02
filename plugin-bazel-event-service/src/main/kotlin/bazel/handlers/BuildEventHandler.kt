@@ -8,11 +8,11 @@ import com.google.devtools.build.lib.buildeventstream.BuildEventStreamProtos
 import com.google.devtools.build.v1.StreamId
 import jetbrains.buildServer.messages.serviceMessages.ServiceMessage
 
-interface BepEventHandler {
-    fun handle(ctx: BepEventHandlerContext): Boolean
+interface BuildEventHandler {
+    fun handle(ctx: BuildEventHandlerContext): Boolean
 }
 
-data class BepEventHandlerContext(
+data class BuildEventHandlerContext(
     override val verbosity: Verbosity,
     override val sequenceNumber: Long,
     override val streamId: StreamId? = null,
@@ -26,7 +26,7 @@ data class BepEventHandlerContext(
             ctx: GrpcEventHandlerContext,
             hierarchy: Hierarchy,
             event: BuildEventStreamProtos.BuildEvent,
-        ) = BepEventHandlerContext(
+        ) = BuildEventHandlerContext(
             ctx.verbosity,
             ctx.sequenceNumber,
             ctx.streamId,

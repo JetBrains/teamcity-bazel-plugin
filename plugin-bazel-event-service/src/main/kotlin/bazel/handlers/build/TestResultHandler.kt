@@ -1,4 +1,4 @@
-package bazel.handlers.bep
+package bazel.handlers.build
 
 import bazel.Verbosity
 import bazel.atLeast
@@ -6,8 +6,8 @@ import bazel.file.File
 import bazel.file.FileConverter
 import bazel.file.FileSystemService
 import bazel.file.readLines
-import bazel.handlers.BepEventHandler
-import bazel.handlers.BepEventHandlerContext
+import bazel.handlers.BuildEventHandler
+import bazel.handlers.BuildEventHandlerContext
 import bazel.messages.Color
 import bazel.messages.TestStatusConverter
 import bazel.messages.apply
@@ -18,11 +18,11 @@ import java.time.Duration
 
 class TestResultHandler(
     private val _fileSystemService: FileSystemService,
-) : BepEventHandler {
+) : BuildEventHandler {
     private val fileConverter = FileConverter()
     private val testStatusConverter = TestStatusConverter()
 
-    override fun handle(ctx: BepEventHandlerContext): Boolean {
+    override fun handle(ctx: BuildEventHandlerContext): Boolean {
         if (!ctx.event.hasTestResult()) {
             return false
         }
@@ -104,7 +104,7 @@ class TestResultHandler(
     }
 
     private fun traceFile(
-        ctx: BepEventHandlerContext,
+        ctx: BuildEventHandlerContext,
         file: File,
         content: List<String>,
     ) {

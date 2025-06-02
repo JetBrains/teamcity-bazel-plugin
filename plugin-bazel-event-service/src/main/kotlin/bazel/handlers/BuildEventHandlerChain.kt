@@ -1,35 +1,35 @@
 package bazel.handlers
 
 import bazel.file.FileSystemService
-import bazel.handlers.bep.AbortedHandler
-import bazel.handlers.bep.ActionExecutedHandler
-import bazel.handlers.bep.BuildCompletedHandler
-import bazel.handlers.bep.BuildMetadataHandler
-import bazel.handlers.bep.BuildMetricsHandler
-import bazel.handlers.bep.BuildStartedHandler
-import bazel.handlers.bep.BuildToolLogsHandler
-import bazel.handlers.bep.ConfigurationHandler
-import bazel.handlers.bep.ConvenienceSymlinkHandler
-import bazel.handlers.bep.ExecRequestHandler
-import bazel.handlers.bep.FetchHandler
-import bazel.handlers.bep.NamedSetOfFilesHandler
-import bazel.handlers.bep.OptionsParsedHandler
-import bazel.handlers.bep.PatternExpandedHandler
-import bazel.handlers.bep.ProgressHandler
-import bazel.handlers.bep.StructuredCommandLineHandler
-import bazel.handlers.bep.TargetCompletedHandler
-import bazel.handlers.bep.TargetConfiguredHandler
-import bazel.handlers.bep.TargetSummaryHandler
-import bazel.handlers.bep.TestProgressHandler
-import bazel.handlers.bep.TestResultHandler
-import bazel.handlers.bep.TestSummaryHandler
-import bazel.handlers.bep.UnknownEventHandler
-import bazel.handlers.bep.UnstructuredCommandLineHandler
-import bazel.handlers.bep.WorkspaceConfigHandler
-import bazel.handlers.bep.WorkspaceStatusHandler
+import bazel.handlers.build.AbortedHandler
+import bazel.handlers.build.ActionExecutedHandler
+import bazel.handlers.build.BuildCompletedHandler
+import bazel.handlers.build.BuildMetadataHandler
+import bazel.handlers.build.BuildMetricsHandler
+import bazel.handlers.build.BuildStartedHandler
+import bazel.handlers.build.BuildToolLogsHandler
+import bazel.handlers.build.ConfigurationHandler
+import bazel.handlers.build.ConvenienceSymlinkHandler
+import bazel.handlers.build.ExecRequestHandler
+import bazel.handlers.build.FetchHandler
+import bazel.handlers.build.NamedSetOfFilesHandler
+import bazel.handlers.build.OptionsParsedHandler
+import bazel.handlers.build.PatternExpandedHandler
+import bazel.handlers.build.ProgressHandler
+import bazel.handlers.build.StructuredCommandLineHandler
+import bazel.handlers.build.TargetCompletedHandler
+import bazel.handlers.build.TargetConfiguredHandler
+import bazel.handlers.build.TargetSummaryHandler
+import bazel.handlers.build.TestProgressHandler
+import bazel.handlers.build.TestResultHandler
+import bazel.handlers.build.TestSummaryHandler
+import bazel.handlers.build.UnknownEventHandler
+import bazel.handlers.build.UnstructuredCommandLineHandler
+import bazel.handlers.build.WorkspaceConfigHandler
+import bazel.handlers.build.WorkspaceStatusHandler
 
-class BepEventHandlerChain : BepEventHandler {
-    override fun handle(ctx: BepEventHandlerContext): Boolean {
+class BuildEventHandlerChain : BuildEventHandler {
+    override fun handle(ctx: BuildEventHandlerContext): Boolean {
         val event = ctx.event
         handlers.firstOrNull { it.handle(ctx) } ?: UnknownEventHandler().handle(ctx)
 
@@ -40,7 +40,7 @@ class BepEventHandlerChain : BepEventHandler {
     }
 
     companion object {
-        private val handlers: List<BepEventHandler> =
+        private val handlers: List<BuildEventHandler> =
             listOf(
                 // Progress progress = 3;
                 ProgressHandler(),

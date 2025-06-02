@@ -1,14 +1,14 @@
-package bazel.handlers.bep
+package bazel.handlers.build
 
-import bazel.handlers.BepEventHandler
-import bazel.handlers.BepEventHandlerContext
+import bazel.handlers.BuildEventHandler
+import bazel.handlers.BuildEventHandlerContext
 import bazel.messages.Color
 import bazel.messages.apply
 import bazel.messages.buildMessage
 import com.google.devtools.build.lib.buildeventstream.BuildEventStreamProtos
 
-class AbortedHandler : BepEventHandler {
-    override fun handle(ctx: BepEventHandlerContext): Boolean {
+class AbortedHandler : BuildEventHandler {
+    override fun handle(ctx: BuildEventHandlerContext): Boolean {
         if (!ctx.event.hasAborted()) {
             return false
         }

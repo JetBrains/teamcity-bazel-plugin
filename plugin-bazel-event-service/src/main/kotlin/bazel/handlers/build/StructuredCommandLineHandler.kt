@@ -1,13 +1,13 @@
-package bazel.handlers.bep
+package bazel.handlers.build
 
 import bazel.Verbosity
 import bazel.atLeast
-import bazel.handlers.BepEventHandler
-import bazel.handlers.BepEventHandlerContext
+import bazel.handlers.BuildEventHandler
+import bazel.handlers.BuildEventHandlerContext
 import bazel.messages.buildMessage
 
-class StructuredCommandLineHandler : BepEventHandler {
-    override fun handle(ctx: BepEventHandlerContext): Boolean {
+class StructuredCommandLineHandler : BuildEventHandler {
+    override fun handle(ctx: BuildEventHandlerContext): Boolean {
         if (!ctx.event.hasStructuredCommandLine()) {
             return false
         }

@@ -19,7 +19,7 @@ class GrpcEventHandlerChain : GrpcEventHandler {
                 BuildEnqueuedHandler(),
                 InvocationAttemptStartedHandler(),
                 InvocationAttemptFinishedHandler(),
-                PackedBazelEventHandler(BepEventHandlerChain(), Hierarchy()),
+                PackedBazelEventHandler(BuildEventHandlerChain(), Hierarchy()),
                 BuildFinishedHandler(),
                 ComponentStreamFinishedHandler(),
                 ConsoleOutputHandler(),

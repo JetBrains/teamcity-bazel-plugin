@@ -1,18 +1,18 @@
-package bazel.handlers.bep
+package bazel.handlers.build
 
 import bazel.Verbosity
-import bazel.handlers.BepEventHandler
-import bazel.handlers.BepEventHandlerContext
+import bazel.handlers.BuildEventHandler
+import bazel.handlers.BuildEventHandlerContext
 import bazel.messages.Color
 import bazel.messages.TestStatusConverter
 import bazel.messages.apply
 import bazel.messages.buildMessage
 import bazel.messages.toColor
 
-class TestSummaryHandler : BepEventHandler {
+class TestSummaryHandler : BuildEventHandler {
     private val testStatusConverter = TestStatusConverter()
 
-    override fun handle(ctx: BepEventHandlerContext): Boolean {
+    override fun handle(ctx: BuildEventHandlerContext): Boolean {
         if (!ctx.event.hasTestSummary() || !ctx.event.id.hasTestSummary()) {
             return false
         }
