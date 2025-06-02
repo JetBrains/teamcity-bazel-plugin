@@ -9,7 +9,7 @@ import io.grpc.Status
 import java.util.logging.Level
 import java.util.logging.Logger
 
-class GRpcServerLoggingInterceptor : ServerInterceptor {
+class GrpcServerLoggingInterceptor : ServerInterceptor {
     override fun <ReqT : Any?, RespT : Any?> interceptCall(
         call: ServerCall<ReqT?, RespT?>?,
         headers: Metadata?,
@@ -33,6 +33,6 @@ class GRpcServerLoggingInterceptor : ServerInterceptor {
     }
 
     companion object {
-        private val logger = Logger.getLogger(GRpcServerLoggingInterceptor::class.java.name)
+        private val logger = Logger.getLogger(GrpcServerLoggingInterceptor::class.java.name)
     }
 }

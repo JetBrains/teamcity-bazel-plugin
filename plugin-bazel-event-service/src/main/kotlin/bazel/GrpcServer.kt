@@ -7,7 +7,7 @@ import java.util.concurrent.atomic.AtomicInteger
 import java.util.logging.Level
 import java.util.logging.Logger
 
-class GRpcServer(
+class GrpcServer(
     private val _port: Int,
 ) : ServerTransportFilter() {
     private val connectionCounter = AtomicInteger()
@@ -17,7 +17,7 @@ class GRpcServer(
             ServerBuilder
                 .forPort(_port)
                 .addTransportFilter(this)
-                .intercept(GRpcServerLoggingInterceptor())
+                .intercept(GrpcServerLoggingInterceptor())
                 .addService(bindableService)
                 .build()
                 .start()
@@ -48,6 +48,6 @@ class GRpcServer(
     }
 
     companion object {
-        private val logger = Logger.getLogger(GRpcServer::class.java.name)
+        private val logger = Logger.getLogger(GrpcServer::class.java.name)
     }
 }

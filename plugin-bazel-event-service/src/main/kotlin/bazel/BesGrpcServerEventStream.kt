@@ -12,7 +12,7 @@ import java.util.concurrent.atomic.AtomicReference
 import java.util.logging.Level
 import java.util.logging.Logger
 
-class BesServerEventStream(
+class BesGrpcServerEventStream(
     private val onEvent: (Result) -> Unit,
 ) : PublishBuildEventGrpc.PublishBuildEventImplBase() {
     sealed interface Result {
@@ -67,7 +67,7 @@ class BesServerEventStream(
     }
 
     companion object {
-        private val logger = Logger.getLogger(BesServerEventStream::class.java.name)
+        private val logger = Logger.getLogger(BesGrpcServerEventStream::class.java.name)
     }
 
     private class PublishEventObserver(

@@ -23,7 +23,7 @@ data class BepEventHandlerContext(
 ) : MessageBuilderContext {
     companion object {
         fun fromBesContext(
-            ctx: BesEventHandlerContext,
+            ctx: GrpcEventHandlerContext,
             hierarchy: Hierarchy,
             event: BuildEventStreamProtos.BuildEvent,
         ) = BepEventHandlerContext(

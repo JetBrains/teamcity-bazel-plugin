@@ -50,11 +50,11 @@ class MainKtTest {
 
     @Test
     fun shouldSubscribeToBuildEventServer() {
-        mockkConstructor(GRpcServer::class)
+        mockkConstructor(GrpcServer::class)
         val disposed = AtomicBoolean(false)
 
-        mockkConstructor(BesServer::class)
-        every { anyConstructed<BesServer>().start() } answers {
+        mockkConstructor(BesGrpcServer::class)
+        every { anyConstructed<BesGrpcServer>().start() } answers {
             AutoCloseable { disposed.set(true) }
         }
 
@@ -66,7 +66,7 @@ class MainKtTest {
         Assert.assertTrue(disposed.get())
 
         verify(exactly = 1) { anyConstructed<BazelRunner>().run() }
-        verify(exactly = 1) { anyConstructed<BesServer>().start() }
+        verify(exactly = 1) { anyConstructed<BesGrpcServer>().start() }
     }
 
     object ExitException : RuntimeException()

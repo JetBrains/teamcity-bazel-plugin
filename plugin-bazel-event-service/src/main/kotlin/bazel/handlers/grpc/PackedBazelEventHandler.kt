@@ -1,9 +1,9 @@
-package bazel.handlers.bes
+package bazel.handlers.grpc
 
 import bazel.handlers.BepEventHandlerChain
 import bazel.handlers.BepEventHandlerContext
-import bazel.handlers.BesEventHandler
-import bazel.handlers.BesEventHandlerContext
+import bazel.handlers.GrpcEventHandler
+import bazel.handlers.GrpcEventHandlerContext
 import bazel.messages.Hierarchy
 import com.google.devtools.build.lib.buildeventstream.BuildEventStreamProtos
 import java.util.logging.Level
@@ -12,8 +12,8 @@ import java.util.logging.Logger
 class PackedBazelEventHandler(
     val bazelEventHandler: BepEventHandlerChain,
     val hierarchy: Hierarchy,
-) : BesEventHandler {
-    override fun handle(ctx: BesEventHandlerContext): Boolean {
+) : GrpcEventHandler {
+    override fun handle(ctx: GrpcEventHandlerContext): Boolean {
         if (!ctx.event.hasBazelEvent()) {
             return false
         }

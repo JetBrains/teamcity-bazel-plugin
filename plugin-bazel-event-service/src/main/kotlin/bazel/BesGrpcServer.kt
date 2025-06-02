@@ -1,26 +1,26 @@
 package bazel
 
-import bazel.handlers.BesEventHandlerChain
-import bazel.handlers.BesEventHandlerContext
+import bazel.handlers.GrpcEventHandlerChain
+import bazel.handlers.GrpcEventHandlerContext
 import bazel.messages.*
 import jetbrains.buildServer.messages.serviceMessages.ServiceMessage
 import java.util.Date
 
-class BesServer(
+class BesGrpcServer(
     private val port: Int,
     private val _verbosity: Verbosity,
     private val _messageFactory: MessageFactory,
-    private val _buildEventHandler: BesEventHandlerChain,
+    private val _buildEventHandler: GrpcEventHandlerChain,
 ) {
     var hasStarted = false
 
     fun start() =
-        GRpcServer(port)
+        GrpcServer(port)
             .start(
-                BesServerEventStream {
+                BesGrpcServerEventStream {
                     when (it) {
-                        is BesServerEventStream.Result.Event -> onEvent(it)
-                        is BesServerEventStream.Result.Error -> onError(it.throwable)
+                        is BesGrpcServerEventStream.Result.Event -> onEvent(it)
+                        is BesGrpcServerEventStream.Result.Error -> onError(it.throwable)
                     }
                 },
             )
@@ -30,9 +30,9 @@ class BesServer(
         printMessage(error)
     }
 
-    private fun onEvent(event: BesServerEventStream.Result.Event) {
+    private fun onEvent(event: BesGrpcServerEventStream.Result.Event) {
         val ctx =
-            BesEventHandlerContext(
+            GrpcEventHandlerContext(
                 _verbosity,
                 event.sequenceNumber,
                 event.streamId,
@@ -55,7 +55,7 @@ class BesServer(
     }
 
     private fun updateHeader(
-        event: BesServerEventStream.Result.Event,
+        event: BesGrpcServerEventStream.Result.Event,
         message: ServiceMessage,
     ): ServiceMessage {
         if (message.flowId.isNullOrEmpty()) {

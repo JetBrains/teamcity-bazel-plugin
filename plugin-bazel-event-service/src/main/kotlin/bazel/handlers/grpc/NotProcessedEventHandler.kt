@@ -1,12 +1,12 @@
-package bazel.handlers.bes
+package bazel.handlers.grpc
 
-import bazel.handlers.BesEventHandler
-import bazel.handlers.BesEventHandlerContext
+import bazel.handlers.GrpcEventHandler
+import bazel.handlers.GrpcEventHandlerContext
 import java.util.logging.Level
 import java.util.logging.Logger
 
-class NotProcessedEventHandler : BesEventHandler {
-    override fun handle(ctx: BesEventHandlerContext): Boolean {
+class NotProcessedEventHandler : GrpcEventHandler {
+    override fun handle(ctx: GrpcEventHandlerContext): Boolean {
         logger.log(Level.SEVERE, "Unknown event type: ${ctx.event}")
         return false
     }

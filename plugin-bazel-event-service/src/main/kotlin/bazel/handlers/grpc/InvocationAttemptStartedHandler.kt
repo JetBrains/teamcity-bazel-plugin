@@ -1,13 +1,13 @@
-package bazel.handlers.bes
+package bazel.handlers.grpc
 
 import bazel.Verbosity
 import bazel.atLeast
-import bazel.handlers.BesEventHandler
-import bazel.handlers.BesEventHandlerContext
+import bazel.handlers.GrpcEventHandler
+import bazel.handlers.GrpcEventHandlerContext
 import bazel.messages.buildMessage
 
-class InvocationAttemptStartedHandler : BesEventHandler {
-    override fun handle(ctx: BesEventHandlerContext): Boolean {
+class InvocationAttemptStartedHandler : GrpcEventHandler {
+    override fun handle(ctx: GrpcEventHandlerContext): Boolean {
         if (!ctx.event.hasInvocationAttemptStarted()) {
             return false
         }

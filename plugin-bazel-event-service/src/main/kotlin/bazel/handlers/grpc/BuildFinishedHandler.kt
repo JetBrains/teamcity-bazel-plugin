@@ -1,15 +1,15 @@
-package bazel.handlers.bes
+package bazel.handlers.grpc
 
-import bazel.handlers.BesEventHandler
-import bazel.handlers.BesEventHandlerContext
+import bazel.handlers.GrpcEventHandler
+import bazel.handlers.GrpcEventHandlerContext
 import bazel.messages.BuildStatusFormatter
 import bazel.messages.Color
 import bazel.messages.apply
 import bazel.messages.buildMessage
 import com.google.devtools.build.v1.BuildStatus
 
-class BuildFinishedHandler : BesEventHandler {
-    override fun handle(ctx: BesEventHandlerContext): Boolean {
+class BuildFinishedHandler : GrpcEventHandler {
+    override fun handle(ctx: GrpcEventHandlerContext): Boolean {
         if (!ctx.event.hasBuildFinished()) {
             return false
         }

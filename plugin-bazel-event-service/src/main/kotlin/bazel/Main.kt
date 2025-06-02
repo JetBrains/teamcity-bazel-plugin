@@ -1,7 +1,7 @@
 package bazel
 
 import bazel.handlers.BepEventHandlerChain
-import bazel.handlers.BesEventHandlerChain
+import bazel.handlers.GrpcEventHandlerChain
 import bazel.messages.Hierarchy
 import bazel.messages.MessageFactory
 import java.util.logging.ConsoleHandler
@@ -27,7 +27,7 @@ fun main(args: Array<String>) {
     if (options.eventFile != null && options.bazelCommandlineFile != null) {
         runBinaryFileMode(options, messageFactory)
     } else {
-        runBesServerMode(options, messageFactory)
+        runBesGrpcServerMode(options, messageFactory)
     }
 }
 
@@ -54,17 +54,17 @@ private fun runBinaryFileMode(
     exit(finalExitCode)
 }
 
-private fun runBesServerMode(
+private fun runBesGrpcServerMode(
     options: BazelOptions,
     messageFactory: MessageFactory,
 ) {
     var finalExitCode = 0
     val server =
-        BesServer(
+        BesGrpcServer(
             options.port,
             options.verbosity,
             messageFactory,
-            BesEventHandlerChain(),
+            GrpcEventHandlerChain(),
         )
 
     try {
