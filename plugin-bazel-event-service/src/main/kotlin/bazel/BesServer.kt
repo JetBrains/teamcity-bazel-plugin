@@ -10,7 +10,6 @@ class BesServer(
     private val port: Int,
     private val _verbosity: Verbosity,
     private val _messageFactory: MessageFactory,
-    private val _hierarchy: Hierarchy,
     private val _buildEventHandler: BesEventHandlerChain,
 ) {
     var hasStarted = false

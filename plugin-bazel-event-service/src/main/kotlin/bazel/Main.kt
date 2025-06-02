@@ -64,7 +64,6 @@ private fun runBesServerMode(
             options.port,
             options.verbosity,
             messageFactory,
-            Hierarchy(),
             BesEventHandlerChain(),
         )
 
