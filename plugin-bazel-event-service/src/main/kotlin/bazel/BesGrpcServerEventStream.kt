@@ -8,7 +8,6 @@ import com.google.devtools.build.v1.PublishLifecycleEventRequest
 import com.google.devtools.build.v1.StreamId
 import com.google.protobuf.Empty
 import io.grpc.stub.StreamObserver
-import java.util.concurrent.atomic.AtomicReference
 import java.util.logging.Level
 import java.util.logging.Logger
 
@@ -17,7 +16,6 @@ class BesGrpcServerEventStream(
 ) : PublishBuildEventGrpc.PublishBuildEventImplBase() {
     sealed interface Result {
         data class Event(
-            val projectId: String,
             val sequenceNumber: Long,
             val streamId: StreamId,
             val event: BuildEvent,
@@ -28,8 +26,6 @@ class BesGrpcServerEventStream(
         ) : Result
     }
 
-    private val projectId = AtomicReference("")
-
     // BuildEvents are used to declare the beginning and end of major portions of a Build
     override fun publishLifecycleEvent(
         request: PublishLifecycleEventRequest?,
@@ -37,12 +33,9 @@ class BesGrpcServerEventStream(
     ) {
         logger.log(Level.FINE, "publishLifecycleEvent: $request")
 
-        projectId.compareAndSet("", request?.projectId ?: "")
-
         if (request?.hasBuildEvent() == true) {
             onEvent(
                 Result.Event(
-                    projectId.get(),
                     request.buildEvent.sequenceNumber,
                     request.buildEvent.streamId,
                     request.buildEvent.event,
@@ -63,7 +56,7 @@ class BesGrpcServerEventStream(
         responseObserver: StreamObserver<PublishBuildToolEventStreamResponse>,
     ): StreamObserver<PublishBuildToolEventStreamRequest> {
         logger.log(Level.FINE, "publishBuildToolEventStream: $responseObserver")
-        return PublishEventObserver(projectId.get(), responseObserver, onEvent)
+        return PublishEventObserver(responseObserver, onEvent)
     }
 
     companion object {
@@ -71,7 +64,6 @@ class BesGrpcServerEventStream(
     }
 
     private class PublishEventObserver(
-        private val _projectId: String,
         private val _responseObserver: StreamObserver<PublishBuildToolEventStreamResponse>,
         private val onEvent: (Result) -> Unit,
     ) : StreamObserver<PublishBuildToolEventStreamRequest> {
@@ -90,7 +82,6 @@ class BesGrpcServerEventStream(
             if (value.hasOrderedBuildEvent() && value.orderedBuildEvent.hasEvent()) {
                 onEvent(
                     Result.Event(
-                        _projectId,
                         value.orderedBuildEvent.sequenceNumber,
                         value.orderedBuildEvent.streamId,
                         value.orderedBuildEvent.event,
