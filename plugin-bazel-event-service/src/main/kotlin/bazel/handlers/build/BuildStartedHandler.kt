@@ -11,24 +11,23 @@ class BuildStartedHandler : BuildEventHandler {
         if (!ctx.event.hasStarted()) {
             return false
         }
-
         val event = ctx.event.started
-        val description = event.command
+        ctx.targetRegistry.commandName = event.command
+
+        if (!ctx.verbosity.atLeast(Verbosity.Normal)) {
+            return true
+        }
+
         val details =
             ctx
                 .buildMessage(false)
-                .append(description, Verbosity.Normal)
+                .append(event.command, Verbosity.Normal)
                 .append(" v${event.buildToolVersion}", Verbosity.Verbose)
                 .append(", directory: \"${event.workingDirectory}\"", Verbosity.Verbose)
                 .append(", workspace: \"${event.workspaceDirectory}\"", Verbosity.Verbose)
                 .toString()
 
-        if (ctx.verbosity.atLeast(Verbosity.Normal)) {
-            ctx.onNext(ctx.messageFactory.createBlockOpened(description, details))
-            ctx.hierarchy.createNode(ctx.event.id, ctx.event.childrenList, description) {
-                ctx.onNext(ctx.messageFactory.createBlockClosed(description))
-            }
-        }
+        ctx.onNext(ctx.messageFactory.createBlockOpened(ctx.targetRegistry.commandName, details))
 
         return true
     }

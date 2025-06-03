@@ -2,8 +2,8 @@ package bazel
 
 import bazel.handlers.BuildEventHandlerChain
 import bazel.handlers.GrpcEventHandlerChain
-import bazel.messages.Hierarchy
 import bazel.messages.MessageFactory
+import bazel.messages.TargetRegistry
 import java.util.logging.ConsoleHandler
 import java.util.logging.LogManager
 import java.util.logging.Logger
@@ -40,7 +40,7 @@ private fun runBinaryFileMode(
         options.eventFile!!,
         options.verbosity,
         messageFactory,
-        Hierarchy(),
+        TargetRegistry(),
         BinaryFileEventStream(),
         BuildEventHandlerChain(),
     ).read().use {

@@ -3,8 +3,8 @@ package bazel.tests
 import bazel.Verbosity
 import bazel.handlers.BuildEventHandlerContext
 import bazel.handlers.build.ProgressHandler
-import bazel.messages.Hierarchy
 import bazel.messages.MessageFactory
+import bazel.messages.TargetRegistry
 import com.google.devtools.build.lib.buildeventstream.BuildEventStreamProtos
 import io.mockk.MockKAnnotations
 import io.mockk.every
@@ -22,7 +22,7 @@ class ProgressHandlerTest {
     private lateinit var messageFactory: MessageFactory
 
     @MockK
-    private lateinit var hierarchy: Hierarchy
+    private lateinit var targetRegistry: TargetRegistry
 
     @BeforeMethod
     fun setUp() {
@@ -64,7 +64,7 @@ class ProgressHandlerTest {
             Verbosity.Normal,
             sequenceNumber = 42,
             messageFactory = messageFactory,
-            hierarchy = hierarchy,
+            targetRegistry = targetRegistry,
             event = event,
         ) {
             serviceMessages.add(it)

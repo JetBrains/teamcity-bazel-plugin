@@ -30,12 +30,7 @@ import bazel.handlers.build.WorkspaceStatusHandler
 
 class BuildEventHandlerChain : BuildEventHandler {
     override fun handle(ctx: BuildEventHandlerContext): Boolean {
-        val event = ctx.event
         handlers.firstOrNull { it.handle(ctx) } ?: UnknownEventHandler().handle(ctx)
-
-        ctx.hierarchy.createNode(event.id, event.childrenList, "")
-        ctx.hierarchy.tryCloseNode(event.id)
-
         return true
     }
 

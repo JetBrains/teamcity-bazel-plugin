@@ -4,8 +4,8 @@ import bazel.Verbosity
 import bazel.file.FileSystemService
 import bazel.handlers.BuildEventHandlerContext
 import bazel.handlers.build.TestResultHandler
-import bazel.messages.Hierarchy
 import bazel.messages.MessageFactory
+import bazel.messages.TargetRegistry
 import com.google.devtools.build.lib.buildeventstream.BuildEventStreamProtos
 import com.google.protobuf.ByteString
 import io.mockk.MockKAnnotations
@@ -26,7 +26,7 @@ class TestResultHandlerTest {
     private lateinit var messageFactory: MessageFactory
 
     @MockK
-    private lateinit var hierarchy: Hierarchy
+    private lateinit var targetRegistry: TargetRegistry
 
     @MockK
     private lateinit var fileSystemService: FileSystemService
@@ -90,7 +90,7 @@ class TestResultHandlerTest {
         verbosity,
         sequenceNumber = 42,
         messageFactory = messageFactory,
-        hierarchy = hierarchy,
+        targetRegistry = targetRegistry,
         event = event,
     ) {
         serviceMessages.add(it)

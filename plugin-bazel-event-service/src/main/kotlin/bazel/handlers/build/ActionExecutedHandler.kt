@@ -21,8 +21,6 @@ class ActionExecutedHandler : BuildEventHandler {
 
         val event = ctx.event.action
         val actionName = "Action \"${event.type}\""
-        ctx.hierarchy.createNode(ctx.event.id, ctx.event.childrenList, actionName)
-
         val details = StringBuilder()
         details.appendLine(event.commandLineList.joinToStringEscaped().trim())
 

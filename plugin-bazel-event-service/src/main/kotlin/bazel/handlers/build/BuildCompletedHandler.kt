@@ -65,6 +65,10 @@ class BuildCompletedHandler : BuildEventHandler {
             }
         }
 
+        if (ctx.verbosity.atLeast(Verbosity.Normal)) {
+            ctx.onNext(ctx.messageFactory.createBlockClosed(ctx.targetRegistry.commandName))
+        }
+
         return true
     }
 }

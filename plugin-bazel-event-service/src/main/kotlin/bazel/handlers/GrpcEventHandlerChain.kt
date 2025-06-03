@@ -8,7 +8,7 @@ import bazel.handlers.grpc.InvocationAttemptFinishedHandler
 import bazel.handlers.grpc.InvocationAttemptStartedHandler
 import bazel.handlers.grpc.NotProcessedEventHandler
 import bazel.handlers.grpc.PackedBazelEventHandler
-import bazel.messages.Hierarchy
+import bazel.messages.TargetRegistry
 
 class GrpcEventHandlerChain : GrpcEventHandler {
     override fun handle(ctx: GrpcEventHandlerContext): Boolean = handlers.firstOrNull { it.handle(ctx) } != null
@@ -19,7 +19,7 @@ class GrpcEventHandlerChain : GrpcEventHandler {
                 BuildEnqueuedHandler(),
                 InvocationAttemptStartedHandler(),
                 InvocationAttemptFinishedHandler(),
-                PackedBazelEventHandler(BuildEventHandlerChain(), Hierarchy()),
+                PackedBazelEventHandler(BuildEventHandlerChain(), TargetRegistry()),
                 BuildFinishedHandler(),
                 ComponentStreamFinishedHandler(),
                 ConsoleOutputHandler(),

@@ -16,11 +16,11 @@ class TargetCompletedHandler : BuildEventHandler {
         }
 
         val completed = ctx.event.completed
-        ctx.hierarchy.tryCloseNode(ctx.event.id)?.let {
+        ctx.targetRegistry.getTarget(ctx.event.id)?.let { target ->
             val description =
                 ctx
                     .buildMessage()
-                    .append(it.description)
+                    .append(target.description)
                     .append(
                         if (completed.success) {
                             " completed"

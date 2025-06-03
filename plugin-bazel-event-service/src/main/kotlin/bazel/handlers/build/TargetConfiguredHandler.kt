@@ -21,7 +21,8 @@ class TargetConfiguredHandler : BuildEventHandler {
                 .buildMessage(false)
                 .append("Target ${event.targetKind} \"${id.targetConfigured.label}\"".apply(Color.BuildStage))
                 .toString()
-        ctx.hierarchy.createNode(id, ctx.event.childrenList, targetName)
+
+        ctx.targetRegistry.registerTarget(id, targetName)
         if (ctx.verbosity.atLeast(Verbosity.Detailed)) {
             ctx.onNext(
                 ctx.messageFactory.createMessage(

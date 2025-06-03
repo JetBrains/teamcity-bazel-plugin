@@ -10,7 +10,7 @@ class BinaryFile(
     private val _eventFile: Path,
     private val _verbosity: Verbosity,
     private val _messageFactory: MessageFactory,
-    private val _hierarchy: Hierarchy,
+    private val _targetRegistry: TargetRegistry,
     private val _binaryStream: BinaryFileEventStream,
     private val _buildEventHandlerChain: BuildEventHandlerChain,
 ) {
@@ -33,7 +33,7 @@ class BinaryFile(
                 _verbosity,
                 event.sequenceNumber,
                 messageFactory = _messageFactory,
-                hierarchy = _hierarchy,
+                targetRegistry = _targetRegistry,
                 event = event.event,
             ) { serviceMessage ->
                 printMessage(serviceMessage)

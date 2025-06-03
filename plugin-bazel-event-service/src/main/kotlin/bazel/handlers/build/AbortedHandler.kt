@@ -13,24 +13,25 @@ class AbortedHandler : BuildEventHandler {
             return false
         }
         val aborted = ctx.event.aborted
-        val reason = formatAbortReason(aborted.reason)
-        ctx.hierarchy.tryAbortNode(ctx.event.id)?.let {
-            if (it.description.isNotEmpty()) {
-                ctx.onNext(
-                    ctx.messageFactory
-                        .createMessage(
-                            ctx
-                                .buildMessage(false)
-                                .append(it.description)
-                                .append(" aborted.".apply(Color.Error))
-                                .append(" $reason")
-                                .append(if (aborted.description.isNotBlank()) ": ${aborted.description}" else ".")
-                                .toString(),
-                        ),
-                )
+        if (ctx.event.id.hasTargetConfigured()) {
+            ctx.targetRegistry.getTarget(ctx.event.id)?.let { target ->
+                val reason = formatAbortReason(aborted.reason)
+                if (target.description.isNotEmpty()) {
+                    ctx.onNext(
+                        ctx.messageFactory
+                            .createMessage(
+                                ctx
+                                    .buildMessage(false)
+                                    .append(target.description)
+                                    .append(" aborted.".apply(Color.Error))
+                                    .append(" $reason")
+                                    .append(if (aborted.description.isNotBlank()) ": ${aborted.description}" else ".")
+                                    .toString(),
+                            ),
+                    )
+                }
             }
         }
-
         return true
     }
 
