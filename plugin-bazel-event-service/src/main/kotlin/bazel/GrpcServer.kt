@@ -1,11 +1,10 @@
 package bazel
 
+import bazel.messages.MessageFactory
 import io.grpc.Attributes
 import io.grpc.ServerBuilder
 import io.grpc.ServerTransportFilter
 import java.util.concurrent.atomic.AtomicInteger
-import java.util.logging.Level
-import java.util.logging.Logger
 
 class GrpcServer(
     private val _port: Int,
@@ -24,14 +23,14 @@ class GrpcServer(
                 .start()
         port = server.port
 
-        logger.log(Level.INFO, "Server started, listening on {0}", port.toString())
+        printTraceMessage("Server started, listening on $port")
         return AutoCloseable {
-            logger.log(Level.INFO, "Initiating server termination..")
+            printTraceMessage("Initiating server termination..")
             server.let {
                 it.shutdownNow()
                 it.awaitTermination()
             }
-            logger.log(Level.INFO, "Server is shutdown")
+            printTraceMessage("Server is shutdown")
         }
     }
 
@@ -46,10 +45,10 @@ class GrpcServer(
     }
 
     private fun connectionCounterChanged(connectionCounter: Int) {
-        logger.log(Level.INFO, "Server connections changed: {0}", connectionCounter)
+        printTraceMessage("Server connections changed: $connectionCounter")
     }
 
-    companion object {
-        private val logger = Logger.getLogger(GrpcServer::class.java.name)
+    private fun printTraceMessage(message: String) {
+        println(MessageFactory.createTraceMessage(message).toString())
     }
 }

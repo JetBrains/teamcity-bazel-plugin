@@ -1,5 +1,6 @@
 package bazel
 
+import bazel.messages.MessageFactory
 import com.google.devtools.build.lib.buildeventstream.BuildEventStreamProtos
 import java.nio.channels.Channels
 import java.nio.channels.FileChannel
@@ -10,13 +11,12 @@ import java.nio.file.StandardWatchEventKinds.ENTRY_CREATE
 import java.nio.file.StandardWatchEventKinds.ENTRY_MODIFY
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicBoolean
-import java.util.logging.Logger
 import kotlin.concurrent.thread
 import kotlin.io.path.exists
 
 class BinaryFileEventStream {
     fun create(binaryFile: Path): Listener {
-        logger.info("Reading Bazel events from \"$binaryFile\"...")
+        printTraceMessage("Reading Bazel events from \"$binaryFile\"...")
         return Listener(binaryFile)
     }
 
@@ -55,7 +55,7 @@ class BinaryFileEventStream {
 
                 do {
                     if (channel == null && binaryFile.exists()) {
-                        logger.info("Opening \"$binaryFile\" for reading...")
+                        printTraceMessage("Opening \"$binaryFile\" for reading...")
                         channel = FileChannel.open(binaryFile, StandardOpenOption.READ)
                     } else if (channel != null) {
                         readBazelEvents(onEvent, channel)
@@ -70,9 +70,9 @@ class BinaryFileEventStream {
                 channel?.let { readBazelEvents(onEvent, it) }
 
                 if (channel == null) {
-                    logger.warning("Bazel event file was not found or is not readable.")
+                    printErrorMessage("Bazel event file was not found or is not readable.")
                 } else {
-                    logger.info("Bazel event stream has been completed")
+                    printTraceMessage("Bazel event stream has been completed")
                 }
             } catch (ex: Exception) {
                 onEvent(Result.Error(ex))
@@ -102,6 +102,13 @@ class BinaryFileEventStream {
     }
 
     companion object {
-        private val logger = Logger.getLogger(BinaryFileEventStream::class.java.name)
+        private fun printTraceMessage(message: String) {
+            println(MessageFactory.createTraceMessage(message).toString())
+        }
+
+        @Suppress("SameParameterValue")
+        private fun printErrorMessage(message: String) {
+            println(MessageFactory.createErrorMessage(message).toString())
+        }
     }
 }

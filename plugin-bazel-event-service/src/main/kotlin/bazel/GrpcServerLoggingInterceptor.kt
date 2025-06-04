@@ -1,13 +1,12 @@
 package bazel
 
+import bazel.messages.MessageFactory
 import io.grpc.ForwardingServerCall
 import io.grpc.Metadata
 import io.grpc.ServerCall
 import io.grpc.ServerCallHandler
 import io.grpc.ServerInterceptor
 import io.grpc.Status
-import java.util.logging.Level
-import java.util.logging.Logger
 
 class GrpcServerLoggingInterceptor : ServerInterceptor {
     override fun <ReqT : Any?, RespT : Any?> interceptCall(
@@ -22,7 +21,7 @@ class GrpcServerLoggingInterceptor : ServerInterceptor {
                     trailers: Metadata?,
                 ) {
                     if (status != Status.OK) {
-                        logger.log(Level.WARNING, "gRPC error: ${status.code} - ${status.description}")
+                        printErrorMessage("gRPC error: ${status.code} - ${status.description}")
                     }
 
                     super.close(status, trailers)
@@ -32,7 +31,7 @@ class GrpcServerLoggingInterceptor : ServerInterceptor {
         return next.startCall(wrappedCall, headers)
     }
 
-    companion object {
-        private val logger = Logger.getLogger(GrpcServerLoggingInterceptor::class.java.name)
+    private fun printErrorMessage(message: String) {
+        println(MessageFactory.createErrorMessage(message).toString())
     }
 }

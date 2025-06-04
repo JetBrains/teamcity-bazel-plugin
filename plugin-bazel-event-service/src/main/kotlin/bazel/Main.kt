@@ -4,20 +4,14 @@ import bazel.handlers.BuildEventHandlerChain
 import bazel.handlers.GrpcEventHandlerChain
 import bazel.messages.MessageFactory
 import bazel.messages.TargetRegistry
-import java.util.logging.ConsoleHandler
-import java.util.logging.LogManager
-import java.util.logging.Logger
 import kotlin.system.exitProcess
 
 fun main(args: Array<String>) {
-    redirectLogsToStdout()
-
     var options: BazelOptions?
     try {
         options = BazelOptions(args)
     } catch (ex: Exception) {
-        val logger = Logger.getLogger("main")
-        logger.severe(ex.message)
+        println(MessageFactory.createErrorMessage(ex.message ?: ex.toString()).asString())
         BazelOptions.printHelp()
         exit(1)
         return
@@ -97,16 +91,3 @@ private fun runBesGrpcServerMode(options: BazelOptions) {
 fun exit(status: Int): Unit = exitProcess(status)
 
 private fun println(line: String) = kotlin.io.println(line)
-
-private fun redirectLogsToStdout() {
-    // Redirect java.util.logging output to System.out
-    val rootLogger = LogManager.getLogManager().getLogger("")
-    rootLogger.handlers.forEach { rootLogger.removeHandler(it) }
-    val stdoutHandler =
-        object : ConsoleHandler() {
-            init {
-                setOutputStream(System.out)
-            }
-        }
-    rootLogger.addHandler(stdoutHandler)
-}

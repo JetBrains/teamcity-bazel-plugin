@@ -1,5 +1,6 @@
 package bazel
 
+import bazel.messages.MessageFactory
 import com.google.devtools.build.v1.BuildEvent
 import com.google.devtools.build.v1.PublishBuildEventGrpc
 import com.google.devtools.build.v1.PublishBuildToolEventStreamRequest
@@ -8,8 +9,6 @@ import com.google.devtools.build.v1.PublishLifecycleEventRequest
 import com.google.devtools.build.v1.StreamId
 import com.google.protobuf.Empty
 import io.grpc.stub.StreamObserver
-import java.util.logging.Level
-import java.util.logging.Logger
 
 class BesGrpcServerEventStream(
     private val onEvent: (Result) -> Unit,
@@ -74,19 +73,19 @@ class BesGrpcServerEventStream(
                     ),
                 )
             } else {
-                logger.log(Level.SEVERE, "OrderedBuildEvent was not found.")
+                printErrorMessage("OrderedBuildEvent was not found.")
             }
         }
 
         override fun onError(error: Throwable) {
-            logger.log(Level.SEVERE, "onError: $error")
+            printErrorMessage("onError: $error")
             onEvent(Result.Error(error))
         }
 
         override fun onCompleted() = _responseObserver.onCompleted()
 
-        companion object {
-            private val logger = Logger.getLogger(PublishEventObserver::class.java.name)
+        private fun printErrorMessage(message: String) {
+            println(MessageFactory.createErrorMessage(message).toString())
         }
     }
 }
