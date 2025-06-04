@@ -36,12 +36,7 @@ class BinaryFile(
             ) { serviceMessage ->
                 printMessage(serviceMessage)
             }
-        val processed = _buildEventHandlerChain.handle(ctx)
-        if (processed) {
-            if (_verbosity.atLeast(Verbosity.Diagnostic)) {
-                printMessage(MessageFactory.createTraceMessage(ctx.event.toString()))
-            }
-        }
+        _buildEventHandlerChain.handle(ctx)
     }
 
     private fun printMessage(message: ServiceMessage) {

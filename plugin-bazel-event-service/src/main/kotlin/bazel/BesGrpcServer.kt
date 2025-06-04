@@ -40,12 +40,7 @@ class BesGrpcServer(
                 hasStarted = true
                 printMessage(updateHeader(event, serviceMessage))
             }
-        val processed = _buildEventHandler.handle(ctx)
-        if (processed) {
-            if (_verbosity.atLeast(Verbosity.Diagnostic)) {
-                printMessage(MessageFactory.createTraceMessage(ctx.event.toString()))
-            }
-        }
+        _buildEventHandler.handle(ctx)
     }
 
     private fun printMessage(message: ServiceMessage) {

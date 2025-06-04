@@ -1,5 +1,7 @@
 package bazel.handlers
 
+import bazel.Verbosity
+import bazel.atLeast
 import bazel.file.FileSystemService
 import bazel.handlers.build.AbortedHandler
 import bazel.handlers.build.ActionExecutedHandler
@@ -27,10 +29,15 @@ import bazel.handlers.build.UnknownEventHandler
 import bazel.handlers.build.UnstructuredCommandLineHandler
 import bazel.handlers.build.WorkspaceConfigHandler
 import bazel.handlers.build.WorkspaceStatusHandler
+import bazel.messages.MessageFactory
 
 class BuildEventHandlerChain : BuildEventHandler {
     override fun handle(ctx: BuildEventHandlerContext): Boolean {
         handlers.firstOrNull { it.handle(ctx) } ?: UnknownEventHandler().handle(ctx)
+
+        if (ctx.verbosity.atLeast(Verbosity.Diagnostic)) {
+            ctx.onNext(MessageFactory.createTraceMessage(ctx.event.toString()))
+        }
         return true
     }
 
