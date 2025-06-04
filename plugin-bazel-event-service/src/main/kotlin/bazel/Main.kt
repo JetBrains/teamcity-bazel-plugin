@@ -89,5 +89,3 @@ private fun runBesGrpcServerMode(options: BazelOptions) {
 }
 
 fun exit(status: Int): Unit = exitProcess(status)
-
-private fun println(line: String) = kotlin.io.println(line)
