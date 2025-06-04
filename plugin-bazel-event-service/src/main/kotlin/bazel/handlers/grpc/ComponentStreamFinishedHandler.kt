@@ -5,6 +5,7 @@ import bazel.atLeast
 import bazel.handlers.GrpcEventHandler
 import bazel.handlers.GrpcEventHandlerContext
 import bazel.messages.Color
+import bazel.messages.MessageFactory
 import bazel.messages.apply
 import bazel.messages.buildMessage
 import com.google.devtools.build.v1.BuildEvent
@@ -22,7 +23,7 @@ class ComponentStreamFinishedHandler : GrpcEventHandler {
                 if (ctx.verbosity.atLeast(Verbosity.Verbose)) {
                     val description = "Component \"$component\" stream finished"
                     ctx.onNext(
-                        ctx.messageFactory.createMessage(
+                        MessageFactory.createMessage(
                             ctx
                                 .buildMessage()
                                 .append(description.apply(Color.BuildStage))
@@ -41,7 +42,7 @@ class ComponentStreamFinishedHandler : GrpcEventHandler {
                         "Set by the WatchBuild RPC server when the publisher of a build event stream stops" +
                             " publishing events without publishing a BuildComponentStreamFinished event whose type equals FINISHED."
                     ctx.onNext(
-                        ctx.messageFactory.createMessage(
+                        MessageFactory.createMessage(
                             ctx
                                 .buildMessage()
                                 .append(description.apply(Color.Warning))

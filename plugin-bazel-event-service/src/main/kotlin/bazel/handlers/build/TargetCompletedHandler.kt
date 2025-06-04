@@ -5,6 +5,7 @@ import bazel.atLeast
 import bazel.handlers.BuildEventHandler
 import bazel.handlers.BuildEventHandlerContext
 import bazel.messages.Color
+import bazel.messages.MessageFactory
 import bazel.messages.apply
 import bazel.messages.buildMessage
 import bazel.messages.joinToStringEscaped
@@ -38,11 +39,11 @@ class TargetCompletedHandler : BuildEventHandler {
                     .toString()
 
             if (completed.success && ctx.verbosity.atLeast(Verbosity.Detailed)) {
-                ctx.onNext(ctx.messageFactory.createMessage(description))
+                ctx.onNext(MessageFactory.createMessage(description))
             }
 
             if (!completed.success) {
-                ctx.onNext(ctx.messageFactory.createErrorMessage(description))
+                ctx.onNext(MessageFactory.createErrorMessage(description))
             }
         }
 

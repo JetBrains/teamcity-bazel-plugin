@@ -4,6 +4,7 @@ import bazel.handlers.GrpcEventHandler
 import bazel.handlers.GrpcEventHandlerContext
 import bazel.messages.BuildStatusFormatter
 import bazel.messages.Color
+import bazel.messages.MessageFactory
 import bazel.messages.apply
 import bazel.messages.buildMessage
 import com.google.devtools.build.v1.BuildStatus
@@ -19,7 +20,7 @@ class BuildFinishedHandler : GrpcEventHandler {
         when (buildFinished.status.result) {
             BuildStatus.Result.COMMAND_SUCCEEDED -> {
                 ctx.onNext(
-                    ctx.messageFactory.createMessage(
+                    MessageFactory.createMessage(
                         ctx
                             .buildMessage()
                             .append(description.apply(Color.Success))
@@ -36,7 +37,7 @@ class BuildFinishedHandler : GrpcEventHandler {
             BuildStatus.Result.INVOCATION_DEADLINE_EXCEEDED,
             BuildStatus.Result.REQUEST_DEADLINE_EXCEEDED,
             -> {
-                ctx.onNext(ctx.messageFactory.createErrorMessage(description))
+                ctx.onNext(MessageFactory.createErrorMessage(description))
             }
 
             else -> {}

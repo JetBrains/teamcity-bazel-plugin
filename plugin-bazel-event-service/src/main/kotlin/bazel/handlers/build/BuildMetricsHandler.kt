@@ -5,6 +5,7 @@ import bazel.atLeast
 import bazel.handlers.BuildEventHandler
 import bazel.handlers.BuildEventHandlerContext
 import bazel.messages.Color
+import bazel.messages.MessageFactory
 import bazel.messages.apply
 import bazel.messages.buildMessage
 
@@ -23,7 +24,7 @@ class BuildMetricsHandler : BuildEventHandler {
             if (event.hasMemoryMetrics()) event.memoryMetrics.usedHeapSizePostBuild else 0
 
         ctx.onNext(
-            ctx.messageFactory.createMessage(
+            MessageFactory.createMessage(
                 ctx
                     .buildMessage()
                     .append("Actions created: $actionsCreated".apply(Color.Details))
@@ -32,7 +33,7 @@ class BuildMetricsHandler : BuildEventHandler {
         )
 
         ctx.onNext(
-            ctx.messageFactory.createMessage(
+            MessageFactory.createMessage(
                 ctx
                     .buildMessage()
                     .append("Used heap size post build: $usedHeapSizePostBuild".apply(Color.Details))

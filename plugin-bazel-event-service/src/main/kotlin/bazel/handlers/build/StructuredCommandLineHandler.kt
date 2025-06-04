@@ -4,6 +4,7 @@ import bazel.Verbosity
 import bazel.atLeast
 import bazel.handlers.BuildEventHandler
 import bazel.handlers.BuildEventHandlerContext
+import bazel.messages.MessageFactory
 import bazel.messages.buildMessage
 
 class StructuredCommandLineHandler : BuildEventHandler {
@@ -19,7 +20,7 @@ class StructuredCommandLineHandler : BuildEventHandler {
                     .takeIf { it.isNotEmpty() } ?: "tool"
 
             ctx.onNext(
-                ctx.messageFactory.createMessage(
+                MessageFactory.createMessage(
                     ctx
                         .buildMessage()
                         .append("Run ")

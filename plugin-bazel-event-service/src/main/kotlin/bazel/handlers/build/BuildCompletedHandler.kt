@@ -4,6 +4,7 @@ import bazel.Verbosity
 import bazel.atLeast
 import bazel.handlers.BuildEventHandler
 import bazel.handlers.BuildEventHandlerContext
+import bazel.messages.MessageFactory
 import bazel.messages.buildMessage
 
 class BuildCompletedHandler : BuildEventHandler {
@@ -17,7 +18,7 @@ class BuildCompletedHandler : BuildEventHandler {
             0 -> {
                 if (ctx.verbosity.atLeast(Verbosity.Detailed)) {
                     ctx.onNext(
-                        ctx.messageFactory.createMessage(
+                        MessageFactory.createMessage(
                             ctx
                                 .buildMessage()
                                 .append("Build completed")
@@ -30,7 +31,7 @@ class BuildCompletedHandler : BuildEventHandler {
 
             3 -> {
                 ctx.onNext(
-                    ctx.messageFactory.createMessage(
+                    MessageFactory.createMessage(
                         ctx
                             .buildMessage()
                             .append("Build completed with failed test(s)")
@@ -42,7 +43,7 @@ class BuildCompletedHandler : BuildEventHandler {
 
             4 -> {
                 ctx.onNext(
-                    ctx.messageFactory.createMessage(
+                    MessageFactory.createMessage(
                         ctx
                             .buildMessage()
                             .append("No tests were found")
@@ -54,7 +55,7 @@ class BuildCompletedHandler : BuildEventHandler {
 
             else -> {
                 ctx.onNext(
-                    ctx.messageFactory.createErrorMessage(
+                    MessageFactory.createErrorMessage(
                         ctx
                             .buildMessage(false)
                             .append("Build failed: ${event.exitCode.name}")
@@ -66,7 +67,7 @@ class BuildCompletedHandler : BuildEventHandler {
         }
 
         if (ctx.verbosity.atLeast(Verbosity.Normal)) {
-            ctx.onNext(ctx.messageFactory.createBlockClosed(ctx.targetRegistry.commandName))
+            ctx.onNext(MessageFactory.createBlockClosed(ctx.targetRegistry.commandName))
         }
 
         return true

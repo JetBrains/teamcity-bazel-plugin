@@ -23,53 +23,43 @@ fun main(args: Array<String>) {
         return
     }
 
-    val messageFactory = MessageFactory()
     if (options.eventFile != null && options.bazelCommandlineFile != null) {
-        runBinaryFileMode(options, messageFactory)
+        runBinaryFileMode(options)
     } else {
-        runBesGrpcServerMode(options, messageFactory)
+        runBesGrpcServerMode(options)
     }
 }
 
-private fun runBinaryFileMode(
-    options: BazelOptions,
-    messageFactory: MessageFactory,
-) {
+private fun runBinaryFileMode(options: BazelOptions) {
     var finalExitCode = 0
     BinaryFile(
         options.eventFile!!,
         options.verbosity,
-        messageFactory,
         TargetRegistry(),
         BinaryFileEventStream(),
         BuildEventHandlerChain(),
     ).read().use {
         val result =
             BazelRunner(
-                messageFactory = messageFactory,
                 verbosity = options.verbosity,
                 bazelCommandlineFile = options.bazelCommandlineFile!!,
                 eventFile = options.eventFile,
             ).run()
         finalExitCode = result.exitCode
         for (error in result.errors) {
-            println(messageFactory.createErrorMessage(error).asString())
+            println(MessageFactory.createErrorMessage(error).asString())
         }
     }
     exit(finalExitCode)
 }
 
-private fun runBesGrpcServerMode(
-    options: BazelOptions,
-    messageFactory: MessageFactory,
-) {
+private fun runBesGrpcServerMode(options: BazelOptions) {
     var finalExitCode = 0
     val grpcServer = GrpcServer(options.port)
     val server =
         BesGrpcServer(
             grpcServer,
             options.verbosity,
-            messageFactory,
             GrpcEventHandlerChain(),
         )
 
@@ -78,7 +68,6 @@ private fun runBesGrpcServerMode(
             server.start().use {
                 val result =
                     BazelRunner(
-                        messageFactory = messageFactory,
                         verbosity = options.verbosity,
                         bazelCommandlineFile = options.bazelCommandlineFile!!,
                         besPort = grpcServer.port,
@@ -87,7 +76,7 @@ private fun runBesGrpcServerMode(
 
                 if (!server.hasStarted) {
                     for (error in result.errors) {
-                        println(messageFactory.createErrorMessage(error).asString())
+                        println(MessageFactory.createErrorMessage(error).asString())
                     }
                 }
             }
@@ -98,7 +87,7 @@ private fun runBesGrpcServerMode(
             }
         }
     } catch (ex: Exception) {
-        println(messageFactory.createErrorMessage(ex.message ?: ex.toString()).asString())
+        println(MessageFactory.createErrorMessage(ex.message ?: ex.toString()).asString())
         exit(1)
     }
 

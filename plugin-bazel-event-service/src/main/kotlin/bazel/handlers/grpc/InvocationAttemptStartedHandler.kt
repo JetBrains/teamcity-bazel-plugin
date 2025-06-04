@@ -4,6 +4,7 @@ import bazel.Verbosity
 import bazel.atLeast
 import bazel.handlers.GrpcEventHandler
 import bazel.handlers.GrpcEventHandlerContext
+import bazel.messages.MessageFactory
 import bazel.messages.buildMessage
 
 class InvocationAttemptStartedHandler : GrpcEventHandler {
@@ -14,7 +15,7 @@ class InvocationAttemptStartedHandler : GrpcEventHandler {
         val invocationAttemptStarted = ctx.event.invocationAttemptStarted
         if (ctx.verbosity.atLeast(Verbosity.Detailed)) {
             ctx.onNext(
-                ctx.messageFactory.createMessage(
+                MessageFactory.createMessage(
                     ctx
                         .buildMessage()
                         .append("Invocation attempt #${invocationAttemptStarted.attemptNumber} started")
@@ -24,7 +25,7 @@ class InvocationAttemptStartedHandler : GrpcEventHandler {
         }
 
         ctx.onNext(
-            ctx.messageFactory.createFlowStarted(ctx.streamId.invocationId, ctx.streamId.buildId),
+            MessageFactory.createFlowStarted(ctx.streamId.invocationId, ctx.streamId.buildId),
         )
         return true
     }

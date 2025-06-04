@@ -9,7 +9,6 @@ import java.nio.file.Path
 import kotlin.io.path.absolutePathString
 
 class BazelRunner(
-    private val messageFactory: MessageFactory,
     private val verbosity: Verbosity,
     private val bazelCommandlineFile: File,
     private val besPort: Int = 0,
@@ -76,7 +75,7 @@ class BazelRunner(
                 if (verbosity.atLeast(Verbosity.Diagnostic)) {
                     // this message is printed by bazel itself, we will get the same message from BES/Binary log file
                     // logging it as trace to reduce noise in the build log
-                    println(messageFactory.createTraceMessage(line))
+                    println(MessageFactory.createTraceMessage(line))
                 }
             }
         val stdErrReader =
@@ -86,7 +85,7 @@ class BazelRunner(
                 }
 
                 if (verbosity.atLeast(Verbosity.Diagnostic)) {
-                    println(messageFactory.createTraceMessage(line))
+                    println(MessageFactory.createTraceMessage(line))
                 }
             }
 

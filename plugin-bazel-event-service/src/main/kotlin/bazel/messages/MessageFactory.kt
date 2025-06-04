@@ -8,7 +8,7 @@ import jetbrains.buildServer.messages.serviceMessages.MessageWithAttributes
 import jetbrains.buildServer.messages.serviceMessages.ServiceMessage
 import jetbrains.buildServer.messages.serviceMessages.ServiceMessageTypes
 
-class MessageFactory {
+object MessageFactory {
     fun createMessage(text: String): ServiceMessage = Message(text.clean(), NORMAL)
 
     fun createTraceMessage(text: String): ServiceMessage =
@@ -54,12 +54,10 @@ class MessageFactory {
 
     fun createCompilationFinished(compiler: String): CompilationFinished = CompilationFinished(compiler)
 
-    companion object {
-        private const val NORMAL = "NORMAL"
-        private const val ERROR = "ERROR"
-        private const val WARNING = "WARNING"
-        private const val TRACE_TAG = "tc:internal"
-    }
+    private const val NORMAL = "NORMAL"
+    private const val ERROR = "ERROR"
+    private const val WARNING = "WARNING"
+    private const val TRACE_TAG = "tc:internal"
 
     private class ImportData(
         type: String,

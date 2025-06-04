@@ -5,6 +5,7 @@ import bazel.atLeast
 import bazel.handlers.BuildEventHandler
 import bazel.handlers.BuildEventHandlerContext
 import bazel.messages.Color
+import bazel.messages.MessageFactory
 import bazel.messages.apply
 import bazel.messages.buildMessage
 import bazel.messages.joinToStringEscaped
@@ -25,7 +26,7 @@ class TargetConfiguredHandler : BuildEventHandler {
         ctx.targetRegistry.registerTarget(id, targetName)
         if (ctx.verbosity.atLeast(Verbosity.Detailed)) {
             ctx.onNext(
-                ctx.messageFactory.createMessage(
+                MessageFactory.createMessage(
                     ctx
                         .buildMessage()
                         .append(targetName)

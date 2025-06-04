@@ -5,6 +5,7 @@ import bazel.atLeast
 import bazel.handlers.BuildEventHandler
 import bazel.handlers.BuildEventHandlerContext
 import bazel.messages.Color
+import bazel.messages.MessageFactory
 import bazel.messages.apply
 import bazel.messages.buildMessage
 
@@ -22,7 +23,7 @@ class ConvenienceSymlinkHandler : BuildEventHandler {
                 "${symlink.path} → ${symlink.target}"
             }
         ctx.onNext(
-            ctx.messageFactory.createMessage(
+            MessageFactory.createMessage(
                 ctx
                     .buildMessage()
                     .append("Convenience symlinks identified ")

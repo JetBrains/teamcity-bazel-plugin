@@ -4,26 +4,19 @@ import bazel.Verbosity
 import bazel.file.FileSystemService
 import bazel.handlers.BuildEventHandlerContext
 import bazel.handlers.build.TestResultHandler
-import bazel.messages.MessageFactory
 import bazel.messages.TargetRegistry
 import com.google.devtools.build.lib.buildeventstream.BuildEventStreamProtos
 import com.google.protobuf.ByteString
 import io.mockk.MockKAnnotations
-import io.mockk.every
 import io.mockk.impl.annotations.MockK
-import jetbrains.buildServer.messages.serviceMessages.Message
 import jetbrains.buildServer.messages.serviceMessages.ServiceMessage
 import org.testng.Assert
 import org.testng.annotations.BeforeMethod
 import org.testng.annotations.DataProvider
 import org.testng.annotations.Test
 
-@Suppress("UNCHECKED_CAST")
 class TestResultHandlerTest {
     private val serviceMessages = mutableListOf<ServiceMessage>()
-
-    @MockK
-    private lateinit var messageFactory: MessageFactory
 
     @MockK
     private lateinit var targetRegistry: TargetRegistry
@@ -67,20 +60,16 @@ class TestResultHandlerTest {
                 ).build()
 
         val ctx = createContext(bazelEvent, verbosity)
-        val message1 = Message("line 1", "Normal", null)
-        val message2 = Message("##teamcity[line 2]", "Normal", null)
-        val message = Message("message", "Normal", null)
-
-        every { messageFactory.createMessage(any()) } returns message
-        every { messageFactory.createMessage("line 1") } returns message1
-        every { messageFactory.createMessage("##teamcity[line 2]") } returns message2
 
         handler.handle(ctx)
 
         // Then
-        Assert.assertTrue(serviceMessages.containsAll(listOf(message1, message2)))
-        Assert.assertFalse(message1.tags.contains("tc:parseServiceMessagesInside"))
-        Assert.assertTrue(message2.tags.contains("tc:parseServiceMessagesInside"))
+        serviceMessages.let {
+            val content = it.joinToString("\n") { it.toString() }
+            Assert.assertTrue(it.all { m -> m.tags.contains("tc:parseServiceMessagesInside") }, content)
+            Assert.assertTrue(it.any { m -> m.attributes["text"] == "line 1" }, content)
+            Assert.assertTrue(it.any { m -> m.attributes["text"] == "##teamcity[line 2]" }, content)
+        }
     }
 
     private fun createContext(
@@ -89,7 +78,6 @@ class TestResultHandlerTest {
     ) = BuildEventHandlerContext(
         verbosity,
         sequenceNumber = 42,
-        messageFactory = messageFactory,
         targetRegistry = targetRegistry,
         event = event,
     ) {

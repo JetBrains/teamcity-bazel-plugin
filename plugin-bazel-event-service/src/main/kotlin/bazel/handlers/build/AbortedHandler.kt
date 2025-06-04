@@ -3,6 +3,7 @@ package bazel.handlers.build
 import bazel.handlers.BuildEventHandler
 import bazel.handlers.BuildEventHandlerContext
 import bazel.messages.Color
+import bazel.messages.MessageFactory
 import bazel.messages.apply
 import bazel.messages.buildMessage
 import com.google.devtools.build.lib.buildeventstream.BuildEventStreamProtos
@@ -18,7 +19,7 @@ class AbortedHandler : BuildEventHandler {
                 val reason = formatAbortReason(aborted.reason)
                 if (target.description.isNotEmpty()) {
                     ctx.onNext(
-                        ctx.messageFactory
+                        MessageFactory
                             .createMessage(
                                 ctx
                                     .buildMessage(false)

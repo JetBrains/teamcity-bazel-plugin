@@ -5,6 +5,7 @@ import bazel.atLeast
 import bazel.handlers.BuildEventHandler
 import bazel.handlers.BuildEventHandlerContext
 import bazel.messages.Color
+import bazel.messages.MessageFactory
 import bazel.messages.apply
 import bazel.messages.buildMessage
 
@@ -17,7 +18,7 @@ class ProgressHandler : BuildEventHandler {
         val progress = ctx.event.progress
         if (ctx.verbosity.atLeast(Verbosity.Normal) && progress.stdout.isNotBlank()) {
             ctx.onNext(
-                ctx.messageFactory.createMessage(
+                MessageFactory.createMessage(
                     ctx
                         .buildMessage()
                         .append(progress.stdout)
@@ -41,14 +42,13 @@ class ProgressHandler : BuildEventHandler {
                         .toString()
 
                 val message =
-                    ctx.messageFactory.let {
-                        when (mostSevereLevel) {
-                            LogLevel.Error -> it.createErrorMessage(messageText)
-                            LogLevel.Warning -> it.createWarningMessage(messageText)
-                            LogLevel.Normal -> it.createMessage(messageText)
-                            LogLevel.Trace -> it.createTraceMessage(messageText)
-                        }
+                    when (mostSevereLevel) {
+                        LogLevel.Error -> MessageFactory.createErrorMessage(messageText)
+                        LogLevel.Warning -> MessageFactory.createWarningMessage(messageText)
+                        LogLevel.Normal -> MessageFactory.createMessage(messageText)
+                        LogLevel.Trace -> MessageFactory.createTraceMessage(messageText)
                     }
+
                 ctx.onNext(message)
             }
         }

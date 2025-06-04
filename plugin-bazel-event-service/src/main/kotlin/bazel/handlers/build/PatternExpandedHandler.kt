@@ -5,6 +5,7 @@ import bazel.atLeast
 import bazel.handlers.BuildEventHandler
 import bazel.handlers.BuildEventHandlerContext
 import bazel.messages.Color
+import bazel.messages.MessageFactory
 import bazel.messages.apply
 import bazel.messages.buildMessage
 import bazel.messages.joinToStringEscaped
@@ -19,7 +20,7 @@ class PatternExpandedHandler : BuildEventHandler {
         if (ctx.verbosity.atLeast(Verbosity.Verbose)) {
             val patterns = patterns.joinToStringEscaped(", ")
             ctx.onNext(
-                ctx.messageFactory.createMessage(
+                MessageFactory.createMessage(
                     ctx
                         .buildMessage()
                         .append("Pattern expanded ")

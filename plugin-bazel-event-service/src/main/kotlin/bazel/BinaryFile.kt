@@ -9,7 +9,6 @@ import java.nio.file.Path
 class BinaryFile(
     private val _eventFile: Path,
     private val _verbosity: Verbosity,
-    private val _messageFactory: MessageFactory,
     private val _targetRegistry: TargetRegistry,
     private val _binaryStream: BinaryFileEventStream,
     private val _buildEventHandlerChain: BuildEventHandlerChain,
@@ -23,7 +22,7 @@ class BinaryFile(
         }
 
     private fun onError(err: Throwable) {
-        val error = _messageFactory.createErrorMessage("Error during binary file read", err.toString())
+        val error = MessageFactory.createErrorMessage("Error during binary file read", err.toString())
         printMessage(error)
     }
 
@@ -32,7 +31,6 @@ class BinaryFile(
             BuildEventHandlerContext(
                 _verbosity,
                 event.sequenceNumber,
-                messageFactory = _messageFactory,
                 targetRegistry = _targetRegistry,
                 event = event.event,
             ) { serviceMessage ->
@@ -41,7 +39,7 @@ class BinaryFile(
         val processed = _buildEventHandlerChain.handle(ctx)
         if (processed) {
             if (_verbosity.atLeast(Verbosity.Diagnostic)) {
-                printMessage(_messageFactory.createTraceMessage(ctx.event.toString()))
+                printMessage(MessageFactory.createTraceMessage(ctx.event.toString()))
             }
         }
     }

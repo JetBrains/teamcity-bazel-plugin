@@ -5,8 +5,6 @@ import org.testng.annotations.DataProvider
 import org.testng.annotations.Test
 
 class MessageFactoryTest {
-    private val messageFactory = MessageFactory()
-
     @Test(dataProvider = "buildProblemDistinctInputs")
     fun shouldGenerateDistinctBuildProblemIdentities(
         projectId1: String,
@@ -14,8 +12,8 @@ class MessageFactoryTest {
         projectId2: String,
         errorId2: String,
     ) {
-        val buildProblem1 = messageFactory.createBuildProblem("problem description", projectId1, errorId1)
-        val buildProblem2 = messageFactory.createBuildProblem("problem description", projectId2, errorId2)
+        val buildProblem1 = MessageFactory.createBuildProblem("problem description", projectId1, errorId1)
+        val buildProblem2 = MessageFactory.createBuildProblem("problem description", projectId2, errorId2)
         Assert.assertNotEquals(
             buildProblem1.attributes["identity"],
             buildProblem2.attributes["identity"],
@@ -25,13 +23,13 @@ class MessageFactoryTest {
     @Test
     fun shouldGenerateSameBuildProblemIdentities() {
         val buildProblem1 =
-            messageFactory.createBuildProblem(
+            MessageFactory.createBuildProblem(
                 "problem description 1",
                 "same project",
                 "same error",
             )
         val buildProblem2 =
-            messageFactory.createBuildProblem(
+            MessageFactory.createBuildProblem(
                 "problem description 2",
                 "same project",
                 "same error",

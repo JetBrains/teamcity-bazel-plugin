@@ -5,6 +5,7 @@ import bazel.atLeast
 import bazel.handlers.BuildEventHandler
 import bazel.handlers.BuildEventHandlerContext
 import bazel.messages.Color
+import bazel.messages.MessageFactory
 import bazel.messages.apply
 import bazel.messages.buildMessage
 
@@ -12,7 +13,7 @@ class UnknownEventHandler : BuildEventHandler {
     override fun handle(ctx: BuildEventHandlerContext): Boolean {
         if (ctx.verbosity.atLeast(Verbosity.Detailed)) {
             ctx.onNext(
-                ctx.messageFactory.createWarningMessage(
+                MessageFactory.createWarningMessage(
                     ctx
                         .buildMessage()
                         .append("Unknown event: ${ctx.event}".apply(Color.Warning))

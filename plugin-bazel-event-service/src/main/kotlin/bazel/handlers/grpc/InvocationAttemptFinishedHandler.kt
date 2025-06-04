@@ -6,6 +6,7 @@ import bazel.handlers.GrpcEventHandler
 import bazel.handlers.GrpcEventHandlerContext
 import bazel.messages.BuildStatusFormatter
 import bazel.messages.Color
+import bazel.messages.MessageFactory
 import bazel.messages.apply
 import bazel.messages.buildMessage
 import com.google.devtools.build.v1.BuildStatus
@@ -15,7 +16,7 @@ class InvocationAttemptFinishedHandler : GrpcEventHandler {
         if (!ctx.event.hasInvocationAttemptFinished()) {
             return false
         }
-        ctx.onNext(ctx.messageFactory.createFlowFinished(ctx.streamId.invocationId))
+        ctx.onNext(MessageFactory.createFlowFinished(ctx.streamId.invocationId))
 
         val invocationAttemptFinished = ctx.event.invocationAttemptFinished
         val status =
@@ -27,7 +28,7 @@ class InvocationAttemptFinishedHandler : GrpcEventHandler {
         if (status == BuildStatus.Result.COMMAND_SUCCEEDED) {
             if (ctx.verbosity.atLeast(Verbosity.Detailed)) {
                 ctx.onNext(
-                    ctx.messageFactory.createMessage(
+                    MessageFactory.createMessage(
                         ctx
                             .buildMessage()
                             .append("Invocation attempt completed".apply(Color.Success))
@@ -38,7 +39,7 @@ class InvocationAttemptFinishedHandler : GrpcEventHandler {
         } else {
             val description = BuildStatusFormatter.format(status)
             ctx.onNext(
-                ctx.messageFactory.createErrorMessage(
+                MessageFactory.createErrorMessage(
                     ctx
                         .buildMessage(false)
                         .append("Invocation attempt failed")

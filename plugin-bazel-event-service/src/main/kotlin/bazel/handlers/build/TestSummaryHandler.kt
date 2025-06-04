@@ -4,6 +4,7 @@ import bazel.Verbosity
 import bazel.handlers.BuildEventHandler
 import bazel.handlers.BuildEventHandlerContext
 import bazel.messages.Color
+import bazel.messages.MessageFactory
 import bazel.messages.TestStatusConverter
 import bazel.messages.apply
 import bazel.messages.buildMessage
@@ -22,7 +23,7 @@ class TestSummaryHandler : BuildEventHandler {
 
         val overallStatus = testStatusConverter.convert(summary.overallStatus)
         ctx.onNext(
-            ctx.messageFactory.createMessage(
+            MessageFactory.createMessage(
                 ctx
                     .buildMessage()
                     .append("$label test summary:")

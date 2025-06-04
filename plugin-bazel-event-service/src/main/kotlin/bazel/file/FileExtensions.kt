@@ -3,6 +3,7 @@ package bazel.file
 import bazel.Verbosity
 import bazel.atLeast
 import bazel.handlers.BuildEventHandlerContext
+import bazel.messages.MessageFactory
 import java.io.InputStreamReader
 
 fun File.read(ctx: BuildEventHandlerContext): String {
@@ -28,6 +29,6 @@ private fun BuildEventHandlerContext.logError(
     error: Exception,
 ) {
     if (verbosity.atLeast(Verbosity.Diagnostic)) {
-        this.onNext(messageFactory.createErrorMessage(message, error.toString()))
+        this.onNext(MessageFactory.createErrorMessage(message, error.toString()))
     }
 }

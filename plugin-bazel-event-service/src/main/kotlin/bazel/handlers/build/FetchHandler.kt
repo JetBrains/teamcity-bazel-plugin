@@ -5,6 +5,7 @@ import bazel.atLeast
 import bazel.handlers.BuildEventHandler
 import bazel.handlers.BuildEventHandlerContext
 import bazel.messages.Color
+import bazel.messages.MessageFactory
 import bazel.messages.apply
 import bazel.messages.buildMessage
 
@@ -24,7 +25,7 @@ class FetchHandler : BuildEventHandler {
 
         if (event.success && ctx.verbosity.atLeast(Verbosity.Detailed)) {
             ctx.onNext(
-                ctx.messageFactory.createMessage(
+                MessageFactory.createMessage(
                     ctx
                         .buildMessage()
                         .append("Fetch \"${url}\"")
@@ -33,7 +34,7 @@ class FetchHandler : BuildEventHandler {
             )
         } else if (!event.success && ctx.verbosity.atLeast(Verbosity.Normal)) {
             ctx.onNext(
-                ctx.messageFactory.createWarningMessage(
+                MessageFactory.createWarningMessage(
                     ctx
                         .buildMessage()
                         .append("Fetch \"${url}\" - unsuccessful".apply(Color.Error))

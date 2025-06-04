@@ -5,6 +5,7 @@ import bazel.atLeast
 import bazel.handlers.BuildEventHandler
 import bazel.handlers.BuildEventHandlerContext
 import bazel.messages.Color
+import bazel.messages.MessageFactory
 import bazel.messages.apply
 import bazel.messages.buildMessage
 import bazel.messages.joinToStringEscaped
@@ -21,7 +22,7 @@ class OptionsParsedHandler : BuildEventHandler {
         val options = ctx.event.optionsParsed
         if (options.startupOptionsList.isNotEmpty()) {
             ctx.onNext(
-                ctx.messageFactory.createMessage(
+                MessageFactory.createMessage(
                     ctx
                         .buildMessage()
                         .append("Options ")
@@ -33,7 +34,7 @@ class OptionsParsedHandler : BuildEventHandler {
 
         if (options.explicitStartupOptionsList.isNotEmpty()) {
             ctx.onNext(
-                ctx.messageFactory.createMessage(
+                MessageFactory.createMessage(
                     ctx
                         .buildMessage()
                         .append("Explicit options ")
@@ -45,7 +46,7 @@ class OptionsParsedHandler : BuildEventHandler {
 
         if (options.cmdLineList.isNotEmpty()) {
             ctx.onNext(
-                ctx.messageFactory.createMessage(
+                MessageFactory.createMessage(
                     ctx
                         .buildMessage()
                         .append("Command ")
@@ -57,7 +58,7 @@ class OptionsParsedHandler : BuildEventHandler {
 
         if (options.explicitCmdLineList.isNotEmpty()) {
             ctx.onNext(
-                ctx.messageFactory.createMessage(
+                MessageFactory.createMessage(
                     ctx
                         .buildMessage()
                         .append("Explicit command ")

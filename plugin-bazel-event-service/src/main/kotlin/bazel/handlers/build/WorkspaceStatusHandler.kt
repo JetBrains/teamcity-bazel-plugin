@@ -5,6 +5,7 @@ import bazel.atLeast
 import bazel.handlers.BuildEventHandler
 import bazel.handlers.BuildEventHandlerContext
 import bazel.messages.Color
+import bazel.messages.MessageFactory
 import bazel.messages.apply
 import bazel.messages.buildMessage
 import bazel.messages.joinToStringEscaped
@@ -19,7 +20,7 @@ class WorkspaceStatusHandler : BuildEventHandler {
         if (ctx.verbosity.atLeast(Verbosity.Verbose) && status.itemCount > 0) {
             for (item in status.itemList) {
                 ctx.onNext(
-                    ctx.messageFactory.createMessage(
+                    MessageFactory.createMessage(
                         ctx
                             .buildMessage()
                             .append(listOf(item.key, item.value).joinToStringEscaped(" = ").apply(Color.Items))

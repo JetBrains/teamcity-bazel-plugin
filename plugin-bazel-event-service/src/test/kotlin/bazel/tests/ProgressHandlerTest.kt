@@ -3,23 +3,17 @@ package bazel.tests
 import bazel.Verbosity
 import bazel.handlers.BuildEventHandlerContext
 import bazel.handlers.build.ProgressHandler
-import bazel.messages.MessageFactory
 import bazel.messages.TargetRegistry
 import com.google.devtools.build.lib.buildeventstream.BuildEventStreamProtos
 import io.mockk.MockKAnnotations
-import io.mockk.every
 import io.mockk.impl.annotations.MockK
-import io.mockk.verify
-import jetbrains.buildServer.messages.serviceMessages.Message
 import jetbrains.buildServer.messages.serviceMessages.ServiceMessage
+import org.testng.Assert
 import org.testng.annotations.BeforeMethod
 import org.testng.annotations.Test
 
 class ProgressHandlerTest {
     private val serviceMessages = mutableListOf<ServiceMessage>()
-
-    @MockK
-    private lateinit var messageFactory: MessageFactory
 
     @MockK
     private lateinit var targetRegistry: TargetRegistry
@@ -49,21 +43,18 @@ class ProgressHandlerTest {
                 .build()
 
         val ctx = createContext(bazelEvent)
-        val message = Message("message", "Warning", null)
-
-        every { messageFactory.createWarningMessage(any()) } returns message
 
         handler.handle(ctx)
 
         // Then
-        verify(exactly = 3) { messageFactory.createWarningMessage(any()) }
+        Assert.assertEquals(serviceMessages.count(), 3)
+        Assert.assertTrue(serviceMessages.all { it.attributes["status"] == "WARNING" })
     }
 
     private fun createContext(event: BuildEventStreamProtos.BuildEvent) =
         BuildEventHandlerContext(
             Verbosity.Normal,
             sequenceNumber = 42,
-            messageFactory = messageFactory,
             targetRegistry = targetRegistry,
             event = event,
         ) {

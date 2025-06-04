@@ -5,6 +5,7 @@ import bazel.atLeast
 import bazel.handlers.BuildEventHandler
 import bazel.handlers.BuildEventHandlerContext
 import bazel.messages.Color
+import bazel.messages.MessageFactory
 import bazel.messages.apply
 import bazel.messages.buildMessage
 import bazel.messages.joinToStringEscaped
@@ -19,7 +20,7 @@ class ConfigurationHandler : BuildEventHandler {
         val event = ctx.event.configuration
         if (ctx.verbosity.atLeast(Verbosity.Detailed)) {
             ctx.onNext(
-                ctx.messageFactory.createMessage(
+                MessageFactory.createMessage(
                     ctx
                         .buildMessage()
                         .append(
@@ -30,7 +31,7 @@ class ConfigurationHandler : BuildEventHandler {
                 ),
             )
             ctx.onNext(
-                ctx.messageFactory.createMessage(
+                MessageFactory.createMessage(
                     ctx
                         .buildMessage()
                         .append(
@@ -39,7 +40,7 @@ class ConfigurationHandler : BuildEventHandler {
                 ),
             )
             ctx.onNext(
-                ctx.messageFactory.createMessage(
+                MessageFactory.createMessage(
                     ctx
                         .buildMessage()
                         .append(listOf("cpu", event.cpu).joinToStringEscaped(" = ").apply(Color.Items))
@@ -50,7 +51,7 @@ class ConfigurationHandler : BuildEventHandler {
             if (ctx.verbosity.atLeast(Verbosity.Verbose)) {
                 for (item in event.makeVariableMap) {
                     ctx.onNext(
-                        ctx.messageFactory.createMessage(
+                        MessageFactory.createMessage(
                             ctx
                                 .buildMessage()
                                 .append(

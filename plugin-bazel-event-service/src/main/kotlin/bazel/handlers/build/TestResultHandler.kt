@@ -9,6 +9,7 @@ import bazel.file.readLines
 import bazel.handlers.BuildEventHandler
 import bazel.handlers.BuildEventHandlerContext
 import bazel.messages.Color
+import bazel.messages.MessageFactory
 import bazel.messages.TestStatusConverter
 import bazel.messages.apply
 import bazel.messages.buildMessage
@@ -36,7 +37,7 @@ class TestResultHandler(
                     .let { Duration.ofSeconds(it.seconds, it.nanos.toLong()) }
                     .toMillis()
             ctx.onNext(
-                ctx.messageFactory.createMessage(
+                MessageFactory.createMessage(
                     ctx
                         .buildMessage()
                         .append("${id.testResult.label} test:")
@@ -56,7 +57,7 @@ class TestResultHandler(
         val hasNextAttempt = ctx.event.childrenList.isNotEmpty()
         for (test in event.testActionOutputList.map { fileConverter.convert(it) }) {
             if (ctx.verbosity.atLeast(Verbosity.Verbose)) {
-                ctx.onNext(ctx.messageFactory.createMessage("$test".apply(Color.Items)))
+                ctx.onNext(MessageFactory.createMessage("$test".apply(Color.Items)))
             }
 
             val content = test.readLines(ctx)
@@ -80,7 +81,7 @@ class TestResultHandler(
                             }
                         }
 
-                        ctx.onNext(ctx.messageFactory.createImportData("junit", testTempFile.absolutePath))
+                        ctx.onNext(MessageFactory.createImportData("junit", testTempFile.absolutePath))
                     }
                 }
 
@@ -88,7 +89,7 @@ class TestResultHandler(
                     // check that it is last attempt
                     if (!hasNextAttempt) {
                         for (line in content) {
-                            val message = ctx.messageFactory.createMessage(line)
+                            val message = MessageFactory.createMessage(line)
                             // Allows to pass TeamCity services messages from tests` stdOut
                             if (line.contains("##teamcity")) {
                                 message.addTag("tc:parseServiceMessagesInside")
@@ -109,9 +110,9 @@ class TestResultHandler(
         content: List<String>,
     ) {
         if (ctx.verbosity.atLeast(Verbosity.Diagnostic)) {
-            ctx.messageFactory.createTraceMessage("File \"$file\":")
+            MessageFactory.createTraceMessage("File \"$file\":")
             for (line in content) {
-                ctx.onNext(ctx.messageFactory.createTraceMessage("$\t$line"))
+                ctx.onNext(MessageFactory.createTraceMessage("$\t$line"))
             }
         }
     }

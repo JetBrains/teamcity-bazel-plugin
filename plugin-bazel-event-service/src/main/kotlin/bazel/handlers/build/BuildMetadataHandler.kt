@@ -5,6 +5,7 @@ import bazel.atLeast
 import bazel.handlers.BuildEventHandler
 import bazel.handlers.BuildEventHandlerContext
 import bazel.messages.Color
+import bazel.messages.MessageFactory
 import bazel.messages.apply
 import bazel.messages.buildMessage
 import bazel.messages.joinToStringEscaped
@@ -20,7 +21,7 @@ class BuildMetadataHandler : BuildEventHandler {
         if (ctx.verbosity.atLeast(Verbosity.Verbose)) {
             for (item in event.metadataMap) {
                 ctx.onNext(
-                    ctx.messageFactory.createMessage(
+                    MessageFactory.createMessage(
                         ctx
                             .buildMessage()
                             .append(listOf(item.key, item.value).joinToStringEscaped(" = ").apply(Color.Items))

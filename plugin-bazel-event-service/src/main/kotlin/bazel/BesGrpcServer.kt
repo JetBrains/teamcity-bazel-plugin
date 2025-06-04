@@ -9,7 +9,6 @@ import java.util.Date
 class BesGrpcServer(
     private val grpcServer: GrpcServer,
     private val _verbosity: Verbosity,
-    private val _messageFactory: MessageFactory,
     private val _buildEventHandler: GrpcEventHandlerChain,
 ) {
     var hasStarted = false
@@ -26,7 +25,7 @@ class BesGrpcServer(
             )
 
     private fun onError(err: Throwable) {
-        val error = _messageFactory.createErrorMessage("BES Server onError", err.toString())
+        val error = MessageFactory.createErrorMessage("BES Server onError", err.toString())
         printMessage(error)
     }
 
@@ -36,7 +35,6 @@ class BesGrpcServer(
                 _verbosity,
                 event.sequenceNumber,
                 event.streamId,
-                _messageFactory,
                 event.event,
             ) { serviceMessage ->
                 hasStarted = true
@@ -45,7 +43,7 @@ class BesGrpcServer(
         val processed = _buildEventHandler.handle(ctx)
         if (processed) {
             if (_verbosity.atLeast(Verbosity.Diagnostic)) {
-                printMessage(_messageFactory.createTraceMessage(ctx.event.toString()))
+                printMessage(MessageFactory.createTraceMessage(ctx.event.toString()))
             }
         }
     }

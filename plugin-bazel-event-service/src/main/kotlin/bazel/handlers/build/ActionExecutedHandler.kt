@@ -7,6 +7,7 @@ import bazel.file.read
 import bazel.handlers.BuildEventHandler
 import bazel.handlers.BuildEventHandlerContext
 import bazel.messages.Color
+import bazel.messages.MessageFactory
 import bazel.messages.apply
 import bazel.messages.buildMessage
 import bazel.messages.joinToStringEscaped
@@ -44,7 +45,7 @@ class ActionExecutedHandler : BuildEventHandler {
         if (event.success) {
             if (ctx.verbosity.atLeast(Verbosity.Detailed)) {
                 ctx.onNext(
-                    ctx.messageFactory.createMessage(
+                    MessageFactory.createMessage(
                         ctx
                             .buildMessage()
                             .append(actionName.apply(Color.BuildStage))
@@ -54,7 +55,7 @@ class ActionExecutedHandler : BuildEventHandler {
                 )
 
                 ctx.onNext(
-                    ctx.messageFactory.createMessage(
+                    MessageFactory.createMessage(
                         ctx
                             .buildMessage()
                             .append(details.toString())
@@ -69,16 +70,16 @@ class ActionExecutedHandler : BuildEventHandler {
                     .append(actionName)
                     .append(" failed to execute.")
                     .toString()
-            ctx.onNext(ctx.messageFactory.createCompilationStarted(error))
+            ctx.onNext(MessageFactory.createCompilationStarted(error))
             ctx.onNext(
-                ctx.messageFactory.createErrorMessage(
+                MessageFactory.createErrorMessage(
                     ctx
                         .buildMessage()
                         .append(details.toString())
                         .toString(),
                 ),
             )
-            ctx.onNext(ctx.messageFactory.createCompilationFinished(error))
+            ctx.onNext(MessageFactory.createCompilationFinished(error))
         }
 
         return true

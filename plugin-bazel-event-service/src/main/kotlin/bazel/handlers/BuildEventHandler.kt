@@ -2,7 +2,6 @@ package bazel.handlers
 
 import bazel.Verbosity
 import bazel.messages.MessageBuilderContext
-import bazel.messages.MessageFactory
 import bazel.messages.TargetRegistry
 import com.google.devtools.build.lib.buildeventstream.BuildEventStreamProtos
 import com.google.devtools.build.v1.StreamId
@@ -16,7 +15,6 @@ data class BuildEventHandlerContext(
     override val verbosity: Verbosity,
     override val sequenceNumber: Long,
     override val streamId: StreamId? = null,
-    val messageFactory: MessageFactory,
     val targetRegistry: TargetRegistry,
     val event: BuildEventStreamProtos.BuildEvent,
     val onNext: (ServiceMessage) -> Unit,
@@ -30,7 +28,6 @@ data class BuildEventHandlerContext(
             ctx.verbosity,
             ctx.sequenceNumber,
             ctx.streamId,
-            ctx.messageFactory,
             targetRegistry,
             event,
             ctx.onNext,

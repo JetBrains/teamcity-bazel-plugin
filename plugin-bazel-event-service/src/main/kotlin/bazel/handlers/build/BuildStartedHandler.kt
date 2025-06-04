@@ -4,6 +4,7 @@ import bazel.Verbosity
 import bazel.atLeast
 import bazel.handlers.BuildEventHandler
 import bazel.handlers.BuildEventHandlerContext
+import bazel.messages.MessageFactory
 import bazel.messages.buildMessage
 
 class BuildStartedHandler : BuildEventHandler {
@@ -27,7 +28,7 @@ class BuildStartedHandler : BuildEventHandler {
                 .append(", workspace: \"${event.workspaceDirectory}\"", Verbosity.Verbose)
                 .toString()
 
-        ctx.onNext(ctx.messageFactory.createBlockOpened(ctx.targetRegistry.commandName, details))
+        ctx.onNext(MessageFactory.createBlockOpened(ctx.targetRegistry.commandName, details))
 
         return true
     }
