@@ -7,7 +7,7 @@ import jetbrains.buildServer.messages.serviceMessages.ServiceMessage
 import java.util.Date
 
 class BesGrpcServer(
-    private val port: Int,
+    private val grpcServer: GrpcServer,
     private val _verbosity: Verbosity,
     private val _messageFactory: MessageFactory,
     private val _buildEventHandler: GrpcEventHandlerChain,
@@ -15,7 +15,7 @@ class BesGrpcServer(
     var hasStarted = false
 
     fun start() =
-        GrpcServer(port)
+        grpcServer
             .start(
                 BesGrpcServerEventStream {
                     when (it) {

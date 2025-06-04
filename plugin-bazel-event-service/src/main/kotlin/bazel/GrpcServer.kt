@@ -11,6 +11,7 @@ class GrpcServer(
     private val _port: Int,
 ) : ServerTransportFilter() {
     private val connectionCounter = AtomicInteger()
+    var port = 0
 
     fun start(bindableService: io.grpc.BindableService): AutoCloseable {
         val server =
@@ -21,8 +22,9 @@ class GrpcServer(
                 .addService(bindableService)
                 .build()
                 .start()
+        port = server.port
 
-        logger.log(Level.INFO, "Server started, listening on {0}", server.port.toString())
+        logger.log(Level.INFO, "Server started, listening on {0}", port.toString())
         return AutoCloseable {
             logger.log(Level.INFO, "Initiating server termination..")
             server.let {

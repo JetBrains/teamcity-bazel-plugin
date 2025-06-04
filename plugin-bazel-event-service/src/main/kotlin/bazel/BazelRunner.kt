@@ -12,7 +12,7 @@ class BazelRunner(
     private val messageFactory: MessageFactory,
     private val verbosity: Verbosity,
     private val bazelCommandlineFile: File,
-    private val besPort: Int,
+    private val besPort: Int = 0,
     private val eventFile: Path? = null,
 ) {
     val args: Sequence<String>

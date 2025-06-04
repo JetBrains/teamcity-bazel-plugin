@@ -44,8 +44,13 @@ private fun runBinaryFileMode(
         BinaryFileEventStream(),
         BuildEventHandlerChain(),
     ).read().use {
-        val bazelRunner = createBazelRunner(options, messageFactory)
-        val result = bazelRunner.run()
+        val result =
+            BazelRunner(
+                messageFactory = messageFactory,
+                verbosity = options.verbosity,
+                bazelCommandlineFile = options.bazelCommandlineFile!!,
+                eventFile = options.eventFile,
+            ).run()
         finalExitCode = result.exitCode
         for (error in result.errors) {
             println(messageFactory.createErrorMessage(error).asString())
@@ -59,9 +64,10 @@ private fun runBesGrpcServerMode(
     messageFactory: MessageFactory,
 ) {
     var finalExitCode = 0
+    val grpcServer = GrpcServer(options.port)
     val server =
         BesGrpcServer(
-            options.port,
+            grpcServer,
             options.verbosity,
             messageFactory,
             GrpcEventHandlerChain(),
@@ -70,8 +76,13 @@ private fun runBesGrpcServerMode(
     try {
         if (options.bazelCommandlineFile != null) {
             server.start().use {
-                val bazelRunner = createBazelRunner(options, messageFactory)
-                val result = bazelRunner.run()
+                val result =
+                    BazelRunner(
+                        messageFactory = messageFactory,
+                        verbosity = options.verbosity,
+                        bazelCommandlineFile = options.bazelCommandlineFile!!,
+                        besPort = grpcServer.port,
+                    ).run()
                 finalExitCode = result.exitCode
 
                 if (!server.hasStarted) {
@@ -92,21 +103,6 @@ private fun runBesGrpcServerMode(
     }
 
     exit(finalExitCode)
-}
-
-private fun createBazelRunner(
-    options: BazelOptions,
-    messageFactory: MessageFactory,
-): BazelRunner {
-    val runner =
-        BazelRunner(
-            messageFactory,
-            options.verbosity,
-            options.bazelCommandlineFile!!,
-            options.port,
-            options.eventFile,
-        )
-    return runner
 }
 
 fun exit(status: Int): Unit = exitProcess(status)
