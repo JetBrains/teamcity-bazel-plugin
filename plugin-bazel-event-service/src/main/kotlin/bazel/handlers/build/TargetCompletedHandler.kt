@@ -39,11 +39,11 @@ class TargetCompletedHandler : BuildEventHandler {
                     .toString()
 
             if (completed.success && ctx.verbosity.atLeast(Verbosity.Detailed)) {
-                ctx.onNext(MessageFactory.createMessage(description))
+                ctx.emitMessage(MessageFactory.createMessage(description))
             }
 
             if (!completed.success) {
-                ctx.onNext(MessageFactory.createErrorMessage(description))
+                ctx.emitMessage(MessageFactory.createErrorMessage(description))
             }
         }
 

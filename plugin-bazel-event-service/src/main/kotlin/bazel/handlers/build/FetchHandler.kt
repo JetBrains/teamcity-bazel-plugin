@@ -24,7 +24,7 @@ class FetchHandler : BuildEventHandler {
             }
 
         if (event.success && ctx.verbosity.atLeast(Verbosity.Detailed)) {
-            ctx.onNext(
+            ctx.emitMessage(
                 MessageFactory.createMessage(
                     ctx
                         .buildMessage()
@@ -33,7 +33,7 @@ class FetchHandler : BuildEventHandler {
                 ),
             )
         } else if (!event.success && ctx.verbosity.atLeast(Verbosity.Normal)) {
-            ctx.onNext(
+            ctx.emitMessage(
                 MessageFactory.createWarningMessage(
                     ctx
                         .buildMessage()

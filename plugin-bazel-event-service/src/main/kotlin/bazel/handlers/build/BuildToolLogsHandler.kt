@@ -22,7 +22,7 @@ class BuildToolLogsHandler : BuildEventHandler {
         for (log in logs) {
             if (log.name.isEmpty()) continue
 
-            ctx.onNext(
+            ctx.emitMessage(
                 MessageFactory.createMessage(
                     ctx
                         .buildMessage()

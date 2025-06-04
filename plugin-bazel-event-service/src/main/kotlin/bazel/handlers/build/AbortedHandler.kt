@@ -18,7 +18,7 @@ class AbortedHandler : BuildEventHandler {
             ctx.targetRegistry.getTarget(ctx.event.id)?.let { target ->
                 val reason = formatAbortReason(aborted.reason)
                 if (target.description.isNotEmpty()) {
-                    ctx.onNext(
+                    ctx.emitMessage(
                         MessageFactory
                             .createMessage(
                                 ctx

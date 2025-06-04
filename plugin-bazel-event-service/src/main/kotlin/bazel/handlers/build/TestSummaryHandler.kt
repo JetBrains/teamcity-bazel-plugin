@@ -22,7 +22,7 @@ class TestSummaryHandler : BuildEventHandler {
         val label = ctx.event.id.testSummary.label
 
         val overallStatus = testStatusConverter.convert(summary.overallStatus)
-        ctx.onNext(
+        ctx.emitMessage(
             MessageFactory.createMessage(
                 ctx
                     .buildMessage()

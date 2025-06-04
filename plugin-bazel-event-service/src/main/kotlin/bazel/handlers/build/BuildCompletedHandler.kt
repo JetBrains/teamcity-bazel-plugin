@@ -17,7 +17,7 @@ class BuildCompletedHandler : BuildEventHandler {
         when (event.exitCode.code) {
             0 -> {
                 if (ctx.verbosity.atLeast(Verbosity.Detailed)) {
-                    ctx.onNext(
+                    ctx.emitMessage(
                         MessageFactory.createMessage(
                             ctx
                                 .buildMessage()
@@ -30,7 +30,7 @@ class BuildCompletedHandler : BuildEventHandler {
             }
 
             3 -> {
-                ctx.onNext(
+                ctx.emitMessage(
                     MessageFactory.createMessage(
                         ctx
                             .buildMessage()
@@ -42,7 +42,7 @@ class BuildCompletedHandler : BuildEventHandler {
             }
 
             4 -> {
-                ctx.onNext(
+                ctx.emitMessage(
                     MessageFactory.createMessage(
                         ctx
                             .buildMessage()
@@ -54,7 +54,7 @@ class BuildCompletedHandler : BuildEventHandler {
             }
 
             else -> {
-                ctx.onNext(
+                ctx.emitMessage(
                     MessageFactory.createErrorMessage(
                         ctx
                             .buildMessage(false)
@@ -67,7 +67,7 @@ class BuildCompletedHandler : BuildEventHandler {
         }
 
         if (ctx.verbosity.atLeast(Verbosity.Normal)) {
-            ctx.onNext(MessageFactory.createBlockClosed(ctx.targetRegistry.commandName))
+            ctx.emitMessage(MessageFactory.createBlockClosed(ctx.targetRegistry.commandName))
         }
 
         return true

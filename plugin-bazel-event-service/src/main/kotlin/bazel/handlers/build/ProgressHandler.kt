@@ -17,7 +17,7 @@ class ProgressHandler : BuildEventHandler {
 
         val progress = ctx.event.progress
         if (ctx.verbosity.atLeast(Verbosity.Normal) && progress.stdout.isNotBlank()) {
-            ctx.onNext(
+            ctx.emitMessage(
                 MessageFactory.createMessage(
                     ctx
                         .buildMessage()
@@ -49,7 +49,7 @@ class ProgressHandler : BuildEventHandler {
                         LogLevel.Trace -> MessageFactory.createTraceMessage(messageText)
                     }
 
-                ctx.onNext(message)
+                ctx.emitMessage(message)
             }
         }
 

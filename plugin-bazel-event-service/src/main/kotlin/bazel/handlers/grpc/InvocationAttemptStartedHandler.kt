@@ -14,7 +14,7 @@ class InvocationAttemptStartedHandler : GrpcEventHandler {
         }
         val invocationAttemptStarted = ctx.event.invocationAttemptStarted
         if (ctx.verbosity.atLeast(Verbosity.Detailed)) {
-            ctx.onNext(
+            ctx.emitMessage(
                 MessageFactory.createMessage(
                     ctx
                         .buildMessage()
@@ -24,7 +24,7 @@ class InvocationAttemptStartedHandler : GrpcEventHandler {
             )
         }
 
-        ctx.onNext(
+        ctx.emitMessage(
             MessageFactory.createFlowStarted(ctx.streamId.invocationId, ctx.streamId.buildId),
         )
         return true

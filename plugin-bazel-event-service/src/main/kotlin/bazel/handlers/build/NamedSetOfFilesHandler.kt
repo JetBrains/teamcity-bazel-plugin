@@ -19,7 +19,7 @@ class NamedSetOfFilesHandler : BuildEventHandler {
         }
 
         for (file in namedSet.filesList) {
-            ctx.onNext(
+            ctx.emitMessage(
                 MessageFactory.createMessage(
                     ctx
                         .buildMessage()

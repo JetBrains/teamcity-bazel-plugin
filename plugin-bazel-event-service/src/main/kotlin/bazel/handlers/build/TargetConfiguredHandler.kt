@@ -25,7 +25,7 @@ class TargetConfiguredHandler : BuildEventHandler {
 
         ctx.targetRegistry.registerTarget(id, targetName)
         if (ctx.verbosity.atLeast(Verbosity.Detailed)) {
-            ctx.onNext(
+            ctx.emitMessage(
                 MessageFactory.createMessage(
                     ctx
                         .buildMessage()

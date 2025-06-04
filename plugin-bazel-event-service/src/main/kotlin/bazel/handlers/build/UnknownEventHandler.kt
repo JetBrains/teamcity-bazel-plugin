@@ -12,7 +12,7 @@ import bazel.messages.buildMessage
 class UnknownEventHandler : BuildEventHandler {
     override fun handle(ctx: BuildEventHandlerContext): Boolean {
         if (ctx.verbosity.atLeast(Verbosity.Detailed)) {
-            ctx.onNext(
+            ctx.emitMessage(
                 MessageFactory.createWarningMessage(
                     ctx
                         .buildMessage()

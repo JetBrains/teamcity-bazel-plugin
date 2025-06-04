@@ -44,7 +44,7 @@ class ActionExecutedHandler : BuildEventHandler {
 
         if (event.success) {
             if (ctx.verbosity.atLeast(Verbosity.Detailed)) {
-                ctx.onNext(
+                ctx.emitMessage(
                     MessageFactory.createMessage(
                         ctx
                             .buildMessage()
@@ -54,7 +54,7 @@ class ActionExecutedHandler : BuildEventHandler {
                     ),
                 )
 
-                ctx.onNext(
+                ctx.emitMessage(
                     MessageFactory.createMessage(
                         ctx
                             .buildMessage()
@@ -70,8 +70,8 @@ class ActionExecutedHandler : BuildEventHandler {
                     .append(actionName)
                     .append(" failed to execute.")
                     .toString()
-            ctx.onNext(MessageFactory.createCompilationStarted(error))
-            ctx.onNext(
+            ctx.emitMessage(MessageFactory.createCompilationStarted(error))
+            ctx.emitMessage(
                 MessageFactory.createErrorMessage(
                     ctx
                         .buildMessage()
@@ -79,7 +79,7 @@ class ActionExecutedHandler : BuildEventHandler {
                         .toString(),
                 ),
             )
-            ctx.onNext(MessageFactory.createCompilationFinished(error))
+            ctx.emitMessage(MessageFactory.createCompilationFinished(error))
         }
 
         return true

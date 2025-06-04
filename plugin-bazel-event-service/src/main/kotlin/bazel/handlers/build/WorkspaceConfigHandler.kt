@@ -17,7 +17,7 @@ class WorkspaceConfigHandler : BuildEventHandler {
 
         val info = ctx.event.workspaceInfo
         if (ctx.verbosity.atLeast(Verbosity.Detailed)) {
-            ctx.onNext(
+            ctx.emitMessage(
                 MessageFactory.createMessage(
                     ctx
                         .buildMessage()

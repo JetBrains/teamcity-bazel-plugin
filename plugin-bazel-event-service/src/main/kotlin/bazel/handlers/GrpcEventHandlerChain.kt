@@ -19,7 +19,7 @@ class GrpcEventHandlerChain : GrpcEventHandler {
 
         // deserialized bazel event is logged in BuildEventHandlerChain
         if (!ctx.event.hasBazelEvent() && ctx.verbosity.atLeast(Verbosity.Diagnostic)) {
-            ctx.onNext(MessageFactory.createTraceMessage(ctx.event.toString()))
+            ctx.emitMessage(MessageFactory.createTraceMessage(ctx.event.toString()))
         }
         return true
     }

@@ -18,7 +18,7 @@ class UnstructuredCommandLineHandler : BuildEventHandler {
         val commandLine = ctx.event.unstructuredCommandLine
         val cmd = commandLine.argsList.joinToStringEscaped()
         if (ctx.verbosity.atLeast(Verbosity.Detailed)) {
-            ctx.onNext(
+            ctx.emitMessage(
                 MessageFactory.createMessage(
                     ctx
                         .buildMessage()

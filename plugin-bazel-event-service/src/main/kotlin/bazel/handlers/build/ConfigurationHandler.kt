@@ -19,7 +19,7 @@ class ConfigurationHandler : BuildEventHandler {
 
         val event = ctx.event.configuration
         if (ctx.verbosity.atLeast(Verbosity.Detailed)) {
-            ctx.onNext(
+            ctx.emitMessage(
                 MessageFactory.createMessage(
                     ctx
                         .buildMessage()
@@ -30,7 +30,7 @@ class ConfigurationHandler : BuildEventHandler {
                         ).toString(),
                 ),
             )
-            ctx.onNext(
+            ctx.emitMessage(
                 MessageFactory.createMessage(
                     ctx
                         .buildMessage()
@@ -39,7 +39,7 @@ class ConfigurationHandler : BuildEventHandler {
                         ).toString(),
                 ),
             )
-            ctx.onNext(
+            ctx.emitMessage(
                 MessageFactory.createMessage(
                     ctx
                         .buildMessage()
@@ -50,7 +50,7 @@ class ConfigurationHandler : BuildEventHandler {
 
             if (ctx.verbosity.atLeast(Verbosity.Verbose)) {
                 for (item in event.makeVariableMap) {
-                    ctx.onNext(
+                    ctx.emitMessage(
                         MessageFactory.createMessage(
                             ctx
                                 .buildMessage()

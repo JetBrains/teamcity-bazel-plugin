@@ -29,6 +29,6 @@ private fun BuildEventHandlerContext.logError(
     error: Exception,
 ) {
     if (verbosity.atLeast(Verbosity.Diagnostic)) {
-        this.onNext(MessageFactory.createErrorMessage(message, error.toString()))
+        this.emitMessage(MessageFactory.createErrorMessage(message, error.toString()))
     }
 }

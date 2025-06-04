@@ -22,7 +22,7 @@ class ComponentStreamFinishedHandler : GrpcEventHandler {
             BuildEvent.BuildComponentStreamFinished.FinishType.FINISHED ->
                 if (ctx.verbosity.atLeast(Verbosity.Verbose)) {
                     val description = "Component \"$component\" stream finished"
-                    ctx.onNext(
+                    ctx.emitMessage(
                         MessageFactory.createMessage(
                             ctx
                                 .buildMessage()
@@ -41,7 +41,7 @@ class ComponentStreamFinishedHandler : GrpcEventHandler {
                     val expiredDescription =
                         "Set by the WatchBuild RPC server when the publisher of a build event stream stops" +
                             " publishing events without publishing a BuildComponentStreamFinished event whose type equals FINISHED."
-                    ctx.onNext(
+                    ctx.emitMessage(
                         MessageFactory.createMessage(
                             ctx
                                 .buildMessage()

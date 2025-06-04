@@ -9,7 +9,7 @@ class BuildEnqueuedHandler : GrpcEventHandler {
         if (!ctx.event.hasBuildEnqueued()) {
             return false
         }
-        ctx.onNext(MessageFactory.createMessage("Build enqueued"))
+        ctx.emitMessage(MessageFactory.createMessage("Build enqueued"))
         return true
     }
 }

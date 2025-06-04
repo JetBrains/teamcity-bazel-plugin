@@ -17,7 +17,7 @@ data class BuildEventHandlerContext(
     override val streamId: StreamId? = null,
     val targetRegistry: TargetRegistry,
     val event: BuildEventStreamProtos.BuildEvent,
-    val onNext: (ServiceMessage) -> Unit,
+    val emitMessage: (ServiceMessage) -> Unit,
 ) : MessageBuilderContext {
     companion object {
         fun fromBesContext(
@@ -30,7 +30,7 @@ data class BuildEventHandlerContext(
             ctx.streamId,
             targetRegistry,
             event,
-            ctx.onNext,
+            ctx.emitMessage,
         )
     }
 }

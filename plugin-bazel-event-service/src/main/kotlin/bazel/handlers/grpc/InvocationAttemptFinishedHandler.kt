@@ -16,7 +16,7 @@ class InvocationAttemptFinishedHandler : GrpcEventHandler {
         if (!ctx.event.hasInvocationAttemptFinished()) {
             return false
         }
-        ctx.onNext(MessageFactory.createFlowFinished(ctx.streamId.invocationId))
+        ctx.emitMessage(MessageFactory.createFlowFinished(ctx.streamId.invocationId))
 
         val invocationAttemptFinished = ctx.event.invocationAttemptFinished
         val status =
@@ -27,7 +27,7 @@ class InvocationAttemptFinishedHandler : GrpcEventHandler {
             }
         if (status == BuildStatus.Result.COMMAND_SUCCEEDED) {
             if (ctx.verbosity.atLeast(Verbosity.Detailed)) {
-                ctx.onNext(
+                ctx.emitMessage(
                     MessageFactory.createMessage(
                         ctx
                             .buildMessage()
@@ -38,7 +38,7 @@ class InvocationAttemptFinishedHandler : GrpcEventHandler {
             }
         } else {
             val description = BuildStatusFormatter.format(status)
-            ctx.onNext(
+            ctx.emitMessage(
                 MessageFactory.createErrorMessage(
                     ctx
                         .buildMessage(false)

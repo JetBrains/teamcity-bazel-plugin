@@ -20,7 +20,7 @@ class BuildMetadataHandler : BuildEventHandler {
         val event = ctx.event.buildMetadata
         if (ctx.verbosity.atLeast(Verbosity.Verbose)) {
             for (item in event.metadataMap) {
-                ctx.onNext(
+                ctx.emitMessage(
                     MessageFactory.createMessage(
                         ctx
                             .buildMessage()

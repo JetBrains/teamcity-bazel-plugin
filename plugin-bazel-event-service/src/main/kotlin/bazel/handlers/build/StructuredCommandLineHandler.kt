@@ -19,7 +19,7 @@ class StructuredCommandLineHandler : BuildEventHandler {
                     .commandLineLabel
                     .takeIf { it.isNotEmpty() } ?: "tool"
 
-            ctx.onNext(
+            ctx.emitMessage(
                 MessageFactory.createMessage(
                     ctx
                         .buildMessage()

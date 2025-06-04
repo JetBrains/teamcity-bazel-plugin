@@ -19,7 +19,7 @@ class WorkspaceStatusHandler : BuildEventHandler {
         val status = ctx.event.workspaceStatus
         if (ctx.verbosity.atLeast(Verbosity.Verbose) && status.itemCount > 0) {
             for (item in status.itemList) {
-                ctx.onNext(
+                ctx.emitMessage(
                     MessageFactory.createMessage(
                         ctx
                             .buildMessage()

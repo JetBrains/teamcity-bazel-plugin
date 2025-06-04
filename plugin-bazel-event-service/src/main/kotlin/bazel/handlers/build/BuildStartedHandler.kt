@@ -28,7 +28,7 @@ class BuildStartedHandler : BuildEventHandler {
                 .append(", workspace: \"${event.workspaceDirectory}\"", Verbosity.Verbose)
                 .toString()
 
-        ctx.onNext(MessageFactory.createBlockOpened(ctx.targetRegistry.commandName, details))
+        ctx.emitMessage(MessageFactory.createBlockOpened(ctx.targetRegistry.commandName, details))
 
         return true
     }

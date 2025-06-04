@@ -22,7 +22,7 @@ class ConvenienceSymlinkHandler : BuildEventHandler {
             symlinks.joinToString(", ") { symlink ->
                 "${symlink.path} → ${symlink.target}"
             }
-        ctx.onNext(
+        ctx.emitMessage(
             MessageFactory.createMessage(
                 ctx
                     .buildMessage()

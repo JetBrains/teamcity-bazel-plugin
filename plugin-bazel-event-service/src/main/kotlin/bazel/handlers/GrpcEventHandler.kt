@@ -15,5 +15,5 @@ data class GrpcEventHandlerContext(
     override val sequenceNumber: Long,
     override val streamId: StreamId,
     val event: BuildEvent,
-    val onNext: (ServiceMessage) -> Unit,
+    val emitMessage: (ServiceMessage) -> Unit,
 ) : MessageBuilderContext

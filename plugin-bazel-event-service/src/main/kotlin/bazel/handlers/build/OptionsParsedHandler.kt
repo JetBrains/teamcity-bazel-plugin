@@ -21,7 +21,7 @@ class OptionsParsedHandler : BuildEventHandler {
 
         val options = ctx.event.optionsParsed
         if (options.startupOptionsList.isNotEmpty()) {
-            ctx.onNext(
+            ctx.emitMessage(
                 MessageFactory.createMessage(
                     ctx
                         .buildMessage()
@@ -33,7 +33,7 @@ class OptionsParsedHandler : BuildEventHandler {
         }
 
         if (options.explicitStartupOptionsList.isNotEmpty()) {
-            ctx.onNext(
+            ctx.emitMessage(
                 MessageFactory.createMessage(
                     ctx
                         .buildMessage()
@@ -45,7 +45,7 @@ class OptionsParsedHandler : BuildEventHandler {
         }
 
         if (options.cmdLineList.isNotEmpty()) {
-            ctx.onNext(
+            ctx.emitMessage(
                 MessageFactory.createMessage(
                     ctx
                         .buildMessage()
@@ -57,7 +57,7 @@ class OptionsParsedHandler : BuildEventHandler {
         }
 
         if (options.explicitCmdLineList.isNotEmpty()) {
-            ctx.onNext(
+            ctx.emitMessage(
                 MessageFactory.createMessage(
                     ctx
                         .buildMessage()

@@ -23,7 +23,7 @@ class BuildMetricsHandler : BuildEventHandler {
         val usedHeapSizePostBuild =
             if (event.hasMemoryMetrics()) event.memoryMetrics.usedHeapSizePostBuild else 0
 
-        ctx.onNext(
+        ctx.emitMessage(
             MessageFactory.createMessage(
                 ctx
                     .buildMessage()
@@ -32,7 +32,7 @@ class BuildMetricsHandler : BuildEventHandler {
             ),
         )
 
-        ctx.onNext(
+        ctx.emitMessage(
             MessageFactory.createMessage(
                 ctx
                     .buildMessage()

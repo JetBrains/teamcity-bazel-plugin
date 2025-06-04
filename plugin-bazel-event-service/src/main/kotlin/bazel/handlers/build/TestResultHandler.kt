@@ -36,7 +36,7 @@ class TestResultHandler(
                 event.testAttemptDuration
                     .let { Duration.ofSeconds(it.seconds, it.nanos.toLong()) }
                     .toMillis()
-            ctx.onNext(
+            ctx.emitMessage(
                 MessageFactory.createMessage(
                     ctx
                         .buildMessage()
@@ -57,7 +57,7 @@ class TestResultHandler(
         val hasNextAttempt = ctx.event.childrenList.isNotEmpty()
         for (test in event.testActionOutputList.map { fileConverter.convert(it) }) {
             if (ctx.verbosity.atLeast(Verbosity.Verbose)) {
-                ctx.onNext(MessageFactory.createMessage("$test".apply(Color.Items)))
+                ctx.emitMessage(MessageFactory.createMessage("$test".apply(Color.Items)))
             }
 
             val content = test.readLines(ctx)
@@ -81,7 +81,7 @@ class TestResultHandler(
                             }
                         }
 
-                        ctx.onNext(MessageFactory.createImportData("junit", testTempFile.absolutePath))
+                        ctx.emitMessage(MessageFactory.createImportData("junit", testTempFile.absolutePath))
                     }
                 }
 
@@ -95,7 +95,7 @@ class TestResultHandler(
                                 message.addTag("tc:parseServiceMessagesInside")
                             }
 
-                            ctx.onNext(message)
+                            ctx.emitMessage(message)
                         }
                     }
             }
@@ -112,7 +112,7 @@ class TestResultHandler(
         if (ctx.verbosity.atLeast(Verbosity.Diagnostic)) {
             MessageFactory.createTraceMessage("File \"$file\":")
             for (line in content) {
-                ctx.onNext(MessageFactory.createTraceMessage("$\t$line"))
+                ctx.emitMessage(MessageFactory.createTraceMessage("$\t$line"))
             }
         }
     }

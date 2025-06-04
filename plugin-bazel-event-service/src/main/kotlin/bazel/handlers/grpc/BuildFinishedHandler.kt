@@ -19,7 +19,7 @@ class BuildFinishedHandler : GrpcEventHandler {
         val description = BuildStatusFormatter.format(buildFinished.status.result)
         when (buildFinished.status.result) {
             BuildStatus.Result.COMMAND_SUCCEEDED -> {
-                ctx.onNext(
+                ctx.emitMessage(
                     MessageFactory.createMessage(
                         ctx
                             .buildMessage()
@@ -37,7 +37,7 @@ class BuildFinishedHandler : GrpcEventHandler {
             BuildStatus.Result.INVOCATION_DEADLINE_EXCEEDED,
             BuildStatus.Result.REQUEST_DEADLINE_EXCEEDED,
             -> {
-                ctx.onNext(MessageFactory.createErrorMessage(description))
+                ctx.emitMessage(MessageFactory.createErrorMessage(description))
             }
 
             else -> {}

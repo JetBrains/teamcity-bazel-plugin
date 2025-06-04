@@ -19,7 +19,7 @@ class PatternExpandedHandler : BuildEventHandler {
         val patterns = ctx.event.id.pattern.patternList
         if (ctx.verbosity.atLeast(Verbosity.Verbose)) {
             val patterns = patterns.joinToStringEscaped(", ")
-            ctx.onNext(
+            ctx.emitMessage(
                 MessageFactory.createMessage(
                     ctx
                         .buildMessage()

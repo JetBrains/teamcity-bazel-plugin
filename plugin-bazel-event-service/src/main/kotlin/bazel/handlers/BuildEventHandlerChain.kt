@@ -36,7 +36,7 @@ class BuildEventHandlerChain : BuildEventHandler {
         handlers.firstOrNull { it.handle(ctx) } ?: UnknownEventHandler().handle(ctx)
 
         if (ctx.verbosity.atLeast(Verbosity.Diagnostic)) {
-            ctx.onNext(MessageFactory.createTraceMessage(ctx.event.toString()))
+            ctx.emitMessage(MessageFactory.createTraceMessage(ctx.event.toString()))
         }
         return true
     }
