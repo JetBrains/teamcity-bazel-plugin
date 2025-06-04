@@ -5,7 +5,7 @@
        xmlns="http://www.springframework.org/schema/beans"
        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd"
        default-autowire="constructor">
-  <bean class="jetbrains.buildServer.bazel.BazelArgumentsSplitterImpl"/>
+  <bean class="jetbrains.buildServer.bazel.BazelArgumentsSplitter"/>
   <bean class="jetbrains.buildServer.bazel.BazelBuildSessionFactory"/>
   <bean class="jetbrains.buildServer.bazel.BazelCommandBuildSession" scope="prototype"/>
   <bean class="jetbrains.buildServer.bazel.BazelCacheCleaner"/>
@@ -40,7 +40,7 @@
     <constructor-arg ref="shutdownCommand"/>
   </bean>
   <bean class="jetbrains.buildServer.bazel.WorkingDirectoryProviderImpl"/>
-  <bean class="jetbrains.buildServer.bazel.ArgumentsConverterImpl"/>
+  <bean class="jetbrains.buildServer.bazel.ArgumentsConverter"/>
   <bean class="jetbrains.buildServer.bazel.BazelCommandFactory">
     <constructor-arg ref="commonArgumentsProvider"/>
   </bean>

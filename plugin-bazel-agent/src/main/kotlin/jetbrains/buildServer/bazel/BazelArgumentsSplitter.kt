@@ -2,6 +2,16 @@
 
 package jetbrains.buildServer.bazel
 
-interface BazelArgumentsSplitter {
-    fun splitArguments(arguments: String): Sequence<String>
+import jetbrains.buildServer.util.StringUtil
+
+class BazelArgumentsSplitter {
+    fun splitArguments(arguments: String) =
+        sequence {
+            yieldAll(
+                StringUtil
+                    .splitCommandArgumentsAndUnquote(arguments)
+                    .asSequence()
+                    .filter { !it.isNullOrBlank() },
+            )
+        }
 }

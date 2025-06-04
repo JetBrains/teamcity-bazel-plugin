@@ -21,7 +21,7 @@ class BazelArgumentsSplitterTest {
         expectedArgs: List<String>,
     ) {
         // given
-        val splitter = BazelArgumentsSplitterImpl()
+        val splitter = BazelArgumentsSplitter()
 
         // when
         val actualArgs = splitter.splitArguments(arguments).toList()

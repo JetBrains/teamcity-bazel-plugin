@@ -73,7 +73,7 @@ class ArgumentsConverterTest {
         expectedSuccess: Boolean,
     ) {
         // given
-        val argumentsConverter = ArgumentsConverterImpl()
+        val argumentsConverter = ArgumentsConverter()
 
         var actualSuccess: Boolean
         // when
