@@ -14,6 +14,6 @@ enum class Verbosity(
     ;
 
     companion object {
-        fun tryParse(id: String): Verbosity? = Verbosity.values().singleOrNull { it.id.equals(id, true) }
+        fun tryParse(id: String): Verbosity? = entries.singleOrNull { it.id.equals(id, true) }
     }
 }

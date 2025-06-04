@@ -8,7 +8,7 @@ import jetbrains.buildServer.bazel.*
  * Provides arguments to bazel shutdowm command.
  */
 class ShutdownCommand(
-    private val _startupArgumentsProvider: ArgumentsProvider,
+    private val _startupArgumentsProvider: StartupArgumentsProvider,
 ) : BazelCommand {
     override val command: String = BazelConstants.COMMAND_SHUTDOWN
 

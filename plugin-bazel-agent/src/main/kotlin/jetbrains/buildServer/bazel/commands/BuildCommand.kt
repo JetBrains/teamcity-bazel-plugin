@@ -8,7 +8,7 @@ import jetbrains.buildServer.bazel.*
  * Provides arguments to bazel build command.
  */
 class BuildCommand(
-    private val _buildArgumentsProvider: ArgumentsProvider,
+    private val _buildArgumentsProvider: BuildArgumentsProvider,
 ) : BazelCommand {
     override val command: String = BazelConstants.COMMAND_BUILD
 

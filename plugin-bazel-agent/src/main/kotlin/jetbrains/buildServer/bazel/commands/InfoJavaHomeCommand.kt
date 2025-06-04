@@ -5,7 +5,7 @@ import jetbrains.buildServer.bazel.CommandArgument
 import jetbrains.buildServer.bazel.CommandArgumentType
 
 class InfoJavaHomeCommand(
-    private val _startupArgumentsProvider: ArgumentsProvider,
+    private val _startupArgumentsProvider: StartupArgumentsProvider,
 ) : BazelCommand {
     override val command: String = "InfoJavaHome"
 

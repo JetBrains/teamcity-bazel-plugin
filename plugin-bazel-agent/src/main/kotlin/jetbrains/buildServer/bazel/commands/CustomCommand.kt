@@ -11,7 +11,7 @@ import jetbrains.buildServer.bazel.CommandArgumentType
  */
 class CustomCommand(
     override val command: String,
-    private val _commonArgumentsProvider: ArgumentsProvider,
+    private val _commonArgumentsProvider: CommonArgumentsProvider,
 ) : BazelCommand {
     override val arguments: Sequence<CommandArgument>
         get() =

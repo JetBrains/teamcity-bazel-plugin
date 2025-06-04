@@ -1,29 +1,12 @@
-plugins {
-    alias libs.plugins.teamcity.common
-}
-
 repositories {
     mavenCentral()
 }
 
 dependencies {
     implementation libs.kotlin.stdlib
-
-    constraints {
-        implementation(libs.constraint.transitive.icu4j) {
-            because 'previous versions have faulty jar files which cause problems during incremental compilation (which is enabled by default since Kotlin 1.8.20)'
-        }
-    }
-
-    testImplementation libs.testng
-    testImplementation libs.mockk
 }
 
 jar {
     // don't include jar version into the name
     archiveFileName = "plugin-bazel-common.jar"
-}
-
-teamcity {
-    version = libs.versions.teamcity.get()
 }

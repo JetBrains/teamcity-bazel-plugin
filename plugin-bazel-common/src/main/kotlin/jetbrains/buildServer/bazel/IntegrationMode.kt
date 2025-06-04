@@ -11,6 +11,6 @@ enum class IntegrationMode(
     ;
 
     companion object {
-        fun tryParse(id: String): IntegrationMode? = IntegrationMode.values().singleOrNull { it.id.equals(id, true) }
+        fun tryParse(id: String): IntegrationMode? = entries.singleOrNull { it.id.equals(id, true) }
     }
 }

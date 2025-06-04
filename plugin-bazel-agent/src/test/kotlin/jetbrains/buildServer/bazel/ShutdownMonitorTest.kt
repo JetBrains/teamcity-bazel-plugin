@@ -8,6 +8,7 @@ import io.mockk.mockk
 import io.mockk.verify
 import jetbrains.buildServer.agent.*
 import jetbrains.buildServer.agent.runner.ProgramCommandLine
+import jetbrains.buildServer.bazel.commands.ShutdownCommand
 import org.testng.annotations.BeforeMethod
 import org.testng.annotations.Test
 import java.io.File
@@ -20,7 +21,7 @@ class ShutdownMonitorTest {
     private lateinit var commandLineExecutor: CommandLineExecutor
 
     @MockK
-    private lateinit var shutdownCommand: BazelCommand
+    private lateinit var shutdownCommand: ShutdownCommand
 
     @MockK
     private lateinit var workspaceRegistry: WorkspaceRegistry

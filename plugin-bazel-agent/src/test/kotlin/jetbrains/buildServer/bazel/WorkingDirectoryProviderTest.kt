@@ -41,7 +41,7 @@ class WorkingDirectoryProviderTest {
         expectedWorkingDirectory: File,
     ) {
         // given
-        val workingDirectoryProvider = WorkingDirectoryProviderImpl(pathsService, parametersService)
+        val workingDirectoryProvider = WorkingDirectoryProvider(pathsService, parametersService)
 
         every {
             parametersService.tryGetParameter(ParameterType.Runner, BazelConstants.PARAM_WORKING_DIR)
