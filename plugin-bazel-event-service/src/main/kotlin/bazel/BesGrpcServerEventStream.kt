@@ -28,12 +28,10 @@ class BesGrpcServerEventStream(
 
     // BuildEvents are used to declare the beginning and end of major portions of a Build
     override fun publishLifecycleEvent(
-        request: PublishLifecycleEventRequest?,
-        responseObserver: StreamObserver<Empty>?,
+        request: PublishLifecycleEventRequest,
+        responseObserver: StreamObserver<Empty>,
     ) {
-        logger.log(Level.FINE, "publishLifecycleEvent: $request")
-
-        if (request?.hasBuildEvent() == true) {
+        if (request.hasBuildEvent()) {
             onEvent(
                 Result.Event(
                     request.buildEvent.sequenceNumber,
@@ -42,11 +40,8 @@ class BesGrpcServerEventStream(
                 ),
             )
         }
-
-        responseObserver?.let {
-            it.onNext(Empty.getDefaultInstance())
-            it.onCompleted()
-        }
+        responseObserver.onNext(Empty.getDefaultInstance())
+        responseObserver.onCompleted()
     }
 
     // This method is used to stream detailed events from the build tool during the build (e.g., target completion, test results, actions, etc.).
@@ -54,22 +49,13 @@ class BesGrpcServerEventStream(
     // NOTE: only single stream can be opened during the build
     override fun publishBuildToolEventStream(
         responseObserver: StreamObserver<PublishBuildToolEventStreamResponse>,
-    ): StreamObserver<PublishBuildToolEventStreamRequest> {
-        logger.log(Level.FINE, "publishBuildToolEventStream: $responseObserver")
-        return PublishEventObserver(responseObserver, onEvent)
-    }
-
-    companion object {
-        private val logger = Logger.getLogger(BesGrpcServerEventStream::class.java.name)
-    }
+    ): StreamObserver<PublishBuildToolEventStreamRequest> = PublishEventObserver(responseObserver, onEvent)
 
     private class PublishEventObserver(
         private val _responseObserver: StreamObserver<PublishBuildToolEventStreamResponse>,
         private val onEvent: (Result) -> Unit,
     ) : StreamObserver<PublishBuildToolEventStreamRequest> {
         override fun onNext(value: PublishBuildToolEventStreamRequest) {
-            logger.log(Level.FINE, "onNext: $value")
-
             // send response
             _responseObserver.onNext(
                 PublishBuildToolEventStreamResponse
@@ -90,12 +76,6 @@ class BesGrpcServerEventStream(
             } else {
                 logger.log(Level.SEVERE, "OrderedBuildEvent was not found.")
             }
-
-            if (value.orderedBuildEvent.event.hasComponentStreamFinished()) {
-                // send onCompleted
-                logger.log(Level.INFO, "The ComponentStreamFinished event was received.")
-                _responseObserver.onCompleted()
-            }
         }
 
         override fun onError(error: Throwable) {
@@ -103,9 +83,7 @@ class BesGrpcServerEventStream(
             onEvent(Result.Error(error))
         }
 
-        override fun onCompleted() {
-            logger.log(Level.INFO, "onComplete")
-        }
+        override fun onCompleted() = _responseObserver.onCompleted()
 
         companion object {
             private val logger = Logger.getLogger(PublishEventObserver::class.java.name)
