@@ -2,11 +2,15 @@ package bazel.handlers.grpc
 
 import bazel.handlers.GrpcEventHandler
 import bazel.handlers.GrpcEventHandlerContext
-import bazel.messages.MessageFactory
+import bazel.handlers.HandlerResult
+import bazel.handlers.HandlerResult.Companion.handled
+import bazel.messages.MessageFactory.createErrorMessage
 
 class NotProcessedEventHandler : GrpcEventHandler {
-    override fun handle(ctx: GrpcEventHandlerContext): Boolean {
-        ctx.emitMessage(MessageFactory.createErrorMessage("Unknown event type: ${ctx.event}"))
-        return false
-    }
+    override fun handle(ctx: GrpcEventHandlerContext): HandlerResult =
+        handled(
+            sequence {
+                yield(createErrorMessage("Unknown event type: ${ctx.event}"))
+            },
+        )
 }

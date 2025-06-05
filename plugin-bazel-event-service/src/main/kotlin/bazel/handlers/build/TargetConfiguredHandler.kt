@@ -4,46 +4,51 @@ import bazel.Verbosity
 import bazel.atLeast
 import bazel.handlers.BuildEventHandler
 import bazel.handlers.BuildEventHandlerContext
+import bazel.handlers.HandlerResult
+import bazel.handlers.HandlerResult.Companion.handled
+import bazel.handlers.HandlerResult.Companion.notHandled
 import bazel.messages.Color
-import bazel.messages.MessageFactory
+import bazel.messages.MessageFactory.createMessage
+import bazel.messages.TargetRegistry
 import bazel.messages.apply
-import bazel.messages.buildMessage
 import bazel.messages.joinToStringEscaped
 
-class TargetConfiguredHandler : BuildEventHandler {
-    override fun handle(ctx: BuildEventHandlerContext): Boolean {
+class TargetConfiguredHandler(
+    private val targetRegistry: TargetRegistry,
+) : BuildEventHandler {
+    override fun handle(ctx: BuildEventHandlerContext): HandlerResult {
         if (!ctx.event.hasConfigured()) {
-            return false
+            return notHandled()
         }
-        val event = ctx.event.configured
-        val id = ctx.event.id
-        val targetName =
-            ctx
-                .buildMessage(false)
-                .append("Target ${event.targetKind} \"${id.targetConfigured.label}\"".apply(Color.BuildStage))
-                .toString()
+        return handled(
+            sequence {
+                val event = ctx.event.configured
+                val id = ctx.event.id
+                val targetName = "Target ${event.targetKind} \"${id.targetConfigured.label}\"".apply(Color.BuildStage)
+                targetRegistry.registerTarget(id, targetName)
 
-        ctx.targetRegistry.registerTarget(id, targetName)
-        if (ctx.verbosity.atLeast(Verbosity.Detailed)) {
-            ctx.emitMessage(
-                MessageFactory.createMessage(
-                    ctx
-                        .buildMessage()
-                        .append(targetName)
-                        .append(" configured")
-                        .append(
-                            ", aspect \"${id.targetConfigured.aspect}\", test size \"${event.testSize.name}\"",
-                            Verbosity.Verbose,
-                        ) { id.targetConfigured.aspect.isNotBlank() }
-                        .append(
-                            ", tags: \"${event.tagList.joinToStringEscaped(", ")}\"",
-                            Verbosity.Verbose,
-                        ) { event.tagList.isNotEmpty() }
-                        .toString(),
-                ),
-            )
-        }
+                if (!ctx.verbosity.atLeast(Verbosity.Detailed)) {
+                    return@sequence
+                }
 
-        return true
+                yield(
+                    createMessage(
+                        buildString {
+                            append(ctx.messagePrefix)
+                            append("$targetName configured")
+
+                            if (ctx.verbosity.atLeast(Verbosity.Verbose)) {
+                                if (id.targetConfigured.aspect.isNotBlank()) {
+                                    append(", aspect \"${id.targetConfigured.aspect}\", test size \"${event.testSize.name}\"")
+                                }
+                                if (event.tagList.isNotEmpty()) {
+                                    append(", tags: \"${event.tagList.joinToStringEscaped(", ")}\"")
+                                }
+                            }
+                        },
+                    ),
+                )
+            },
+        )
     }
 }

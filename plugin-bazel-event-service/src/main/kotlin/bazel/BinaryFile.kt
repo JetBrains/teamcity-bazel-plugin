@@ -9,7 +9,6 @@ import java.nio.file.Path
 class BinaryFile(
     private val _eventFile: Path,
     private val _verbosity: Verbosity,
-    private val _targetRegistry: TargetRegistry,
     private val _binaryStream: BinaryFileEventStream,
     private val _buildEventHandlerChain: BuildEventHandlerChain,
 ) {
@@ -30,13 +29,10 @@ class BinaryFile(
         val ctx =
             BuildEventHandlerContext(
                 _verbosity,
-                event.sequenceNumber,
-                targetRegistry = _targetRegistry,
-                event = event.event,
-            ) { serviceMessage ->
-                printMessage(serviceMessage)
-            }
-        _buildEventHandlerChain.handle(ctx)
+                getMessagePrefix(_verbosity, event.sequenceNumber),
+                event.event,
+            )
+        _buildEventHandlerChain.handle(ctx).messages.forEach(::printMessage)
     }
 
     private fun printMessage(message: ServiceMessage) {

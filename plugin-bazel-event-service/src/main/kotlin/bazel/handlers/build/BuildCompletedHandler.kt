@@ -4,72 +4,79 @@ import bazel.Verbosity
 import bazel.atLeast
 import bazel.handlers.BuildEventHandler
 import bazel.handlers.BuildEventHandlerContext
-import bazel.messages.MessageFactory
-import bazel.messages.buildMessage
+import bazel.handlers.HandlerResult
+import bazel.handlers.HandlerResult.Companion.handled
+import bazel.handlers.HandlerResult.Companion.notHandled
+import bazel.messages.MessageFactory.createBlockClosed
+import bazel.messages.MessageFactory.createErrorMessage
+import bazel.messages.MessageFactory.createMessage
+import bazel.messages.TargetRegistry
 
-class BuildCompletedHandler : BuildEventHandler {
-    override fun handle(ctx: BuildEventHandlerContext): Boolean {
+class BuildCompletedHandler(
+    private val targetRegistry: TargetRegistry,
+) : BuildEventHandler {
+    override fun handle(ctx: BuildEventHandlerContext): HandlerResult {
         if (!ctx.event.hasFinished()) {
-            return false
+            return notHandled()
         }
 
-        val event = ctx.event.finished
-        when (event.exitCode.code) {
-            0 -> {
-                if (ctx.verbosity.atLeast(Verbosity.Detailed)) {
-                    ctx.emitMessage(
-                        MessageFactory.createMessage(
-                            ctx
-                                .buildMessage()
-                                .append("Build completed")
-                                .append(", exit code ${event.exitCode}")
-                                .toString(),
-                        ),
-                    )
+        return handled(
+            sequence {
+                val event = ctx.event.finished
+                when (event.exitCode.code) {
+                    0 ->
+                        if (ctx.verbosity.atLeast(Verbosity.Detailed)) {
+                            yield(
+                                createMessage(
+                                    buildString {
+                                        append(ctx.messagePrefix)
+                                        append("Build completed")
+                                        append(", exit code ${event.exitCode}")
+                                    },
+                                ),
+                            )
+                        }
+
+                    3 ->
+                        yield(
+                            createMessage(
+                                buildString {
+                                    append(ctx.messagePrefix)
+                                    append("Build completed with failed test(s)")
+                                    append(", exit code ${event.exitCode}")
+                                },
+                            ),
+                        )
+
+                    4 ->
+                        yield(
+                            createMessage(
+                                buildString {
+                                    append(ctx.messagePrefix)
+                                    append("No tests were found")
+                                    append(", exit code ${event.exitCode}")
+                                },
+                            ),
+                        )
+
+                    else ->
+                        yield(
+                            createErrorMessage(
+                                buildString {
+                                    append(ctx.messagePrefix)
+                                    append("Build failed: ${event.exitCode.name}")
+                                    if (ctx.verbosity.atLeast(Verbosity.Detailed)) {
+                                        append(", exit code ${event.exitCode}")
+                                    }
+                                },
+                            ),
+                        )
                 }
-            }
 
-            3 -> {
-                ctx.emitMessage(
-                    MessageFactory.createMessage(
-                        ctx
-                            .buildMessage()
-                            .append("Build completed with failed test(s)")
-                            .append(", exit code ${event.exitCode}")
-                            .toString(),
-                    ),
-                )
-            }
-
-            4 -> {
-                ctx.emitMessage(
-                    MessageFactory.createMessage(
-                        ctx
-                            .buildMessage()
-                            .append("No tests were found")
-                            .append(", exit code ${event.exitCode}")
-                            .toString(),
-                    ),
-                )
-            }
-
-            else -> {
-                ctx.emitMessage(
-                    MessageFactory.createErrorMessage(
-                        ctx
-                            .buildMessage(false)
-                            .append("Build failed: ${event.exitCode.name}")
-                            .append(", exit code ${event.exitCode}", Verbosity.Detailed)
-                            .toString(),
-                    ),
-                )
-            }
-        }
-
-        if (ctx.verbosity.atLeast(Verbosity.Normal)) {
-            ctx.emitMessage(MessageFactory.createBlockClosed(ctx.targetRegistry.commandName))
-        }
-
-        return true
+                if (ctx.verbosity.atLeast(Verbosity.Normal)) {
+                    yield(createBlockClosed(targetRegistry.commandName))
+                }
+            },
+        )
     }
 }

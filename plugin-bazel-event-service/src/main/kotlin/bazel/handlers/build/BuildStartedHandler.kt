@@ -4,32 +4,41 @@ import bazel.Verbosity
 import bazel.atLeast
 import bazel.handlers.BuildEventHandler
 import bazel.handlers.BuildEventHandlerContext
-import bazel.messages.MessageFactory
-import bazel.messages.buildMessage
+import bazel.handlers.HandlerResult
+import bazel.handlers.HandlerResult.Companion.handled
+import bazel.handlers.HandlerResult.Companion.notHandled
+import bazel.messages.MessageFactory.createBlockOpened
+import bazel.messages.TargetRegistry
 
-class BuildStartedHandler : BuildEventHandler {
-    override fun handle(ctx: BuildEventHandlerContext): Boolean {
+class BuildStartedHandler(
+    private val targetRegistry: TargetRegistry,
+) : BuildEventHandler {
+    override fun handle(ctx: BuildEventHandlerContext): HandlerResult {
         if (!ctx.event.hasStarted()) {
-            return false
-        }
-        val event = ctx.event.started
-        ctx.targetRegistry.commandName = event.command
-
-        if (!ctx.verbosity.atLeast(Verbosity.Normal)) {
-            return true
+            return notHandled()
         }
 
-        val details =
-            ctx
-                .buildMessage(false)
-                .append(event.command, Verbosity.Normal)
-                .append(" v${event.buildToolVersion}", Verbosity.Verbose)
-                .append(", directory: \"${event.workingDirectory}\"", Verbosity.Verbose)
-                .append(", workspace: \"${event.workspaceDirectory}\"", Verbosity.Verbose)
-                .toString()
+        return handled(
+            sequence {
+                val event = ctx.event.started
+                targetRegistry.commandName = event.command
 
-        ctx.emitMessage(MessageFactory.createBlockOpened(ctx.targetRegistry.commandName, details))
+                if (!ctx.verbosity.atLeast(Verbosity.Normal)) {
+                    return@sequence
+                }
+                val details =
+                    buildString {
+                        append(event.command)
 
-        return true
+                        if (ctx.verbosity.atLeast(Verbosity.Verbose)) {
+                            append(" v${event.buildToolVersion}")
+                            append(", directory: \"${event.workingDirectory}\"")
+                            append(", workspace: \"${event.workspaceDirectory}\"")
+                        }
+                    }
+
+                yield(createBlockOpened(targetRegistry.commandName, details))
+            },
+        )
     }
 }

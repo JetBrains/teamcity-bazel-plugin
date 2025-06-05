@@ -2,19 +2,20 @@ package bazel
 
 import bazel.handlers.GrpcEventHandlerChain
 import bazel.handlers.GrpcEventHandlerContext
-import bazel.messages.*
+import bazel.messages.MessageFactory.createErrorMessage
+import bazel.messages.getMessagePrefix
 import jetbrains.buildServer.messages.serviceMessages.ServiceMessage
 import java.util.Date
 
 class BesGrpcServer(
-    private val grpcServer: GrpcServer,
+    private val _grpcServer: GrpcServer,
     private val _verbosity: Verbosity,
     private val _buildEventHandler: GrpcEventHandlerChain,
 ) {
     var hasStarted = false
 
     fun start() =
-        grpcServer
+        _grpcServer
             .start(
                 BesGrpcServerEventStream {
                     when (it) {
@@ -25,7 +26,7 @@ class BesGrpcServer(
             )
 
     private fun onError(err: Throwable) {
-        val error = MessageFactory.createErrorMessage("BES Server onError", err.toString())
+        val error = createErrorMessage("BES Server onError", err.toString())
         printMessage(error)
     }
 
@@ -33,19 +34,14 @@ class BesGrpcServer(
         val ctx =
             GrpcEventHandlerContext(
                 _verbosity,
-                event.sequenceNumber,
                 event.streamId,
+                getMessagePrefix(_verbosity, event.sequenceNumber, event.streamId),
                 event.event,
-            ) { serviceMessage ->
-                hasStarted = true
-                printMessage(updateHeader(event, serviceMessage))
-            }
-        _buildEventHandler.handle(ctx)
+            )
+        _buildEventHandler.handle(ctx).messages.forEach { printMessage(updateHeader(event, it)) }
     }
 
-    private fun printMessage(message: ServiceMessage) {
-        println(message.asString())
-    }
+    private fun printMessage(message: ServiceMessage) = println(message.asString())
 
     private fun updateHeader(
         event: BesGrpcServerEventStream.Result.Event,

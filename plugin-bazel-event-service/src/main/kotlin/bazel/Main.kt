@@ -3,7 +3,6 @@ package bazel
 import bazel.handlers.BuildEventHandlerChain
 import bazel.handlers.GrpcEventHandlerChain
 import bazel.messages.MessageFactory
-import bazel.messages.TargetRegistry
 import kotlin.system.exitProcess
 
 fun main(args: Array<String>) {
@@ -29,7 +28,6 @@ private fun runBinaryFileMode(options: BazelOptions) {
     BinaryFile(
         options.eventFile!!,
         options.verbosity,
-        TargetRegistry(),
         BinaryFileEventStream(),
         BuildEventHandlerChain(),
     ).read().use {

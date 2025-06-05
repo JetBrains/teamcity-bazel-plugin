@@ -4,32 +4,34 @@ import bazel.Verbosity
 import bazel.atLeast
 import bazel.handlers.BuildEventHandler
 import bazel.handlers.BuildEventHandlerContext
+import bazel.handlers.HandlerResult
+import bazel.handlers.HandlerResult.Companion.handled
+import bazel.handlers.HandlerResult.Companion.notHandled
 import bazel.messages.MessageFactory
-import bazel.messages.buildMessage
 
 class StructuredCommandLineHandler : BuildEventHandler {
-    override fun handle(ctx: BuildEventHandlerContext): Boolean {
+    override fun handle(ctx: BuildEventHandlerContext): HandlerResult {
         if (!ctx.event.hasStructuredCommandLine()) {
-            return false
+            return notHandled()
         }
-        if (ctx.verbosity.atLeast(Verbosity.Detailed)) {
-            val label =
-                ctx.event
-                    .structuredCommandLine
-                    .commandLineLabel
-                    .takeIf { it.isNotEmpty() } ?: "tool"
+        return handled(
+            sequence {
+                if (!ctx.verbosity.atLeast(Verbosity.Detailed)) {
+                    return@sequence
+                }
+                val label =
+                    ctx.event.structuredCommandLine.commandLineLabel
+                        .takeIf { it.isNotEmpty() } ?: "tool"
 
-            ctx.emitMessage(
-                MessageFactory.createMessage(
-                    ctx
-                        .buildMessage()
-                        .append("Run ")
-                        .append(label)
-                        .toString(),
-                ),
-            )
-        }
-
-        return true
+                yield(
+                    MessageFactory.createMessage(
+                        buildString {
+                            append(ctx.messagePrefix)
+                            append("Run $label")
+                        },
+                    ),
+                )
+            },
+        )
     }
 }

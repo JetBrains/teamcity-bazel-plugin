@@ -4,32 +4,38 @@ import bazel.Verbosity
 import bazel.atLeast
 import bazel.handlers.BuildEventHandler
 import bazel.handlers.BuildEventHandlerContext
+import bazel.handlers.HandlerResult
+import bazel.handlers.HandlerResult.Companion.handled
+import bazel.handlers.HandlerResult.Companion.notHandled
 import bazel.messages.Color
-import bazel.messages.MessageFactory
+import bazel.messages.MessageFactory.createMessage
 import bazel.messages.apply
-import bazel.messages.buildMessage
 import bazel.messages.joinToStringEscaped
 
 class WorkspaceStatusHandler : BuildEventHandler {
-    override fun handle(ctx: BuildEventHandlerContext): Boolean {
+    override fun handle(ctx: BuildEventHandlerContext): HandlerResult {
         if (!ctx.event.hasWorkspaceStatus()) {
-            return false
+            return notHandled()
         }
 
-        val status = ctx.event.workspaceStatus
-        if (ctx.verbosity.atLeast(Verbosity.Verbose) && status.itemCount > 0) {
-            for (item in status.itemList) {
-                ctx.emitMessage(
-                    MessageFactory.createMessage(
-                        ctx
-                            .buildMessage()
-                            .append(listOf(item.key, item.value).joinToStringEscaped(" = ").apply(Color.Items))
-                            .toString(),
-                    ),
-                )
-            }
-        }
+        return handled(
+            sequence {
+                val status = ctx.event.workspaceStatus
+                if (!ctx.verbosity.atLeast(Verbosity.Verbose) || status.itemCount <= 0) {
+                    return@sequence
+                }
 
-        return true
+                for (item in status.itemList) {
+                    yield(
+                        createMessage(
+                            buildString {
+                                append(ctx.messagePrefix)
+                                append(listOf(item.key, item.value).joinToStringEscaped(" = ").apply(Color.Items))
+                            },
+                        ),
+                    )
+                }
+            },
+        )
     }
 }

@@ -4,32 +4,39 @@ import bazel.Verbosity
 import bazel.atLeast
 import bazel.handlers.BuildEventHandler
 import bazel.handlers.BuildEventHandlerContext
+import bazel.handlers.HandlerResult
+import bazel.handlers.HandlerResult.Companion.handled
+import bazel.handlers.HandlerResult.Companion.notHandled
 import bazel.messages.Color
-import bazel.messages.MessageFactory
+import bazel.messages.MessageFactory.createMessage
 import bazel.messages.apply
-import bazel.messages.buildMessage
 import bazel.messages.joinToStringEscaped
 
 class PatternExpandedHandler : BuildEventHandler {
-    override fun handle(ctx: BuildEventHandlerContext): Boolean {
+    override fun handle(ctx: BuildEventHandlerContext): HandlerResult {
         if (!ctx.event.hasExpanded()) {
-            return false
+            return notHandled()
         }
 
-        val patterns = ctx.event.id.pattern.patternList
-        if (ctx.verbosity.atLeast(Verbosity.Verbose)) {
-            val patterns = patterns.joinToStringEscaped(", ")
-            ctx.emitMessage(
-                MessageFactory.createMessage(
-                    ctx
-                        .buildMessage()
-                        .append("Pattern expanded ")
-                        .append(patterns.apply(Color.Details))
-                        .toString(),
-                ),
-            )
-        }
+        return handled(
+            sequence {
+                if (!ctx.verbosity.atLeast(Verbosity.Verbose)) {
+                    return@sequence
+                }
 
-        return true
+                val patterns =
+                    ctx.event.id.pattern.patternList
+                        .joinToStringEscaped(", ")
+                yield(
+                    createMessage(
+                        buildString {
+                            append(ctx.messagePrefix)
+                            append("Pattern expanded ")
+                            append(patterns.apply(Color.Details))
+                        },
+                    ),
+                )
+            },
+        )
     }
 }

@@ -2,46 +2,52 @@ package bazel.handlers.grpc
 
 import bazel.handlers.GrpcEventHandler
 import bazel.handlers.GrpcEventHandlerContext
+import bazel.handlers.HandlerResult
+import bazel.handlers.HandlerResult.Companion.handled
+import bazel.handlers.HandlerResult.Companion.notHandled
 import bazel.messages.BuildStatusFormatter
 import bazel.messages.Color
-import bazel.messages.MessageFactory
+import bazel.messages.MessageFactory.createErrorMessage
+import bazel.messages.MessageFactory.createMessage
 import bazel.messages.apply
-import bazel.messages.buildMessage
-import com.google.devtools.build.v1.BuildStatus
+import com.google.devtools.build.v1.BuildStatus.Result.*
 
 class BuildFinishedHandler : GrpcEventHandler {
-    override fun handle(ctx: GrpcEventHandlerContext): Boolean {
+    override fun handle(ctx: GrpcEventHandlerContext): HandlerResult {
         if (!ctx.event.hasBuildFinished()) {
-            return false
+            return notHandled()
         }
 
-        val buildFinished = ctx.event.buildFinished
-        val description = BuildStatusFormatter.format(buildFinished.status.result)
-        when (buildFinished.status.result) {
-            BuildStatus.Result.COMMAND_SUCCEEDED -> {
-                ctx.emitMessage(
-                    MessageFactory.createMessage(
-                        ctx
-                            .buildMessage()
-                            .append(description.apply(Color.Success))
-                            .toString(),
-                    ),
-                )
-            }
+        return handled(
+            sequence {
+                val buildFinished = ctx.event.buildFinished
+                val description = BuildStatusFormatter.format(buildFinished.status.result)
+                when (buildFinished.status.result) {
+                    COMMAND_SUCCEEDED -> {
+                        yield(
+                            createMessage(
+                                buildString {
+                                    append(ctx.messagePrefix)
+                                    append(description.apply(Color.Success))
+                                },
+                            ),
+                        )
+                    }
 
-            BuildStatus.Result.CANCELLED,
-            BuildStatus.Result.COMMAND_FAILED,
-            BuildStatus.Result.SYSTEM_ERROR,
-            BuildStatus.Result.USER_ERROR,
-            BuildStatus.Result.RESOURCE_EXHAUSTED,
-            BuildStatus.Result.INVOCATION_DEADLINE_EXCEEDED,
-            BuildStatus.Result.REQUEST_DEADLINE_EXCEEDED,
-            -> {
-                ctx.emitMessage(MessageFactory.createErrorMessage(description))
-            }
+                    CANCELLED,
+                    COMMAND_FAILED,
+                    SYSTEM_ERROR,
+                    USER_ERROR,
+                    RESOURCE_EXHAUSTED,
+                    INVOCATION_DEADLINE_EXCEEDED,
+                    REQUEST_DEADLINE_EXCEEDED,
+                    -> {
+                        yield(createErrorMessage(description))
+                    }
 
-            else -> {}
-        }
-        return true
+                    else -> {}
+                }
+            },
+        )
     }
 }

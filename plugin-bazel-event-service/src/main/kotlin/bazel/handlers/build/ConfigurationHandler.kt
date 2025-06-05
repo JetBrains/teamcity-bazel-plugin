@@ -4,65 +4,75 @@ import bazel.Verbosity
 import bazel.atLeast
 import bazel.handlers.BuildEventHandler
 import bazel.handlers.BuildEventHandlerContext
+import bazel.handlers.HandlerResult
+import bazel.handlers.HandlerResult.Companion.handled
+import bazel.handlers.HandlerResult.Companion.notHandled
 import bazel.messages.Color
-import bazel.messages.MessageFactory
+import bazel.messages.MessageFactory.createMessage
 import bazel.messages.apply
-import bazel.messages.buildMessage
 import bazel.messages.joinToStringEscaped
 import kotlin.collections.iterator
 
 class ConfigurationHandler : BuildEventHandler {
-    override fun handle(ctx: BuildEventHandlerContext): Boolean {
+    override fun handle(ctx: BuildEventHandlerContext): HandlerResult {
         if (!ctx.event.hasConfiguration()) {
-            return false
+            return notHandled()
         }
 
-        val event = ctx.event.configuration
-        if (ctx.verbosity.atLeast(Verbosity.Detailed)) {
-            ctx.emitMessage(
-                MessageFactory.createMessage(
-                    ctx
-                        .buildMessage()
-                        .append(
-                            listOf("platformName", event.platformName)
-                                .joinToStringEscaped(" = ")
-                                .apply(Color.Items),
-                        ).toString(),
-                ),
-            )
-            ctx.emitMessage(
-                MessageFactory.createMessage(
-                    ctx
-                        .buildMessage()
-                        .append(
-                            listOf("mnemonic", event.mnemonic).joinToStringEscaped(" = ").apply(Color.Items),
-                        ).toString(),
-                ),
-            )
-            ctx.emitMessage(
-                MessageFactory.createMessage(
-                    ctx
-                        .buildMessage()
-                        .append(listOf("cpu", event.cpu).joinToStringEscaped(" = ").apply(Color.Items))
-                        .toString(),
-                ),
-            )
+        return handled(
+            sequence {
+                val event = ctx.event.configuration
+                if (!ctx.verbosity.atLeast(Verbosity.Detailed)) {
+                    return@sequence
+                }
 
-            if (ctx.verbosity.atLeast(Verbosity.Verbose)) {
+                yield(
+                    createMessage(
+                        buildString {
+                            append(ctx.messagePrefix)
+                            append(
+                                listOf("platformName", event.platformName)
+                                    .joinToStringEscaped(" = ")
+                                    .apply(Color.Items),
+                            )
+                        },
+                    ),
+                )
+                yield(
+                    createMessage(
+                        buildString {
+                            append(ctx.messagePrefix)
+                            append(
+                                listOf("mnemonic", event.mnemonic).joinToStringEscaped(" = ").apply(Color.Items),
+                            )
+                        },
+                    ),
+                )
+                yield(
+                    createMessage(
+                        buildString {
+                            append(ctx.messagePrefix)
+                            append(listOf("cpu", event.cpu).joinToStringEscaped(" = ").apply(Color.Items))
+                        },
+                    ),
+                )
+
+                if (!ctx.verbosity.atLeast(Verbosity.Verbose)) {
+                    return@sequence
+                }
                 for (item in event.makeVariableMap) {
-                    ctx.emitMessage(
-                        MessageFactory.createMessage(
-                            ctx
-                                .buildMessage()
-                                .append(
+                    yield(
+                        createMessage(
+                            buildString {
+                                append(ctx.messagePrefix)
+                                append(
                                     listOf(item.key, item.value).joinToStringEscaped(" = ").apply(Color.Items),
-                                ).toString(),
+                                )
+                            },
                         ),
                     )
                 }
-            }
-        }
-
-        return true
+            },
+        )
     }
 }

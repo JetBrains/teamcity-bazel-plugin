@@ -4,29 +4,34 @@ import bazel.Verbosity
 import bazel.atLeast
 import bazel.handlers.BuildEventHandler
 import bazel.handlers.BuildEventHandlerContext
+import bazel.handlers.HandlerResult
+import bazel.handlers.HandlerResult.Companion.handled
+import bazel.handlers.HandlerResult.Companion.notHandled
 import bazel.messages.Color
-import bazel.messages.MessageFactory
+import bazel.messages.MessageFactory.createMessage
 import bazel.messages.apply
-import bazel.messages.buildMessage
 
 class WorkspaceConfigHandler : BuildEventHandler {
-    override fun handle(ctx: BuildEventHandlerContext): Boolean {
+    override fun handle(ctx: BuildEventHandlerContext): HandlerResult {
         if (!ctx.event.hasWorkspaceInfo()) {
-            return false
+            return notHandled()
         }
 
-        val info = ctx.event.workspaceInfo
-        if (ctx.verbosity.atLeast(Verbosity.Detailed)) {
-            ctx.emitMessage(
-                MessageFactory.createMessage(
-                    ctx
-                        .buildMessage()
-                        .append("localExecRoot = ${info.localExecRoot}".apply(Color.Items))
-                        .toString(),
-                ),
-            )
-        }
-
-        return true
+        return handled(
+            sequence {
+                val info = ctx.event.workspaceInfo
+                if (!ctx.verbosity.atLeast(Verbosity.Detailed)) {
+                    return@sequence
+                }
+                yield(
+                    createMessage(
+                        buildString {
+                            append(ctx.messagePrefix)
+                            append("localExecRoot = ${info.localExecRoot}".apply(Color.Items))
+                        },
+                    ),
+                )
+            },
+        )
     }
 }

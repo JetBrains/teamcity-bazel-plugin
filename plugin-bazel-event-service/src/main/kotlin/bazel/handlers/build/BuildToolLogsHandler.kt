@@ -4,34 +4,39 @@ import bazel.Verbosity
 import bazel.atLeast
 import bazel.handlers.BuildEventHandler
 import bazel.handlers.BuildEventHandlerContext
+import bazel.handlers.HandlerResult
+import bazel.handlers.HandlerResult.Companion.handled
+import bazel.handlers.HandlerResult.Companion.notHandled
 import bazel.messages.Color
-import bazel.messages.MessageFactory
+import bazel.messages.MessageFactory.createMessage
 import bazel.messages.apply
-import bazel.messages.buildMessage
 
 class BuildToolLogsHandler : BuildEventHandler {
-    override fun handle(ctx: BuildEventHandlerContext): Boolean {
+    override fun handle(ctx: BuildEventHandlerContext): HandlerResult {
         if (!ctx.event.hasBuildToolLogs()) {
-            return false
-        }
-        if (!ctx.verbosity.atLeast(Verbosity.Verbose)) {
-            return true
+            return notHandled()
         }
 
-        val logs = ctx.event.buildToolLogs.logList
-        for (log in logs) {
-            if (log.name.isEmpty()) continue
+        return handled(
+            sequence {
+                if (!ctx.verbosity.atLeast(Verbosity.Verbose)) {
+                    return@sequence
+                }
 
-            ctx.emitMessage(
-                MessageFactory.createMessage(
-                    ctx
-                        .buildMessage()
-                        .append("$log".apply(Color.Items))
-                        .toString(),
-                ),
-            )
-        }
+                val logs = ctx.event.buildToolLogs.logList
+                for (log in logs) {
+                    if (log.name.isEmpty()) continue
 
-        return true
+                    yield(
+                        createMessage(
+                            buildString {
+                                append(ctx.messagePrefix)
+                                append("$log".apply(Color.Items))
+                            },
+                        ),
+                    )
+                }
+            },
+        )
     }
 }
