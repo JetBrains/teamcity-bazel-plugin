@@ -2,11 +2,17 @@ package bazel.messages
 
 import bazel.Verbosity
 import bazel.atLeast
+import bazel.messages.MessageFactory.createBlockClosed
+import bazel.messages.MessageFactory.createBlockOpened
+import bazel.messages.MessageFactory.createCompilationFinished
+import bazel.messages.MessageFactory.createCompilationStarted
 import bazel.messages.MessageFactory.createErrorMessage
 import bazel.messages.MessageFactory.createFlowFinished
 import bazel.messages.MessageFactory.createFlowStarted
+import bazel.messages.MessageFactory.createImportData
 import bazel.messages.MessageFactory.createMessage
 import bazel.messages.MessageFactory.createTraceMessage
+import bazel.messages.MessageFactory.createWarningMessage
 import com.google.devtools.build.v1.StreamId
 import com.google.devtools.build.v1.StreamId.BuildComponent.CONTROLLER
 import com.google.devtools.build.v1.StreamId.BuildComponent.TOOL
@@ -17,26 +23,48 @@ class MessageWriter(
     private val verbosity: Verbosity,
     private val sequenceNumber: Long,
     private val streamId: StreamId? = null,
-    private val output: (ServiceMessage) -> Unit = { println(it.asString()) },
+    private val write: (ServiceMessage) -> Unit
 ) {
     fun message(
         text: String,
         hasPrefix: Boolean = true,
-    ) = output(createMessage(format(text, hasPrefix)))
+    ) = write(createMessage(format(text, hasPrefix)))
+
+    fun warning(
+        text: String,
+        hasPrefix: Boolean = true,
+    ) = write(createWarningMessage(format(text, hasPrefix)))
 
     fun error(
         text: String,
+        errorDetails: String? = null,
         hasPrefix: Boolean = true,
-    ) = output(createErrorMessage(format(text, hasPrefix)))
+    ) = write(createErrorMessage(format(text, hasPrefix), errorDetails))
 
-    fun trace(text: String) = output(createTraceMessage(text))
+    fun trace(
+        text: String,
+        hasPrefix: Boolean = true,
+    ) = write(createTraceMessage(format(text, hasPrefix)))
 
     fun flowStarted(
         flowId: String,
         parentFlowId: String,
-    ) = output(createFlowStarted(flowId, parentFlowId))
+    ) = write(createFlowStarted(flowId, parentFlowId))
 
-    fun flowFinished(flowId: String) = output(createFlowFinished(flowId))
+    fun flowFinished(flowId: String) = write(createFlowFinished(flowId))
+
+    fun compilationStarted(compiler: String) = write(createCompilationStarted(compiler))
+
+    fun compilationFinished(compiler: String) = write(createCompilationFinished(compiler))
+
+    fun blockOpened(
+        blockName: String,
+        description: String,
+    ) = write(createBlockOpened(blockName, description))
+
+    fun blockClosed(blockName: String) = write(createBlockClosed(blockName))
+
+    fun importJUnitReport(path: String) = write(createImportData("junit", path))
 
     private fun format(
         text: String,

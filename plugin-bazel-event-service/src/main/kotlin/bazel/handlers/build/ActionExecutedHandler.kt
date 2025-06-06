@@ -6,84 +6,51 @@ import bazel.file.File
 import bazel.file.FileConverter
 import bazel.handlers.BuildEventHandler
 import bazel.handlers.BuildEventHandlerContext
-import bazel.handlers.HandlerResult
-import bazel.handlers.HandlerResult.Companion.handled
-import bazel.handlers.HandlerResult.Companion.notHandled
 import bazel.messages.Color
-import bazel.messages.MessageFactory.createCompilationFinished
-import bazel.messages.MessageFactory.createCompilationStarted
-import bazel.messages.MessageFactory.createErrorMessage
-import bazel.messages.MessageFactory.createMessage
+import bazel.messages.MessageWriter
 import bazel.messages.apply
 import bazel.messages.joinToStringEscaped
 import com.google.devtools.build.lib.buildeventstream.BuildEventStreamProtos
-import jetbrains.buildServer.messages.serviceMessages.ServiceMessage
 import java.io.InputStreamReader
 
 class ActionExecutedHandler : BuildEventHandler {
     private val fileConverter = FileConverter()
 
-    override fun handle(ctx: BuildEventHandlerContext): HandlerResult {
+    override fun handle(ctx: BuildEventHandlerContext): Boolean {
         if (!ctx.event.hasAction()) {
-            return notHandled()
+            return false
         }
 
-        return handled(
-            sequence {
-                val event = ctx.event.action
-                val actionName = "Action \"${event.type}\""
+        val event = ctx.event.action
+        val actionName = "Action \"${event.type}\""
 
-                if (!event.success) {
-                    val error = "$actionName failed to execute."
-                    val details = getActionDetails(event, ctx.verbosity)
-                    yield(createCompilationStarted(error))
-                    yield(
-                        createErrorMessage(
-                            buildString {
-                                append(ctx.messagePrefix)
-                                append(details)
-                            },
-                        ),
-                    )
-                    yield(createCompilationFinished(error))
-                    return@sequence
-                }
+        if (!event.success) {
+            val error = "$actionName failed to execute."
+            ctx.writer.compilationStarted(error)
+            val details = getActionDetails(event, ctx.verbosity, ctx.writer)
+            ctx.writer.error(details, hasPrefix = false)
+            ctx.writer.compilationFinished(error)
+            return true
+        }
 
-                if (!ctx.verbosity.atLeast(Verbosity.Detailed)) {
-                    return@sequence
-                }
-                yield(
-                    createMessage(
-                        buildString {
-                            append(ctx.messagePrefix)
-                            append(actionName.apply(Color.BuildStage))
-                            append(" executed.")
-                        },
-                    ),
-                )
+        if (ctx.verbosity.atLeast(Verbosity.Detailed)) {
+            ctx.writer.message(actionName.apply(Color.BuildStage) + " executed.")
+            ctx.writer.message(getActionDetails(event, ctx.verbosity, ctx.writer))
+        }
 
-                val details = getActionDetails(event, ctx.verbosity)
-                yield(
-                    createMessage(
-                        buildString {
-                            append(ctx.messagePrefix)
-                            append(details)
-                        },
-                    ),
-                )
-            },
-        )
+        return true
     }
 
-    private suspend fun SequenceScope<ServiceMessage>.getActionDetails(
+    private fun getActionDetails(
         event: BuildEventStreamProtos.ActionExecuted,
         verbosity: Verbosity,
+        writer: MessageWriter,
     ) = buildString {
-        suspend fun SequenceScope<ServiceMessage>.appendFileIfNotBlank(
+        fun appendFileIfNotBlank(
             file: BuildEventStreamProtos.File,
             isError: Boolean = false,
         ) {
-            val content = readFile(fileConverter.convert(file), verbosity).trim()
+            val content = readFile(fileConverter.convert(file), verbosity, writer).trim()
             if (content.isNotEmpty()) {
                 appendLine(if (isError) content.apply(Color.Error) else content)
             }
@@ -96,15 +63,16 @@ class ActionExecutedHandler : BuildEventHandler {
         appendLine("Exit code: ${event.exitCode}")
     }
 
-    private suspend fun SequenceScope<ServiceMessage>.readFile(
+    private fun readFile(
         file: File,
         verbosity: Verbosity,
+        writer: MessageWriter,
     ): String {
         try {
             return InputStreamReader(file.createStream()).use { it.readText() }
         } catch (ex: Exception) {
             if (verbosity.atLeast(Verbosity.Diagnostic)) {
-                yield(createErrorMessage("Cannot read from ${file.name}.", ex.toString()))
+                writer.error("Cannot read from ${file.name}.", errorDetails = ex.toString())
             }
             return ""
         }

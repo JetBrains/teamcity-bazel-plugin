@@ -4,7 +4,6 @@ import bazel.handlers.GrpcEventHandlerChain
 import bazel.handlers.GrpcEventHandlerContext
 import bazel.messages.MessageFactory.createErrorMessage
 import bazel.messages.MessageWriter
-import bazel.messages.getMessagePrefix
 import jetbrains.buildServer.messages.serviceMessages.ServiceMessage
 import java.util.Date
 
@@ -32,17 +31,14 @@ class BesGrpcServer(
     }
 
     private fun onEvent(event: BesGrpcServerEventStream.Result.Event) {
-        val messageWriter =
-            MessageWriter(_verbosity, event.sequenceNumber, event.streamId) {
-                printMessage(updateHeader(event, it))
-            }
         val ctx =
             GrpcEventHandlerContext(
                 _verbosity,
                 event.streamId,
-                getMessagePrefix(_verbosity, event.sequenceNumber, event.streamId),
                 event.event,
-                messageWriter,
+                MessageWriter(_verbosity, event.sequenceNumber, event.streamId) {
+                    printMessage(updateHeader(event, it))
+                },
             )
         _buildEventHandler.handle(ctx)
     }

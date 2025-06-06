@@ -2,11 +2,7 @@ package bazel.handlers.build
 
 import bazel.handlers.BuildEventHandler
 import bazel.handlers.BuildEventHandlerContext
-import bazel.handlers.HandlerResult
-import bazel.handlers.HandlerResult.Companion.handled
-import bazel.handlers.HandlerResult.Companion.notHandled
 import bazel.messages.Color
-import bazel.messages.MessageFactory.createMessage
 import bazel.messages.TargetRegistry
 import bazel.messages.apply
 import com.google.devtools.build.lib.buildeventstream.BuildEventStreamProtos
@@ -15,33 +11,27 @@ import com.google.devtools.build.lib.buildeventstream.BuildEventStreamProtos.Abo
 class AbortedHandler(
     private val targetRegistry: TargetRegistry,
 ) : BuildEventHandler {
-    override fun handle(ctx: BuildEventHandlerContext): HandlerResult {
+    override fun handle(ctx: BuildEventHandlerContext): Boolean {
         if (!ctx.event.hasAborted()) {
-            return notHandled()
+            return false
         }
 
-        return handled(
-            sequence {
-                val aborted = ctx.event.aborted
-                if (!ctx.event.id.hasTargetConfigured()) {
-                    return@sequence
-                }
-                val target = targetRegistry.getTarget(ctx.event.id)?.description
-                if (target.isNullOrEmpty()) {
-                    return@sequence
-                }
-                yield(
-                    createMessage(
-                        buildString {
-                            append(target)
-                            append(" aborted.".apply(Color.Error))
-                            append(" ${formatAbortReason(aborted.reason)}")
-                            append(if (aborted.description.isNotBlank()) ": ${aborted.description}" else ".")
-                        },
-                    ),
-                )
+        val target = targetRegistry.getTarget(ctx.event.id)?.description
+        if (target.isNullOrEmpty()) {
+            return true
+        }
+
+        val aborted = ctx.event.aborted
+        ctx.writer.message(
+            buildString {
+                append(target)
+                append(" aborted.".apply(Color.Error))
+                append(" ${formatAbortReason(aborted.reason)}")
+                append(if (aborted.description.isNotBlank()) ": ${aborted.description}" else ".")
             },
+            hasPrefix = false,
         )
+        return true
     }
 
     private fun formatAbortReason(reason: BuildEventStreamProtos.Aborted.AbortReason?) =

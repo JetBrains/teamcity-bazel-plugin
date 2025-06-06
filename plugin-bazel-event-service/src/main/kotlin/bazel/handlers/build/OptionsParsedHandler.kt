@@ -4,75 +4,39 @@ import bazel.Verbosity
 import bazel.atLeast
 import bazel.handlers.BuildEventHandler
 import bazel.handlers.BuildEventHandlerContext
-import bazel.handlers.HandlerResult
-import bazel.handlers.HandlerResult.Companion.handled
-import bazel.handlers.HandlerResult.Companion.notHandled
 import bazel.messages.Color
-import bazel.messages.MessageFactory.createMessage
 import bazel.messages.apply
 import bazel.messages.joinToStringEscaped
 
 class OptionsParsedHandler : BuildEventHandler {
-    override fun handle(ctx: BuildEventHandlerContext): HandlerResult {
+    override fun handle(ctx: BuildEventHandlerContext): Boolean {
         if (!ctx.event.hasOptionsParsed()) {
-            return notHandled()
+            return false
         }
 
-        return handled(
-            sequence {
-                if (!ctx.verbosity.atLeast(Verbosity.Verbose)) {
-                    return@sequence
-                }
+        if (!ctx.verbosity.atLeast(Verbosity.Verbose)) {
+            return true
+        }
 
-                val options = ctx.event.optionsParsed
-                if (options.startupOptionsList.isNotEmpty()) {
-                    yield(
-                        createMessage(
-                            buildString {
-                                append(ctx.messagePrefix)
-                                append("Options ")
-                                append(options.startupOptionsList.joinToStringEscaped().apply(Color.Details))
-                            },
-                        ),
-                    )
-                }
+        val options = ctx.event.optionsParsed
+        if (options.startupOptionsList.isNotEmpty()) {
+            ctx.writer.message("Options " + options.startupOptionsList.joinToStringEscaped().apply(Color.Details))
+        }
 
-                if (options.explicitStartupOptionsList.isNotEmpty()) {
-                    yield(
-                        createMessage(
-                            buildString {
-                                append(ctx.messagePrefix)
-                                append("Explicit options ")
-                                append(options.explicitStartupOptionsList.joinToStringEscaped().apply(Color.Details))
-                            },
-                        ),
-                    )
-                }
+        if (options.explicitStartupOptionsList.isNotEmpty()) {
+            ctx.writer.message(
+                "Explicit options " + options.explicitStartupOptionsList.joinToStringEscaped().apply(Color.Details),
+            )
+        }
 
-                if (options.cmdLineList.isNotEmpty()) {
-                    yield(
-                        createMessage(
-                            buildString {
-                                append(ctx.messagePrefix)
-                                append("Command ")
-                                append(options.cmdLineList.joinToString().apply(Color.Details))
-                            },
-                        ),
-                    )
-                }
+        if (options.cmdLineList.isNotEmpty()) {
+            ctx.writer.message("Command " + options.cmdLineList.joinToString().apply(Color.Details))
+        }
 
-                if (options.explicitCmdLineList.isNotEmpty()) {
-                    yield(
-                        createMessage(
-                            buildString {
-                                append(ctx.messagePrefix)
-                                append("Explicit command ")
-                                append(options.explicitCmdLineList.joinToString().apply(Color.Details))
-                            },
-                        ),
-                    )
-                }
-            },
-        )
+        if (options.explicitCmdLineList.isNotEmpty()) {
+            ctx.writer.message("Explicit command " + options.explicitCmdLineList.joinToString().apply(Color.Details))
+        }
+
+        return true
     }
 }

@@ -4,10 +4,12 @@ import bazel.Verbosity
 import bazel.file.FileSystemService
 import bazel.handlers.BuildEventHandlerContext
 import bazel.handlers.build.TestResultHandler
+import bazel.messages.MessageWriter
 import com.google.devtools.build.lib.buildeventstream.BuildEventStreamProtos
 import com.google.protobuf.ByteString
 import io.mockk.MockKAnnotations
 import io.mockk.impl.annotations.MockK
+import jetbrains.buildServer.messages.serviceMessages.ServiceMessage
 import org.testng.Assert
 import org.testng.annotations.BeforeMethod
 import org.testng.annotations.DataProvider
@@ -51,9 +53,10 @@ class TestResultHandlerTest {
                         ),
                 ).build()
 
-        val ctx = createContext(bazelEvent, verbosity)
+        val serviceMessages = mutableListOf<ServiceMessage>()
+        val ctx = createContext(bazelEvent, verbosity, serviceMessages)
 
-        val serviceMessages = handler.handle(ctx).messages
+        handler.handle(ctx)
 
         // Then
         serviceMessages.let {
@@ -67,9 +70,10 @@ class TestResultHandlerTest {
     private fun createContext(
         event: BuildEventStreamProtos.BuildEvent,
         verbosity: Verbosity,
+        serviceMessages: MutableList<ServiceMessage>,
     ) = BuildEventHandlerContext(
         verbosity,
-        messagePrefix = "",
         event = event,
+        MessageWriter(Verbosity.Normal, 0) { serviceMessages.add(it) },
     )
 }

@@ -12,7 +12,6 @@ interface GrpcEventHandler {
 data class GrpcEventHandlerContext(
     val verbosity: Verbosity,
     val streamId: StreamId,
-    val messagePrefix: String,
     val event: BuildEvent,
     val writer: MessageWriter,
 )

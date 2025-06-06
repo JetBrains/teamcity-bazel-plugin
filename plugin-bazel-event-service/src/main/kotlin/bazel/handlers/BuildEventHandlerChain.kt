@@ -3,7 +3,6 @@ package bazel.handlers
 import bazel.Verbosity
 import bazel.atLeast
 import bazel.file.FileSystemService
-import bazel.handlers.HandlerResult.Companion.handled
 import bazel.handlers.build.AbortedHandler
 import bazel.handlers.build.ActionExecutedHandler
 import bazel.handlers.build.BuildCompletedHandler
@@ -30,7 +29,6 @@ import bazel.handlers.build.UnknownEventHandler
 import bazel.handlers.build.UnstructuredCommandLineHandler
 import bazel.handlers.build.WorkspaceConfigHandler
 import bazel.handlers.build.WorkspaceStatusHandler
-import bazel.messages.MessageFactory
 import bazel.messages.TargetRegistry
 
 class BuildEventHandlerChain : BuildEventHandler {
@@ -90,21 +88,12 @@ class BuildEventHandlerChain : BuildEventHandler {
             TestProgressHandler(),
         )
 
-    override fun handle(ctx: BuildEventHandlerContext): HandlerResult {
-        val result =
-            handlers
-                .asSequence()
-                .map { it.handle(ctx) }
-                .firstOrNull { it.handled }
-                ?: UnknownEventHandler().handle(ctx)
+    override fun handle(ctx: BuildEventHandlerContext): Boolean {
+        handlers.firstOrNull { it.handle(ctx) } ?: UnknownEventHandler().handle(ctx)
+        if (ctx.verbosity.atLeast(Verbosity.Diagnostic)) {
+            ctx.writer.trace(ctx.event.toString(), hasPrefix = false)
+        }
 
-        return handled(
-            sequence {
-                yieldAll(result.messages)
-                if (ctx.verbosity.atLeast(Verbosity.Diagnostic)) {
-                    yield(MessageFactory.createTraceMessage(ctx.event.toString()))
-                }
-            },
-        )
+        return true
     }
 }

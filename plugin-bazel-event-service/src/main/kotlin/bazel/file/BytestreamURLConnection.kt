@@ -8,7 +8,6 @@ import java.io.InputStream
 import java.lang.IllegalStateException
 import java.net.URL
 import java.net.URLConnection
-import kotlin.collections.iterator
 
 class BytestreamURLConnection(
     url: URL,

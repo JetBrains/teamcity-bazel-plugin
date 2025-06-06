@@ -4,38 +4,22 @@ import bazel.Verbosity
 import bazel.atLeast
 import bazel.handlers.BuildEventHandler
 import bazel.handlers.BuildEventHandlerContext
-import bazel.handlers.HandlerResult
-import bazel.handlers.HandlerResult.Companion.handled
-import bazel.handlers.HandlerResult.Companion.notHandled
 import bazel.messages.Color
-import bazel.messages.MessageFactory.createMessage
 import bazel.messages.apply
 import bazel.messages.joinToStringEscaped
-import kotlin.collections.iterator
 
 class BuildMetadataHandler : BuildEventHandler {
-    override fun handle(ctx: BuildEventHandlerContext): HandlerResult {
+    override fun handle(ctx: BuildEventHandlerContext): Boolean {
         if (!ctx.event.hasBuildMetadata()) {
-            return notHandled()
+            return false
         }
-        return handled(
-            sequence {
-                val event = ctx.event.buildMetadata
-                if (!ctx.verbosity.atLeast(Verbosity.Verbose)) {
-                    return@sequence
-                }
+        if (ctx.verbosity.atLeast(Verbosity.Verbose)) {
+            val event = ctx.event.buildMetadata
+            for (item in event.metadataMap) {
+                ctx.writer.message(listOf(item.key, item.value).joinToStringEscaped(" = ").apply(Color.Items))
+            }
+        }
 
-                for (item in event.metadataMap) {
-                    yield(
-                        createMessage(
-                            buildString {
-                                append(ctx.messagePrefix)
-                                append(listOf(item.key, item.value).joinToStringEscaped(" = ").apply(Color.Items))
-                            },
-                        ),
-                    )
-                }
-            },
-        )
+        return true
     }
 }

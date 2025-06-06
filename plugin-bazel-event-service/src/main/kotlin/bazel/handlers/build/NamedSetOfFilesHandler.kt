@@ -4,35 +4,20 @@ import bazel.Verbosity
 import bazel.atLeast
 import bazel.handlers.BuildEventHandler
 import bazel.handlers.BuildEventHandlerContext
-import bazel.handlers.HandlerResult
-import bazel.handlers.HandlerResult.Companion.handled
-import bazel.handlers.HandlerResult.Companion.notHandled
-import bazel.messages.MessageFactory.createMessage
 
 class NamedSetOfFilesHandler : BuildEventHandler {
-    override fun handle(ctx: BuildEventHandlerContext): HandlerResult {
+    override fun handle(ctx: BuildEventHandlerContext): Boolean {
         if (!ctx.event.hasNamedSetOfFiles()) {
-            return notHandled()
+            return false
         }
 
-        return handled(
-            sequence {
-                val namedSet = ctx.event.namedSetOfFiles
-                if (!ctx.verbosity.atLeast(Verbosity.Detailed) || namedSet.filesCount == 0) {
-                    return@sequence
-                }
+        val namedSet = ctx.event.namedSetOfFiles
+        if (ctx.verbosity.atLeast(Verbosity.Detailed) && namedSet.filesCount > 0) {
+            for (file in namedSet.filesList) {
+                ctx.writer.message(file.name)
+            }
+        }
 
-                for (file in namedSet.filesList) {
-                    yield(
-                        createMessage(
-                            buildString {
-                                append(ctx.messagePrefix)
-                                append(file.name)
-                            },
-                        ),
-                    )
-                }
-            },
-        )
+        return true
     }
 }

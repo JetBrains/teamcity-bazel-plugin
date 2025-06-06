@@ -4,75 +4,47 @@ import bazel.Verbosity
 import bazel.atLeast
 import bazel.handlers.BuildEventHandler
 import bazel.handlers.BuildEventHandlerContext
-import bazel.handlers.HandlerResult
-import bazel.handlers.HandlerResult.Companion.handled
-import bazel.handlers.HandlerResult.Companion.notHandled
 import bazel.messages.Color
-import bazel.messages.MessageFactory.createMessage
 import bazel.messages.apply
 import bazel.messages.joinToStringEscaped
-import kotlin.collections.iterator
 
 class ConfigurationHandler : BuildEventHandler {
-    override fun handle(ctx: BuildEventHandlerContext): HandlerResult {
+    override fun handle(ctx: BuildEventHandlerContext): Boolean {
         if (!ctx.event.hasConfiguration()) {
-            return notHandled()
+            return false
         }
 
-        return handled(
-            sequence {
-                val event = ctx.event.configuration
-                if (!ctx.verbosity.atLeast(Verbosity.Detailed)) {
-                    return@sequence
-                }
+        val event = ctx.event.configuration
+        if (!ctx.verbosity.atLeast(Verbosity.Detailed)) {
+            return true
+        }
 
-                yield(
-                    createMessage(
-                        buildString {
-                            append(ctx.messagePrefix)
-                            append(
-                                listOf("platformName", event.platformName)
-                                    .joinToStringEscaped(" = ")
-                                    .apply(Color.Items),
-                            )
-                        },
-                    ),
-                )
-                yield(
-                    createMessage(
-                        buildString {
-                            append(ctx.messagePrefix)
-                            append(
-                                listOf("mnemonic", event.mnemonic).joinToStringEscaped(" = ").apply(Color.Items),
-                            )
-                        },
-                    ),
-                )
-                yield(
-                    createMessage(
-                        buildString {
-                            append(ctx.messagePrefix)
-                            append(listOf("cpu", event.cpu).joinToStringEscaped(" = ").apply(Color.Items))
-                        },
-                    ),
-                )
+        ctx.writer.run {
+            message(
+                listOf("platformName", event.platformName)
+                    .joinToStringEscaped(" = ")
+                    .apply(Color.Items),
+            )
+            message(
+                listOf("mnemonic", event.mnemonic)
+                    .joinToStringEscaped(" = ")
+                    .apply(Color.Items),
+            )
+            message(
+                listOf("cpu", event.cpu)
+                    .joinToStringEscaped(" = ")
+                    .apply(Color.Items),
+            )
+        }
 
-                if (!ctx.verbosity.atLeast(Verbosity.Verbose)) {
-                    return@sequence
-                }
-                for (item in event.makeVariableMap) {
-                    yield(
-                        createMessage(
-                            buildString {
-                                append(ctx.messagePrefix)
-                                append(
-                                    listOf(item.key, item.value).joinToStringEscaped(" = ").apply(Color.Items),
-                                )
-                            },
-                        ),
-                    )
-                }
-            },
-        )
+        if (ctx.verbosity.atLeast(Verbosity.Verbose)) {
+            for (item in event.makeVariableMap) {
+                ctx.writer.message(
+                    listOf(item.key, item.value).joinToStringEscaped(" = ").apply(Color.Items),
+                )
+            }
+        }
+
+        return true
     }
 }

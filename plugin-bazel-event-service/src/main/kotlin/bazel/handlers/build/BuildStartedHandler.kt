@@ -4,41 +4,33 @@ import bazel.Verbosity
 import bazel.atLeast
 import bazel.handlers.BuildEventHandler
 import bazel.handlers.BuildEventHandlerContext
-import bazel.handlers.HandlerResult
-import bazel.handlers.HandlerResult.Companion.handled
-import bazel.handlers.HandlerResult.Companion.notHandled
-import bazel.messages.MessageFactory.createBlockOpened
 import bazel.messages.TargetRegistry
 
 class BuildStartedHandler(
     private val targetRegistry: TargetRegistry,
 ) : BuildEventHandler {
-    override fun handle(ctx: BuildEventHandlerContext): HandlerResult {
+    override fun handle(ctx: BuildEventHandlerContext): Boolean {
         if (!ctx.event.hasStarted()) {
-            return notHandled()
+            return false
         }
 
-        return handled(
-            sequence {
-                val event = ctx.event.started
-                targetRegistry.commandName = event.command
+        val event = ctx.event.started
+        targetRegistry.commandName = event.command
 
-                if (!ctx.verbosity.atLeast(Verbosity.Normal)) {
-                    return@sequence
-                }
-                val details =
-                    buildString {
-                        append(event.command)
+        if (ctx.verbosity.atLeast(Verbosity.Normal)) {
+            val details =
+                buildString {
+                    append(event.command)
 
-                        if (ctx.verbosity.atLeast(Verbosity.Verbose)) {
-                            append(" v${event.buildToolVersion}")
-                            append(", directory: \"${event.workingDirectory}\"")
-                            append(", workspace: \"${event.workspaceDirectory}\"")
-                        }
+                    if (ctx.verbosity.atLeast(Verbosity.Verbose)) {
+                        append(" v${event.buildToolVersion}")
+                        append(", directory: \"${event.workingDirectory}\"")
+                        append(", workspace: \"${event.workspaceDirectory}\"")
                     }
+                }
+            ctx.writer.blockOpened(targetRegistry.commandName, details)
+        }
 
-                yield(createBlockOpened(targetRegistry.commandName, details))
-            },
-        )
+        return true
     }
 }

@@ -29,10 +29,12 @@ class BinaryFile(
         val ctx =
             BuildEventHandlerContext(
                 _verbosity,
-                getMessagePrefix(_verbosity, event.sequenceNumber),
                 event.event,
+                MessageWriter(_verbosity, event.sequenceNumber) {
+                    printMessage(it)
+                },
             )
-        _buildEventHandlerChain.handle(ctx).messages.forEach(::printMessage)
+        _buildEventHandlerChain.handle(ctx)
     }
 
     private fun printMessage(message: ServiceMessage) {

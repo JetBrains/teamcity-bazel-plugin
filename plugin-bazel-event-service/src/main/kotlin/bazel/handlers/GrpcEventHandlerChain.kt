@@ -27,7 +27,7 @@ class GrpcEventHandlerChain : GrpcEventHandler {
         handlers.firstOrNull { it.handle(ctx) } ?: NotProcessedEventHandler().handle(ctx)
 
         if (!ctx.event.hasBazelEvent() && ctx.verbosity.atLeast(Verbosity.Diagnostic)) {
-            ctx.writer.trace(ctx.event.toString())
+            ctx.writer.trace(ctx.event.toString(), hasPrefix = false)
         }
 
         return true
