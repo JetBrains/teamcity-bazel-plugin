@@ -1,11 +1,12 @@
 package bazel.handlers
 
 import bazel.Verbosity
+import bazel.messages.MessageWriter
 import com.google.devtools.build.v1.BuildEvent
 import com.google.devtools.build.v1.StreamId
 
 interface GrpcEventHandler {
-    fun handle(ctx: GrpcEventHandlerContext): HandlerResult
+    fun handle(ctx: GrpcEventHandlerContext): Boolean
 }
 
 data class GrpcEventHandlerContext(
@@ -13,4 +14,5 @@ data class GrpcEventHandlerContext(
     val streamId: StreamId,
     val messagePrefix: String,
     val event: BuildEvent,
+    val writer: MessageWriter,
 )

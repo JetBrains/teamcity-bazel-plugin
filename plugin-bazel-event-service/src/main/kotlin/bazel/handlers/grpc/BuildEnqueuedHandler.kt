@@ -2,20 +2,13 @@ package bazel.handlers.grpc
 
 import bazel.handlers.GrpcEventHandler
 import bazel.handlers.GrpcEventHandlerContext
-import bazel.handlers.HandlerResult
-import bazel.handlers.HandlerResult.Companion.handled
-import bazel.handlers.HandlerResult.Companion.notHandled
-import bazel.messages.MessageFactory
 
 class BuildEnqueuedHandler : GrpcEventHandler {
-    override fun handle(ctx: GrpcEventHandlerContext): HandlerResult {
+    override fun handle(ctx: GrpcEventHandlerContext): Boolean {
         if (!ctx.event.hasBuildEnqueued()) {
-            return notHandled()
+            return false
         }
-        return handled(
-            sequence {
-                yield(MessageFactory.createMessage("Build enqueued"))
-            },
-        )
+        ctx.writer.message("Build enqueued", hasPrefix = false)
+        return true
     }
 }

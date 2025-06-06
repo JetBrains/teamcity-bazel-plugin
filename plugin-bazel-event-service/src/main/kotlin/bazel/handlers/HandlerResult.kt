@@ -9,6 +9,8 @@ class HandlerResult(
     companion object {
         fun handled(messages: Sequence<ServiceMessage>) = HandlerResult(true, messages)
 
+        fun handled() = HandlerResult(true, emptySequence())
+
         fun notHandled() = HandlerResult(false, emptySequence())
     }
 }
