@@ -6,13 +6,13 @@ import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import java.io.InputStream
 import java.io.OutputStream
 
-class JacksonJsonSerializer : Serializer {
-    override fun <T> tryDeserialize(
+class JacksonJsonSerializer {
+    fun <T> tryDeserialize(
         type: Class<T>,
         reader: InputStream,
     ): T? = mapper.readValue<T>(reader, type)
 
-    override fun <T> serialize(
+    fun <T> serialize(
         value: T,
         writer: OutputStream,
     ) {

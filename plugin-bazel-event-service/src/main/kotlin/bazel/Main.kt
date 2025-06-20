@@ -1,148 +1,96 @@
 package bazel
 
-import bazel.bazel.converters.BazelEventConverter
-import bazel.messages.MessageFactoryImpl
-import bazel.v1.BuildEventConverter
-import bazel.v1.PublishBuildEventService
-import bazel.v1.converters.BuildComponentConverter
-import bazel.v1.converters.StreamIdConverter
-import devteam.rx.observer
-import devteam.rx.use
-import java.io.File
-import java.io.IOException
-import java.nio.file.Path
-import java.util.logging.ConsoleHandler
-import java.util.logging.LogManager
-import java.util.logging.Logger
+import bazel.handlers.BuildEventHandlerChain
+import bazel.handlers.GrpcEventHandlerChain
+import bazel.messages.MessageWriter
 import kotlin.system.exitProcess
 
-@Throws(IOException::class, InterruptedException::class)
 fun main(args: Array<String>) {
-    redirectLogsToStdout()
-
-    val logger = Logger.getLogger("main")
-    val port: Int
-    val eventFile: Path?
-    val verbosity: Verbosity
-    val bazelCommandlineFile: File?
+    val messageWriter = MessageWriter(messagePrefix = "") { println(it.toString()) }
+    var options: BazelOptions?
     try {
-        val bazelOptions = BazelOptions(args)
-        port = bazelOptions.port
-        eventFile = bazelOptions.eventFile
-        verbosity = bazelOptions.verbosity
-        bazelCommandlineFile = bazelOptions.bazelCommandlineFile
+        options = BazelOptions(args)
     } catch (ex: Exception) {
-        logger.severe(ex.message)
+        messageWriter.error(ex.message ?: ex.toString())
         BazelOptions.printHelp()
         exit(1)
+        return
     }
 
-    val messageFactory = MessageFactoryImpl()
-
-    if (eventFile != null && bazelCommandlineFile != null) {
-        var finalExitCode = 0
-        BinaryFile(
-            eventFile,
-            verbosity,
-            messageFactory,
-            BinaryFileStream(BazelEventConverter()),
-        ).subscribe(
-            observer(
-                onNext = { println(it) },
-                onError = {
-                    println(
-                        messageFactory.createErrorMessage("Error during binary file read", it.toString()).asString(),
-                    )
-                },
-                onComplete = {},
-            ),
-        ).use {
-            val bazelRunner = BazelRunner(messageFactory, verbosity, bazelCommandlineFile, 0, eventFile)
-            val commandLine = bazelRunner.args.joinToString(" ") { if (it.contains(' ')) "\"$it\"" else it }
-            println("Starting: $commandLine")
-            println("in directory: ${bazelRunner.workingDirectory}")
-            val result = bazelRunner.run()
-            finalExitCode = result.exitCode
-            for (error in result.errors) {
-                println(messageFactory.createErrorMessage(error).asString())
-            }
-        }
-
-        exit(finalExitCode)
+    if (options.eventFile != null && options.bazelCommandlineFile != null) {
+        runBinaryFileMode(options, messageWriter)
+    } else {
+        runBesGrpcServerMode(options, messageWriter)
     }
+}
 
-    val gRpcServer = GRpcServer(port)
-    var besIsActive = false
+private fun runBinaryFileMode(
+    options: BazelOptions,
+    messageWriter: MessageWriter,
+) {
+    var finalExitCode = 0
+    BinaryFile(
+        messageWriter,
+        options.eventFile!!,
+        options.verbosity,
+        BinaryFileEventStream(messageWriter),
+        BuildEventHandlerChain(),
+    ).read().use {
+        val result =
+            BazelRunner(
+                messageWriter,
+                options.verbosity,
+                options.bazelCommandlineFile!!,
+                eventFile = options.eventFile,
+            ).run()
+        finalExitCode = result.exitCode
+        result.errors.forEach { messageWriter.error(it) }
+    }
+    exit(finalExitCode)
+}
+
+private fun runBesGrpcServerMode(
+    options: BazelOptions,
+    messageWriter: MessageWriter,
+) {
+    var finalExitCode = 0
+    val grpcServer = GrpcServer(messageWriter, options.port)
+    val server =
+        BesGrpcServer(
+            messageWriter,
+            grpcServer,
+            options.verbosity,
+            GrpcEventHandlerChain(),
+        )
 
     try {
-        var finalExitCode = 0
-        BesServer(
-            gRpcServer,
-            verbosity,
-            PublishBuildEventService(),
-            BuildEventConverter(StreamIdConverter(BuildComponentConverter())),
-            messageFactory,
-        ).subscribe(
-            observer(
-                onNext = { it ->
-                    besIsActive = true
-                    println(it)
-                },
-                onError = {
-                    println(messageFactory.createErrorMessage("BES Server onError", it.toString()).asString())
-                },
-                onComplete = {},
-            ),
-        ).use {
-            // when has no bazel command and port is Auto
-            if (bazelCommandlineFile == null && port == 0) {
-                println("BES Port: ${gRpcServer.port}")
-            }
+        if (options.bazelCommandlineFile != null) {
+            server.start().use {
+                val result =
+                    BazelRunner(
+                        messageWriter,
+                        options.verbosity,
+                        options.bazelCommandlineFile!!,
+                        besPort = grpcServer.port,
+                    ).run()
+                finalExitCode = result.exitCode
 
-            if (bazelCommandlineFile != null) {
-                try {
-                    val bazelRunner = BazelRunner(messageFactory, verbosity, bazelCommandlineFile, gRpcServer.port)
-                    val commandLine = bazelRunner.args.joinToString(" ") { if (it.contains(' ')) "\"$it\"" else it }
-                    println("Starting: $commandLine")
-                    println("in directory: ${bazelRunner.workingDirectory}")
-                    val result = bazelRunner.run()
-                    finalExitCode = result.exitCode
-
-                    if (!besIsActive) {
-                        for (error in result.errors) {
-                            println(messageFactory.createErrorMessage(error).asString())
-                        }
-                    }
-                } catch (ex: Exception) {
-                    gRpcServer.shutdown()
-                    throw ex
+                if (!server.hasStarted) {
+                    result.errors.forEach { messageWriter.error(it) }
                 }
             }
-        }
-        exit(finalExitCode)
-    } catch (ex: Exception) {
-        println(messageFactory.createErrorMessage(ex.message ?: ex.toString()).asString())
-        exit(1)
-    }
-}
-
-fun exit(status: Int): Nothing {
-    exitProcess(status)
-}
-
-private fun println(line: String) {
-    kotlin.io.println(line)
-}
-
-private fun redirectLogsToStdout() {
-    // Redirect java.util.logging output to System.out
-    val rootLogger = LogManager.getLogManager().getLogger("")
-    rootLogger.handlers.forEach { rootLogger.removeHandler(it) }
-    val stdoutHandler =
-        object : ConsoleHandler() {
-            init {
-                setOutputStream(System.out)
+        } else {
+            server.start().use {
+                messageWriter.message("Running, press Enter to exit...")
+                java.util.Scanner(System.`in`).nextLine()
             }
         }
-    rootLogger.addHandler(stdoutHandler)
+    } catch (ex: Exception) {
+        messageWriter.error(ex.message ?: ex.toString())
+        exit(1)
+    }
+
+    exit(finalExitCode)
 }
+
+fun exit(status: Int): Unit = exitProcess(status)

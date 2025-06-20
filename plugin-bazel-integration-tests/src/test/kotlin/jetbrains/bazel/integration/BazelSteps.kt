@@ -4,8 +4,6 @@ package jetbrains.bazel.integration
 
 import cucumber.api.java.en.Then
 import cucumber.api.java.en.When
-import devteam.rx.Disposable
-import devteam.rx.use
 import io.cucumber.datatable.DataTable
 import org.testng.Assert
 import java.io.BufferedReader
@@ -151,7 +149,8 @@ class BazelSteps {
                     stdErr.add(line)
                 }
 
-            stdOutReader.use { stdErrReader.use {} }
+            stdOutReader.thread.join()
+            stdErrReader.thread.join()
 
             Assert.assertTrue(
                 process.waitFor(2, TimeUnit.MINUTES),
@@ -169,24 +168,20 @@ class BazelSteps {
         private class ActiveReader(
             reader: BufferedReader,
             action: (line: String) -> Unit,
-        ) : Disposable {
-            private val thread: Thread =
-                object : Thread() {
-                    override fun run() {
-                        do {
-                            val line = reader.readLine()
-                            if (!line.isNullOrBlank()) {
-                                action(line)
-                            }
-                        } while (line != null)
-                    }
+        ) {
+            val thread =
+                Thread {
+                    do {
+                        val line = reader.readLine()
+                        if (!line.isNullOrBlank()) {
+                            action(line)
+                        }
+                    } while (line != null)
                 }
 
             init {
                 thread.start()
             }
-
-            override fun dispose() = thread.join()
         }
     }
 }

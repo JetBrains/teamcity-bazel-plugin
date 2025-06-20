@@ -2,8 +2,6 @@
 
 package jetbrains.buildServer.bazel
 
-import jetbrains.buildServer.agent.AgentRuntimeProperties
-
 /**
  * Bazel runner constants.
  */
@@ -30,7 +28,7 @@ object BazelConstants {
     const val PARAM_STARTUP_OPTIONS = "startupOptions"
     const val PARAM_COMMAND = "command"
     const val PARAM_TARGETS = "targets"
-    const val PARAM_WORKING_DIR = AgentRuntimeProperties.BUILD_WORKING_DIR
+    const val PARAM_WORKING_DIR = "teamcity.build.workingDir" // includes path to build working dir
     const val PARAM_VERBOSITY = "verbosity"
     const val PARAM_INTEGRATION_MODE = "integration"
     const val PARAM_SUCCESS_WHEN_NO_TESTS = "successWhenNoTests"

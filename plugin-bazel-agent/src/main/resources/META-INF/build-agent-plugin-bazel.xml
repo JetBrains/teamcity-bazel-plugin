@@ -5,82 +5,53 @@
        xmlns="http://www.springframework.org/schema/beans"
        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd"
        default-autowire="constructor">
-  <bean class="jetbrains.buildServer.bazel.BazelArgumentsSplitterImpl"/>
-  <bean class="jetbrains.buildServer.bazel.BazelBuildSessionFactory"/>
-  <bean class="jetbrains.buildServer.bazel.BazelCommandBuildSession" scope="prototype"/>
-  <bean class="jetbrains.buildServer.bazel.BazelCacheCleaner"/>
-  <bean class="jetbrains.buildServer.bazel.BazelToolProvider"/>
-  <bean class="jetbrains.buildServer.bazel.BazelRunnerBuildService" scope="prototype"/>
-  <bean class="jetbrains.buildServer.agent.java.AgentHostJavaExecutableProvider"/>
-  <bean class="jetbrains.buildServer.agent.java.DockerJavaExecutableProvider"/>
-  <bean class="jetbrains.buildServer.agent.java.docker.SystemJavaLocator"/>
-  <bean class="jetbrains.buildServer.agent.java.docker.BazelEmbeddedJavaLocator"/>
+    <bean class="jetbrains.buildServer.bazel.BazelArgumentsSplitter"/>
+    <bean class="jetbrains.buildServer.bazel.BazelBuildSessionFactory"/>
+    <bean class="jetbrains.buildServer.bazel.BazelCommandBuildSession" scope="prototype"/>
+    <bean class="jetbrains.buildServer.bazel.BazelCacheCleaner"/>
+    <bean class="jetbrains.buildServer.bazel.BazelToolProvider"/>
+    <bean class="jetbrains.buildServer.bazel.BazelRunnerBuildService" scope="prototype"/>
+    <bean class="jetbrains.buildServer.agent.java.AgentHostJavaExecutableProvider"/>
+    <bean class="jetbrains.buildServer.agent.java.DockerJavaExecutableProvider"/>
+    <bean class="jetbrains.buildServer.agent.java.docker.SystemJavaLocator"/>
+    <bean class="jetbrains.buildServer.agent.java.docker.BazelEmbeddedJavaLocator"/>
 
-  <!--agent service-->
-  <bean class="jetbrains.buildServer.agent.EnvironmentImpl"/>
-  <bean class="jetbrains.buildServer.agent.JacksonJsonSerializer"/>
-  <bean class="jetbrains.buildServer.agent.CommandLineExecutorImpl"/>
-  <bean class="jetbrains.buildServer.agent.FileSystemServiceImpl"/>
+    <!--agent service-->
+    <bean class="jetbrains.buildServer.agent.Environment"/>
+    <bean class="jetbrains.buildServer.agent.JacksonJsonSerializer"/>
+    <bean class="jetbrains.buildServer.agent.CommandLineExecutor"/>
+    <bean class="jetbrains.buildServer.agent.FileSystemServiceImpl"/>
 
-  <!--runner service-->
-  <bean class="jetbrains.buildServer.agent.runner.BuildStepContextImpl"/>
-  <bean class="jetbrains.buildServer.agent.runner.ParametersServiceImpl"/>
-  <bean class="jetbrains.buildServer.agent.runner.PathsServiceImpl"/>
+    <!--runner service-->
+    <bean class="jetbrains.buildServer.agent.runner.BuildStepContext"/>
+    <bean class="jetbrains.buildServer.agent.runner.ParametersServiceImpl"/>
+    <bean class="jetbrains.buildServer.agent.runner.PathsService"/>
 
-  <!--bazel services-->
-  <bean class="jetbrains.buildServer.bazel.RunnerInitializer"/>
-  <bean class="jetbrains.buildServer.bazel.WorkspaceRegistryImpl"/>
-  <bean class="jetbrains.buildServer.bazel.BesCommandLineBuilder"/>
-  <bean class="jetbrains.buildServer.bazel.BazelCommandLineBuilder"/>
-  <bean class="jetbrains.buildServer.bazel.WorkspaceExplorerImpl">
-    <constructor-arg ref="infoWorkspaceCommand"/>
-    <constructor-arg ref="fullCleanCommand"/>
-  </bean>
-  <bean class="jetbrains.buildServer.bazel.ShutdownMonitor">
-    <constructor-arg ref="shutdownCommand"/>
-  </bean>
-  <bean class="jetbrains.buildServer.bazel.WorkingDirectoryProviderImpl"/>
-  <bean class="jetbrains.buildServer.bazel.ArgumentsConverterImpl"/>
-  <bean class="jetbrains.buildServer.bazel.BazelCommandFactory">
-    <constructor-arg ref="commonArgumentsProvider"/>
-  </bean>
+    <!--bazel services-->
+    <bean class="jetbrains.buildServer.bazel.RunnerInitializer"/>
+    <bean class="jetbrains.buildServer.bazel.WorkspaceRegistryImpl"/>
+    <bean class="jetbrains.buildServer.bazel.BesCommandLineBuilder"/>
+    <bean class="jetbrains.buildServer.bazel.BazelCommandLineBuilder"/>
+    <bean class="jetbrains.buildServer.bazel.WorkspaceExplorer"/>
+    <bean class="jetbrains.buildServer.bazel.ShutdownMonitor"/>
+    <bean class="jetbrains.buildServer.bazel.WorkingDirectoryProvider"/>
+    <bean class="jetbrains.buildServer.bazel.ArgumentsConverter"/>
+    <bean class="jetbrains.buildServer.bazel.BazelCommandFactory"/>
 
-  <!--bazel arguments providers-->
-  <bean class="jetbrains.buildServer.bazel.commands.StartupArgumentsProvider" id="startupArgumentsProvider"/>
-  <bean class="jetbrains.buildServer.bazel.commands.CommonArgumentsProvider" id="commonArgumentsProvider">
-    <constructor-arg ref="startupArgumentsProvider"/>
-  </bean>
-  <bean class="jetbrains.buildServer.bazel.commands.TargetsArgumentsProvider" id="targetsArgumentsProvider"/>
-  <bean class="jetbrains.buildServer.bazel.commands.BuildArgumentsProvider" id="buildArgumentsProvider">
-    <constructor-arg ref="commonArgumentsProvider"/>
-    <constructor-arg ref="targetsArgumentsProvider"/>
-  </bean>
+    <!--bazel arguments providers-->
+    <bean class="jetbrains.buildServer.bazel.commands.StartupArgumentsProvider"/>
+    <bean class="jetbrains.buildServer.bazel.commands.CommonArgumentsProvider"/>
+    <bean class="jetbrains.buildServer.bazel.commands.TargetsArgumentsProvider"/>
+    <bean class="jetbrains.buildServer.bazel.commands.BuildArgumentsProvider"/>
 
-  <!--bazel commands-->
-  <bean class="jetbrains.buildServer.bazel.commands.BuildCommand">
-    <constructor-arg ref="buildArgumentsProvider"/>
-  </bean>
-  <bean class="jetbrains.buildServer.bazel.commands.CleanCommand" id="cleanCommand">
-    <constructor-arg ref="commonArgumentsProvider"/>
-  </bean>
-  <bean class="jetbrains.buildServer.bazel.commands.RunCommand">
-    <constructor-arg ref="commonArgumentsProvider"/>
-    <constructor-arg ref="targetsArgumentsProvider"/>
-  </bean>
-  <bean class="jetbrains.buildServer.bazel.commands.TestCommand">
-    <constructor-arg ref="buildArgumentsProvider"/>
-  </bean>
-  <bean class="jetbrains.buildServer.bazel.commands.ShutdownCommand" id="shutdownCommand">
-    <constructor-arg ref="startupArgumentsProvider"/>
-  </bean>
-  <bean class="jetbrains.buildServer.bazel.commands.InfoWorkspaceCommand" id="infoWorkspaceCommand">
-    <constructor-arg ref="startupArgumentsProvider"/>
-  </bean>
-  <bean class="jetbrains.buildServer.bazel.commands.InfoJavaHomeCommand" id="infoJavaHomeCommand">
-    <constructor-arg ref="startupArgumentsProvider"/>
-  </bean>
-  <bean class="jetbrains.buildServer.bazel.commands.FullCleanCommand" id="fullCleanCommand">
-    <constructor-arg ref="startupArgumentsProvider"/>
-  </bean>
+    <!--bazel commands-->
+    <bean class="jetbrains.buildServer.bazel.commands.BuildCommand"/>
+    <bean class="jetbrains.buildServer.bazel.commands.CleanCommand"/>
+    <bean class="jetbrains.buildServer.bazel.commands.RunCommand"/>
+    <bean class="jetbrains.buildServer.bazel.commands.TestCommand"/>
+    <bean class="jetbrains.buildServer.bazel.commands.ShutdownCommand"/>
+    <bean class="jetbrains.buildServer.bazel.commands.InfoWorkspaceCommand"/>
+    <bean class="jetbrains.buildServer.bazel.commands.InfoJavaHomeCommand"/>
+    <bean class="jetbrains.buildServer.bazel.commands.FullCleanCommand"/>
 
 </beans>

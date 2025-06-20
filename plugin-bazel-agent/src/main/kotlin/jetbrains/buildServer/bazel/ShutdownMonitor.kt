@@ -7,6 +7,7 @@ import jetbrains.buildServer.agent.AgentRunningBuild
 import jetbrains.buildServer.agent.BuildFinishedStatus
 import jetbrains.buildServer.agent.CommandLineExecutor
 import jetbrains.buildServer.agent.runner.ProgramCommandLine
+import jetbrains.buildServer.bazel.commands.ShutdownCommand
 import jetbrains.buildServer.util.EventDispatcher
 import java.io.File
 
@@ -14,11 +15,10 @@ class ShutdownMonitor(
     events: EventDispatcher<AgentLifeCycleListener>,
     private val _commandLineExecutor: CommandLineExecutor,
     private val _workspaceExplorer: WorkspaceExplorer,
-    private val _shutdownCommand: BazelCommand,
+    private val _shutdownCommand: ShutdownCommand,
     private val _workspaceRegistry: WorkspaceRegistry,
     private val _commandLineBuilder: BazelCommandLineBuilder,
-) : AgentLifeCycleAdapter(),
-    CommandRegistry {
+) : AgentLifeCycleAdapter() {
     private var shutdownCommands: MutableSet<ShutdownCommandLine> = mutableSetOf()
 
     init {
@@ -40,7 +40,7 @@ class ShutdownMonitor(
         }
     }
 
-    override fun register(command: BazelCommand) {
+    fun register(command: BazelCommand) {
         val commandLine = _commandLineBuilder.build(_shutdownCommand)
         val workingDirectory = File(commandLine.workingDirectory)
 

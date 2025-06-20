@@ -1,35 +1,37 @@
 package bazel
 
+import bazel.handlers.BuildEventHandlerChain
+import bazel.handlers.BuildEventHandlerContext
 import bazel.messages.*
-import devteam.rx.*
 import java.nio.file.Path
 
 class BinaryFile(
+    private val _messageWriter: MessageWriter,
     private val _eventFile: Path,
     private val _verbosity: Verbosity,
-    private val _messageFactory: MessageFactory,
-    private val _binaryFileStream: BinaryFileStream,
-) : Observable<String> {
-    override fun subscribe(observer: Observer<String>): Disposable {
-        val controllerSubject = ControllerSubject(_verbosity, _messageFactory, HierarchyImpl())
-        val subscription =
-            disposableOf(
-                controllerSubject.subscribe(
-                    observer(
-                        onNext = { observer.onNext(it.asString()) },
-                        onError = { observer.onError(it) },
-                        onComplete = { observer.onComplete() },
-                    ),
-                ),
-                _binaryFileStream.create(_eventFile).subscribe(
-                    observer(
-                        onNext = { controllerSubject.onNext(Event("", it)) },
-                        onError = { controllerSubject.onError(it) },
-                        onComplete = { controllerSubject.onComplete() },
-                    ),
-                ),
-            )
+    private val _binaryStream: BinaryFileEventStream,
+    private val _buildEventHandlerChain: BuildEventHandlerChain,
+) {
+    fun read(): AutoCloseable =
+        _binaryStream.create(_eventFile).start {
+            when (it) {
+                is BinaryFileEventStream.Result.Error -> onError(it.throwable)
+                is BinaryFileEventStream.Result.Event -> onEvent(it)
+            }
+        }
 
-        return subscription
+    private fun onError(err: Throwable) {
+        _messageWriter.error("Error during binary file read", err.toString())
+    }
+
+    private fun onEvent(event: BinaryFileEventStream.Result.Event) {
+        val messagePrefix = MessagePrefix.build(_verbosity, event.sequenceNumber)
+        val ctx =
+            BuildEventHandlerContext(
+                _verbosity,
+                event.event,
+                MessageWriter(messagePrefix) { _messageWriter.write(it) },
+            )
+        _buildEventHandlerChain.handle(ctx)
     }
 }

@@ -1,20 +1,16 @@
-
-
 package bazel
 
-import bazel.messages.MessageFactory
-import devteam.rx.Disposable
-import devteam.rx.use
+import bazel.messages.MessageWriter
 import java.io.BufferedReader
 import java.io.File
 import java.nio.file.Path
 import kotlin.io.path.absolutePathString
 
 class BazelRunner(
-    private val messageFactory: MessageFactory,
+    private val messageWriter: MessageWriter,
     private val verbosity: Verbosity,
     private val bazelCommandlineFile: File,
-    private val besPort: Int,
+    private val besPort: Int = 0,
     private val eventFile: Path? = null,
 ) {
     val args: Sequence<String>
@@ -62,6 +58,10 @@ class BazelRunner(
     val workingDirectory: File = File(".").absoluteFile
 
     fun run(): Result {
+        val commandLine = args.joinToString(" ") { if (it.contains(' ')) "\"$it\"" else it }
+        messageWriter.message("Starting: $commandLine")
+        messageWriter.message("in directory: $workingDirectory")
+
         val process =
             ProcessBuilder(args.toList())
                 .directory(workingDirectory)
@@ -74,7 +74,7 @@ class BazelRunner(
                 if (verbosity.atLeast(Verbosity.Diagnostic)) {
                     // this message is printed by bazel itself, we will get the same message from BES/Binary log file
                     // logging it as trace to reduce noise in the build log
-                    println(messageFactory.createTraceMessage(line))
+                    messageWriter.trace(line)
                 }
             }
         val stdErrReader =
@@ -84,10 +84,12 @@ class BazelRunner(
                 }
 
                 if (verbosity.atLeast(Verbosity.Diagnostic)) {
-                    println(messageFactory.createTraceMessage(line))
+                    messageWriter.trace(line)
                 }
             }
-        stdOutReader.use { stdErrReader.use {} }
+
+        stdOutReader.thread.join()
+        stdErrReader.thread.join()
 
         process.waitFor()
         val exitCode = process.exitValue()
@@ -102,24 +104,20 @@ class BazelRunner(
     private class ActiveReader(
         reader: BufferedReader,
         action: (line: String) -> Unit,
-    ) : Disposable {
-        private val thread: Thread =
-            object : Thread() {
-                override fun run() {
-                    do {
-                        val line = reader.readLine()
-                        if (!line.isNullOrBlank()) {
-                            action(line)
-                        }
-                    } while (line != null)
-                }
+    ) {
+        val thread =
+            Thread {
+                do {
+                    val line = reader.readLine()
+                    if (!line.isNullOrBlank()) {
+                        action(line)
+                    }
+                } while (line != null)
             }
 
         init {
             thread.start()
         }
-
-        override fun dispose() = thread.join()
     }
 
     data class Result(

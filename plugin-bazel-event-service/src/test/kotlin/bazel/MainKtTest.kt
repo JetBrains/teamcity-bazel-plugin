@@ -1,9 +1,7 @@
 package bazel
 
 import bazel.messages.Message
-import bazel.messages.MessageFactoryImpl
-import devteam.rx.Observer
-import devteam.rx.disposableOf
+import bazel.messages.MessageFactory
 import io.mockk.*
 import org.testng.Assert
 import org.testng.annotations.BeforeMethod
@@ -25,48 +23,39 @@ class MainKtTest {
         every { anyConstructed<BazelRunner>().args } returns sequenceOf("foo", "bar")
         every { anyConstructed<BazelRunner>().run() } returns BazelRunner.Result(57, emptyList())
 
-        mockkConstructor(MessageFactoryImpl::class)
-        every { anyConstructed<MessageFactoryImpl>().createErrorMessage(any()) } returns Message("caught ExitException", "Normal")
+        mockkConstructor(MessageFactory::class)
+        every { anyConstructed<MessageFactory>().createErrorMessage(any()) } returns
+            Message(
+                "caught ExitException",
+                "Normal",
+            )
     }
 
     @Test
     fun shouldSubscribeToBuildEventBinaryFile() {
         mockkConstructor(BinaryFile::class)
-        val subscriberSlot = slot<Observer<String>>()
         val disposed = AtomicBoolean(false)
-        every { anyConstructed<BinaryFile>().subscribe(capture(subscriberSlot)) } answers {
-            subscriberSlot.captured.onNext("next 1")
-            subscriberSlot.captured.onNext("next 2")
-            subscriberSlot.captured.onComplete()
-            disposableOf {
-                disposed.set(true)
-            }
-        }
 
+        every { anyConstructed<BinaryFile>().read() } answers {
+            AutoCloseable { disposed.set(true) }
+        }
         preventExit { main(arrayOf("-f=/fake", "-c=/fake")) }
         Assert.assertEquals(exitCode.captured, 57)
 
         Assert.assertTrue(disposed.get())
 
         verify(exactly = 1) { anyConstructed<BazelRunner>().run() }
-        verify(exactly = 1) { anyConstructed<BinaryFile>().subscribe(any()) }
+        verify(exactly = 1) { anyConstructed<BinaryFile>().read() }
     }
 
     @Test
     fun shouldSubscribeToBuildEventServer() {
-        mockkConstructor(GRpcServer::class)
-        every { anyConstructed<GRpcServer>().port } returns 1234
+        mockkConstructor(GrpcServer::class)
         val disposed = AtomicBoolean(false)
 
-        mockkConstructor(BesServer::class)
-        val subscriberSlot = slot<Observer<String>>()
-        every { anyConstructed<BesServer>().subscribe(capture(subscriberSlot)) } answers {
-            subscriberSlot.captured.onNext("next 1")
-            subscriberSlot.captured.onNext("next 2")
-            subscriberSlot.captured.onComplete()
-            disposableOf {
-                disposed.set(true)
-            }
+        mockkConstructor(BesGrpcServer::class)
+        every { anyConstructed<BesGrpcServer>().start() } answers {
+            AutoCloseable { disposed.set(true) }
         }
 
         preventExit { main(arrayOf("-c=/fake")) }
@@ -77,7 +66,7 @@ class MainKtTest {
         Assert.assertTrue(disposed.get())
 
         verify(exactly = 1) { anyConstructed<BazelRunner>().run() }
-        verify(exactly = 1) { anyConstructed<BesServer>().subscribe(any()) }
+        verify(exactly = 1) { anyConstructed<BesGrpcServer>().start() }
     }
 
     object ExitException : RuntimeException()

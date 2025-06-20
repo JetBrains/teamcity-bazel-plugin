@@ -5,8 +5,8 @@ import io.mockk.clearAllMocks
 import io.mockk.every
 import io.mockk.impl.annotations.MockK
 import jetbrains.buildServer.agent.runner.ParameterType
-import jetbrains.buildServer.bazel.commands.ArgumentsProvider
 import jetbrains.buildServer.bazel.commands.CommonArgumentsProvider
+import jetbrains.buildServer.bazel.commands.StartupArgumentsProvider
 import org.testng.Assert
 import org.testng.annotations.BeforeMethod
 import org.testng.annotations.DataProvider
@@ -17,7 +17,7 @@ class CommonArgumentsProviderTest {
     lateinit var argumentsSplitter: BazelArgumentsSplitter
 
     @MockK
-    lateinit var startupArgumentsProvider: ArgumentsProvider
+    lateinit var startupArgumentsProvider: StartupArgumentsProvider
 
     @MockK
     lateinit var command: BazelCommand

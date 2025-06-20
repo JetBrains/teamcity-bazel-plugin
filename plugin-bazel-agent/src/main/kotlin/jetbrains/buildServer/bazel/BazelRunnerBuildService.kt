@@ -12,7 +12,7 @@ import jetbrains.buildServer.bazel.BazelConstants.COMMAND_TEST
  */
 class BazelRunnerBuildService(
     buildStepContext: BuildStepContext,
-    private val _commandRegistry: CommandRegistry,
+    private val _shutdownMonitor: ShutdownMonitor,
     private val _commandFactory: BazelCommandFactory,
     private val _bazelCommandLineBuilder: BazelCommandLineBuilder,
     private val _besCommandLineBuilder: BesCommandLineBuilder,
@@ -33,7 +33,7 @@ class BazelRunnerBuildService(
 
         // Register for shutdown only on build agent
         if (!runnerContext.isVirtualContext) {
-            _commandRegistry.register(command)
+            _shutdownMonitor.register(command)
         }
 
         if (BES_COMMANDS.contains(commandName)) {

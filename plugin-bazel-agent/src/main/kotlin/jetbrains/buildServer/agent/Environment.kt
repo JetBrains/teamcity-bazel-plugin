@@ -2,12 +2,15 @@
 
 package jetbrains.buildServer.agent
 
+import jetbrains.buildServer.agent.impl.OSTypeDetector
 import jetbrains.buildServer.util.OSType
 
-interface Environment {
-    val osType: OSType
+class Environment(
+    private val _osTypeDetector: OSTypeDetector,
+) {
+    val osType: OSType get() = _osTypeDetector.detect()
 
-    val environmentVariables: Map<String, String>
+    val environmentVariables: Map<String, String> get() = System.getenv()
 
-    fun tryGetEnvironmentVariable(name: String): String?
+    fun tryGetEnvironmentVariable(name: String): String? = System.getenv(name)
 }

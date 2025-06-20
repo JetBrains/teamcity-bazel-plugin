@@ -5,7 +5,7 @@ package jetbrains.buildServer.bazel.commands
 import jetbrains.buildServer.bazel.*
 
 class FullCleanCommand(
-    private val _startupArgumentsProvider: ArgumentsProvider,
+    private val _startupArgumentsProvider: StartupArgumentsProvider,
 ) : BazelCommand {
     override val command: String = "CleanExpunge"
 

@@ -13,7 +13,7 @@ import jetbrains.buildServer.agent.plugins.beans.PluginDescriptor
 import jetbrains.buildServer.agent.runner.BuildStepContext
 import jetbrains.buildServer.agent.runner.ParameterType
 import jetbrains.buildServer.agent.runner.ParametersService
-import jetbrains.buildServer.agent.runner.PathsServiceImpl
+import jetbrains.buildServer.agent.runner.PathsService
 import jetbrains.buildServer.bazel.BazelConstants
 import jetbrains.buildServer.util.OSType
 import org.testng.Assert
@@ -236,7 +236,7 @@ class PathsServiceTest {
     }
 
     private fun createInstance() =
-        PathsServiceImpl(
+        PathsService(
             buildStepContext,
             buildAgentConfiguration,
             buildAgentConfigurablePaths,

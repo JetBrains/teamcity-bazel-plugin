@@ -10,8 +10,8 @@ import jetbrains.buildServer.bazel.CommandArgumentType
 
 class BuildArgumentsProvider(
     private val _parametersService: ParametersService,
-    private val _commonArgumentsProvider: ArgumentsProvider,
-    private val _targetsArgumentsProvider: ArgumentsProvider,
+    private val _commonArgumentsProvider: CommonArgumentsProvider,
+    private val _targetsArgumentsProvider: TargetsArgumentsProvider,
 ) : ArgumentsProvider {
     override fun getArguments(command: BazelCommand): Sequence<CommandArgument> =
         sequence {

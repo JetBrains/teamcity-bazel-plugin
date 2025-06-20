@@ -4,7 +4,7 @@ package jetbrains.buildServer.bazel
 
 import com.intellij.openapi.diagnostic.Logger
 import jetbrains.buildServer.agent.FileSystemService
-import jetbrains.buildServer.agent.Serializer
+import jetbrains.buildServer.agent.JacksonJsonSerializer
 import jetbrains.buildServer.agent.runner.PathType
 import jetbrains.buildServer.agent.runner.PathsService
 import jetbrains.buildServer.agent.runner.SimpleProgramCommandLine
@@ -13,7 +13,7 @@ import java.io.File
 class WorkspaceRegistryImpl(
     pathsService: PathsService,
     private val _fileSystemService: FileSystemService,
-    private val _serializer: Serializer,
+    private val _serializer: JacksonJsonSerializer,
 ) : WorkspaceRegistry {
     private val dataDir = File(pathsService.getPath(PathType.System), "bazel")
     private val dataFile = File(dataDir, "workspaces.json")
