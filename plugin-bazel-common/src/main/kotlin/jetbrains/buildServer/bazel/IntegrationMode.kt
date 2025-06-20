@@ -12,5 +12,7 @@ enum class IntegrationMode(
 
     companion object {
         fun tryParse(id: String): IntegrationMode? = entries.singleOrNull { it.id.equals(id, true) }
+
+        val default = BinaryFile
     }
 }

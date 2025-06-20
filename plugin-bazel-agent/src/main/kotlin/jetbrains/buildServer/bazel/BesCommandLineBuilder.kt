@@ -128,5 +128,5 @@ class BesCommandLineBuilder(
                 .tryGetParameter(ParameterType.Runner, PARAM_INTEGRATION_MODE)
                 ?.trim()
                 ?.let { IntegrationMode.tryParse(it) }
-                ?: IntegrationMode.BES
+                ?: IntegrationMode.default
 }
