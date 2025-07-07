@@ -7,7 +7,7 @@ import jetbrains.buildServer.serverSide.InvalidProperty
 import jetbrains.buildServer.serverSide.PropertiesProcessor
 import jetbrains.buildServer.web.openapi.PluginDescriptor
 import java.net.MalformedURLException
-import java.net.URL
+import java.net.URI
 
 class BazelBuildFeature(
     descriptor: PluginDescriptor,
@@ -51,13 +51,13 @@ class BazelBuildFeature(
             val result = mutableListOf<InvalidProperty>()
             properties?.get(BazelConstants.PARAM_REMOTE_CACHE)?.let { remoteCache ->
                 try {
-                    URL(
+                    URI(
                         remoteCache
                             .trim()
                             .lowercase()
                             .replace("grpc:", "http:")
                             .replace("grpcs:", "http:"),
-                    )
+                    ).toURL()
                 } catch (e: MalformedURLException) {
                     result.add(InvalidProperty(BazelConstants.PARAM_REMOTE_CACHE, "Invalid remote cache URL"))
                 }

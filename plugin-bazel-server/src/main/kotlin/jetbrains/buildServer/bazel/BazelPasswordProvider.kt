@@ -7,7 +7,7 @@ import jetbrains.buildServer.serverSide.SBuild
 import jetbrains.buildServer.serverSide.SimpleParameter
 import jetbrains.buildServer.serverSide.parameters.types.PasswordsProvider
 import java.net.MalformedURLException
-import java.net.URL
+import java.net.URI
 
 class BazelPasswordProvider : PasswordsProvider {
     override fun getPasswordParameters(build: SBuild): MutableCollection<Parameter> {
@@ -15,7 +15,7 @@ class BazelPasswordProvider : PasswordsProvider {
         build.getBuildFeaturesOfType(BazelConstants.BUILD_FEATURE_TYPE).forEach { feature ->
             feature.parameters[BazelConstants.PARAM_REMOTE_CACHE]?.let { remoteCache ->
                 try {
-                    URL(remoteCache.trim())
+                    URI(remoteCache.trim()).toURL()
                 } catch (e: MalformedURLException) {
                     return@let
                 }.userInfo?.let {

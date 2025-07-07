@@ -5,32 +5,22 @@ import com.google.bytestream.ByteStreamProto
 import io.grpc.ManagedChannel
 import io.grpc.ManagedChannelBuilder
 import java.io.InputStream
-import java.lang.IllegalStateException
-import java.net.URL
-import java.net.URLConnection
+import java.net.URI
 
-class BytestreamURLConnection(
-    url: URL,
-) : URLConnection(url) {
-    private var channelBuilder: ManagedChannelBuilder<*>? = null
+object BytestreamReader {
+    fun getInputStream(uri: URI): InputStream {
+        val channel =
+            ManagedChannelBuilder
+                .forAddress(uri.host, uri.port)
+                .usePlaintext()
+                .build()
 
-    override fun connect() {
-        channelBuilder = ManagedChannelBuilder.forAddress(url.host, url.port).usePlaintext()
-    }
-
-    override fun getInputStream(): InputStream {
-        val channelBuilder = channelBuilder
-        if (channelBuilder == null) {
-            throw IllegalStateException("Not connected.")
-        }
-
-        val channel = channelBuilder.build()
         try {
             val blockingStub = ByteStreamGrpc.newBlockingStub(channel)
             val readRequest =
                 ByteStreamProto.ReadRequest
                     .newBuilder()
-                    .setResourceName(url.toString())
+                    .setResourceName(uri.toString())
                     .build()
 
             val readResponse = blockingStub.read(readRequest)
@@ -68,7 +58,7 @@ class BytestreamURLConnection(
         }
 
         private fun getBytest(iterator: MutableIterator<ByteStreamProto.ReadResponse>) =
-            sequence<Int> {
+            sequence {
                 for (resp in iterator) {
                     for (bt in resp.data) {
                         yield(bt.toInt())

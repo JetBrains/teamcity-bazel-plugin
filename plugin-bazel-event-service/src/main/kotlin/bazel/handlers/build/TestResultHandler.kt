@@ -50,7 +50,7 @@ class TestResultHandler(
                                     ", shard: ${id.testResult.shard}" +
                                     ", duration: $testAttemptDurationMillis(ms)" +
                                     ", cached locally: ${event.cachedLocally}"
-                            ).apply(Color.Details),
+                                ).apply(Color.Details),
                         )
                     }
                 },

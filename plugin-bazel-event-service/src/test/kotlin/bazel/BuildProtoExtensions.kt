@@ -14,6 +14,14 @@ inline fun testResult(builderAction: BuildEventStreamProtos.TestResult.Builder.(
         .apply(builderAction)
         .build()
 
+inline fun executionInfo(
+    builderAction: BuildEventStreamProtos.TestResult.ExecutionInfo.Builder.() -> Unit,
+): BuildEventStreamProtos.TestResult.ExecutionInfo =
+    BuildEventStreamProtos.TestResult.ExecutionInfo
+        .newBuilder()
+        .apply(builderAction)
+        .build()
+
 inline fun file(builderAction: BuildEventStreamProtos.File.Builder.() -> Unit): BuildEventStreamProtos.File =
     BuildEventStreamProtos.File
         .newBuilder()
