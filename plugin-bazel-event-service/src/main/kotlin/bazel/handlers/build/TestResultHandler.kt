@@ -8,10 +8,10 @@ import bazel.file.FileSystemService
 import bazel.handlers.BuildEventHandler
 import bazel.handlers.BuildEventHandlerContext
 import bazel.messages.Color
-import bazel.messages.MessageWriter
 import bazel.messages.TestStatusConverter
 import bazel.messages.apply
 import bazel.messages.toColor
+import java.io.FileNotFoundException
 import java.io.InputStreamReader
 import java.io.OutputStreamWriter
 import java.time.Duration
@@ -57,74 +57,86 @@ class TestResultHandler(
             )
         }
 
-        val hasNextAttempt = ctx.event.childrenList.isNotEmpty()
-        for (test in event.testActionOutputList.map { fileConverter.convert(it) }) {
-            if (ctx.verbosity.atLeast(Verbosity.Verbose)) {
-                ctx.writer.message("$test".apply(Color.Items))
-            }
-
-            val content = readFileLines(test, ctx.verbosity, ctx.writer)
-            if (test.name.length < 3) {
-                continue
-            }
-
-            when (test.name.lowercase().takeLast(3)) {
-                "xml" -> {
-                    // check that it is last attempt
-                    if (!hasNextAttempt) {
-                        // import test results
-                        val testTempFile = _fileSystemService.generateTempFile("tmp", test.name)
-                        _fileSystemService.write(testTempFile) { stream ->
-                            OutputStreamWriter(stream).use { writer ->
-                                for (line in content) {
-                                    writer.write(line)
-                                }
-                            }
-                        }
-                        ctx.writer.importJUnitReport(testTempFile.absolutePath)
-                    }
+        val tests = event.testActionOutputList.map { fileConverter.convert(it) }
+        if (ctx.verbosity.atLeast(Verbosity.Verbose)) {
+            tests.forEach { test ->
+                if (ctx.verbosity.atLeast(Verbosity.Verbose)) {
+                    ctx.writer.message("$test".apply(Color.Items))
                 }
-
-                "log" ->
-                    // check that it is last attempt
-                    if (!hasNextAttempt) {
-                        for (line in content) {
-                            // tc:parseServiceMessagesInside is included in the message
-                            ctx.writer.message(line)
-                        }
-                    }
             }
         }
+
+        val isLastAttempt = ctx.event.childrenList.isEmpty()
+        if (isLastAttempt) {
+            tests
+                .filter { it.name.endsWith(".xml") || it.name.endsWith(".log") }
+                .forEach { testResults ->
+                    readTestResults(
+                        ctx,
+                        testResults,
+                        isRemoteCacheHit = event.executionInfo.cachedRemotely,
+                    )
+                }
+        }
+
         return true
     }
 
-    private fun readFileLines(
-        file: File,
-        verbosity: Verbosity,
-        writer: MessageWriter,
-    ): List<String> {
+    private fun readTestResults(
+        ctx: BuildEventHandlerContext,
+        test: File,
+        isRemoteCacheHit: Boolean,
+    ) {
         try {
-            val content = InputStreamReader(file.createStream()).use { it.readLines() }
-            if (verbosity.atLeast(Verbosity.Diagnostic)) {
-                traceFile(file, content, writer)
+            val content = readFileLines(ctx, test)
+            when {
+                test.name.endsWith(".xml") -> importXmlTestResults(ctx, test.name, content)
+                test.name.endsWith(".log") -> printLogTestResults(ctx, content)
             }
-            return content
         } catch (ex: Exception) {
-            if (verbosity.atLeast(Verbosity.Diagnostic)) {
-                writer.error("Cannot read from ${file.name}.", ex.toString())
+            if (isRemoteCacheHit && ex is FileNotFoundException) {
+                if (ctx.verbosity.atLeast(Verbosity.Verbose)) {
+                    ctx.writer.message(
+                        "Test result file \"${test.name}\" is missing: there was a remote cache hit. " +
+                            "Outputs were skipped due to remote_download_outputs setting.",
+                    )
+                }
+            } else {
+                ctx.writer.error("Cannot read from ${test.name}.", ex.toString())
             }
-            return emptyList()
         }
     }
 
-    private fun traceFile(
-        file: File,
+    private fun importXmlTestResults(
+        ctx: BuildEventHandlerContext,
+        fileName: String,
         content: List<String>,
-        writer: MessageWriter,
     ) {
-        writer.trace("File \"$file\":")
-        for (line in content) {
-            writer.trace("$\t$line")
+        val testTempFile = _fileSystemService.generateTempFile("tmp", fileName)
+        _fileSystemService.write(testTempFile) { stream ->
+            OutputStreamWriter(stream).use { writer -> content.forEach { writer.write(it) } }
         }
+        ctx.writer.importJUnitReport(testTempFile.absolutePath)
+    }
+
+    private fun printLogTestResults(
+        ctx: BuildEventHandlerContext,
+        content: List<String>,
+    ) {
+        // print log file as a message
+        // tc:parseServiceMessagesInside will parse teamcity service messages if it has any
+        content.forEach { ctx.writer.message(it) }
+    }
+
+    private fun readFileLines(
+        ctx: BuildEventHandlerContext,
+        file: File,
+    ): List<String> {
+        val content = InputStreamReader(file.createStream()).use { it.readLines() }
+        if (ctx.verbosity.atLeast(Verbosity.Diagnostic)) {
+            ctx.writer.trace("File \"$file\":")
+            content.forEach { ctx.writer.trace("$\t$it") }
+        }
+        return content
     }
 }

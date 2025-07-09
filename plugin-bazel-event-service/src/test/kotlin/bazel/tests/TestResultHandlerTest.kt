@@ -2,6 +2,7 @@ package bazel.tests
 
 import bazel.Verbosity
 import bazel.buildEvent
+import bazel.executionInfo
 import bazel.file
 import bazel.file.FileSystemService
 import bazel.handlers.BuildEventHandlerContext
@@ -17,6 +18,7 @@ import org.testng.Assert
 import org.testng.annotations.BeforeMethod
 import org.testng.annotations.DataProvider
 import org.testng.annotations.Test
+import kotlin.io.path.Path
 
 class TestResultHandlerTest {
     @MockK
@@ -29,20 +31,14 @@ class TestResultHandlerTest {
 
     @DataProvider
     fun verbosityLevels(): Array<Array<Verbosity>> =
-        arrayOf(
-            arrayOf(Verbosity.Quiet),
-            arrayOf(Verbosity.Normal),
-            arrayOf(Verbosity.Detailed),
-            arrayOf(Verbosity.Verbose),
-        )
+        Verbosity.entries
+            .map { arrayOf(it) }
+            .toTypedArray()
 
     @Test(dataProvider = "verbosityLevels")
-    fun shouldSendContentOfTestLogFileViaServiceMessages(verbosity: Verbosity) {
-        // Given
+    fun `should send content of test log file via service messages`(verbosity: Verbosity) {
+        // arrange
         val handler = TestResultHandler(fileSystemService)
-
-        // When
-
         val bazelEvent =
             buildEvent {
                 testResult =
@@ -59,14 +55,59 @@ class TestResultHandlerTest {
         val serviceMessages = mutableListOf<ServiceMessage>()
         val ctx = createContext(bazelEvent, verbosity, serviceMessages)
 
+        // act
         handler.handle(ctx)
 
-        // Then
+        // assert
         serviceMessages.let {
             val content = it.joinToString("\n") { it.toString() }
             Assert.assertTrue(it.all { m -> m.tags.contains("tc:parseServiceMessagesInside") }, content)
             Assert.assertTrue(it.any { m -> m.attributes["text"] == "line 1" }, content)
             Assert.assertTrue(it.any { m -> m.attributes["text"] == "##teamcity[line 2]" }, content)
+        }
+    }
+
+    @DataProvider
+    fun booleans() = listOf(true, false).map { arrayOf(it) }.toTypedArray()
+
+    @Test(dataProvider = "booleans")
+    fun `should skip not existing test report when remote cache is enabled`(isCachedRemotely: Boolean) {
+        // arrange
+        val reportPath =
+            Path(
+                System.getProperty("java.io.tmpdir"),
+                "not-existing-report",
+            )
+        val handler = TestResultHandler(fileSystemService)
+        val bazelEvent =
+            buildEvent {
+                testResult =
+                    testResult {
+                        addTestActionOutput(
+                            file {
+                                name = "test.log"
+                                uri = reportPath.toUri().toString()
+                            },
+                        )
+                        executionInfo =
+                            executionInfo {
+                                setCachedRemotely(isCachedRemotely)
+                            }
+                    }
+            }
+
+        val serviceMessages = mutableListOf<ServiceMessage>()
+        val ctx = createContext(bazelEvent, Verbosity.Normal, serviceMessages)
+
+        // act
+        handler.handle(ctx)
+
+        if (isCachedRemotely) {
+            Assert.assertEquals(serviceMessages.count(), 0)
+        } else {
+            // should log error
+            Assert.assertEquals(serviceMessages.count(), 1)
+            Assert.assertEquals(serviceMessages[0].attributes["status"], "ERROR")
         }
     }
 
