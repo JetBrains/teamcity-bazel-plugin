@@ -14,6 +14,7 @@
 - Improved handling of missing test reports when using `--remote_download_outputs=minimal`. [TW-94280](https://youtrack.jetbrains.com/issue/TW-94280)
 - Fixed a race condition caused by unsubscribing too early from the binary BEP stream. [TW-94016](https://youtrack.jetbrains.com/issue/TW-94016)
 - Bazel builds can now run in containers without a JDK installed. [TW-93139](https://youtrack.jetbrains.com/issue/TW-93139)
+- Relaxed Bazel executable resolution to support `setup-bazelisk` recipe. The runner no longer requires Bazel to be preinstalled on the agent. [TW-93454](https://youtrack.jetbrains.com/issue/TW-93454)
 
 ## 0.1.0 - 2024-08-08
 

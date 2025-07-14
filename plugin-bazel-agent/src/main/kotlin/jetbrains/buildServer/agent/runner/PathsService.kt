@@ -1,5 +1,3 @@
-
-
 package jetbrains.buildServer.agent.runner
 
 import jetbrains.buildServer.RunBuildException
@@ -25,7 +23,7 @@ class PathsService(
     private val _buildAgentConfiguration: BuildAgentConfiguration,
     private val _buildAgentConfigurablePaths: BuildAgentConfigurablePaths,
     private val _pluginDescriptor: PluginDescriptor,
-    private val _fileSystemService: FileSystemService,
+    private val _fileSystem: FileSystemService,
     private val _environment: Environment,
     private val _parametersService: ParametersService,
 ) {
@@ -40,31 +38,27 @@ class PathsService(
             PathType.System -> _buildAgentConfiguration.systemDirectory
         }
 
-    val toolPath: File
+    val toolPath: String
         get() {
             val toolPathParam = _parametersService.tryGetParameter(ParameterType.Runner, BazelConstants.TOOL_PATH)
-            if (toolPathParam == null) {
-                return File(_buildStepContext.runnerContext.getToolPath(BazelConstants.BAZEL_CONFIG_NAME))
-            }
+            return when (toolPathParam) {
+                null -> _buildStepContext.runnerContext.getToolPath(BazelConstants.BAZEL_CONFIG_NAME)
 
-            var toolPath = File(toolPathParam)
-            if (!_fileSystemService.isAbsolute(toolPath)) {
-                toolPath = File(getPath(PathType.Checkout), toolPathParam)
-            }
+                // force search inside PATH, tool might be installed during a previous build step
+                "bazel", "bazel.exe" -> toolPathParam
 
-            if (_fileSystemService.isDirectory(toolPath)) {
-                toolPath =
-                    if (_environment.osType == OSType.WINDOWS) {
-                        File(toolPath, "bazel.exe")
-                    } else {
-                        File(toolPath, "bazel")
-                    }
+                else ->
+                    File(toolPathParam)
+                        .let { if (_fileSystem.isAbsolute(it)) it else getPath(PathType.Checkout).resolve(it) }
+                        .let {
+                            if (_fileSystem.isDirectory(it)) {
+                                it.resolve(if (_environment.osType == OSType.WINDOWS) "bazel.exe" else "bazel")
+                            } else {
+                                it
+                            }
+                        }.takeIf { _fileSystem.isExists(it) }
+                        ?.path
+                        ?: throw RunBuildException("Cannot find Bazel at \"$toolPathParam\".")
             }
-
-            if (!_fileSystemService.isExists(toolPath)) {
-                throw RunBuildException("Cannot find Bazel at \"$toolPathParam\".")
-            }
-
-            return toolPath
         }
 }

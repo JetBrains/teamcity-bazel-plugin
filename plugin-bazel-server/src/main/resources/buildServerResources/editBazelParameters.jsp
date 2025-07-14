@@ -111,7 +111,7 @@
             </jsp:attribute>
         </props:textProperty>
         <span class="error" id="error_${params.toolPathKey}"></span>
-        <span class="smallNote">Optional, set if a custom bazel tool is required. Paths relative to the checkout directory are supported.</span>
+        <span class="smallNote">Optional, set if a custom bazel tool is required. Paths relative to the checkout directory are supported. Use "bazel" to force using Bazel from the system PATH, if it's installed in a previous build step.</span>
     </td>
 </tr>
 

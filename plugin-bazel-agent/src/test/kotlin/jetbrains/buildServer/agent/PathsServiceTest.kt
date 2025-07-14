@@ -17,6 +17,7 @@ import jetbrains.buildServer.agent.runner.PathsService
 import jetbrains.buildServer.bazel.BazelConstants
 import jetbrains.buildServer.util.OSType
 import org.testng.Assert
+import org.testng.Assert.assertEquals
 import org.testng.annotations.BeforeMethod
 import org.testng.annotations.Test
 import java.io.File
@@ -43,11 +44,11 @@ class PathsServiceTest {
     }
 
     @Test
-    fun shouldProvideToolPathWhenToolPathWasNotDefined() {
-        // Given
+    fun `should provide tool path when tool path was not defined`() {
+        // arrange
         val pathsService = createInstance()
 
-        // When
+        // act
         every { parametersService.tryGetParameter(ParameterType.Runner, BazelConstants.TOOL_PATH) } returns null
         every { buildStepContext.runnerContext } returns
             mockk<BuildRunnerContext> {
@@ -56,60 +57,75 @@ class PathsServiceTest {
 
         val actualToolPath = pathsService.toolPath
 
-        // Then
-        Assert.assertEquals(actualToolPath, File("default_bazel"))
+        // assert
+        assertEquals(actualToolPath, "default_bazel")
     }
 
     @Test
-    fun shouldProvideToolPathWhenCustomToolPathIsAbsoluteExecutable() {
-        // Given
+    fun `should skip checks for bazel executable name`() {
+        // arrange
         val pathsService = createInstance()
-        val path = File("custom_bazel")
+        every { parametersService.tryGetParameter(ParameterType.Runner, BazelConstants.TOOL_PATH) } returns "bazel"
 
-        // When
-        every { parametersService.tryGetParameter(ParameterType.Runner, BazelConstants.TOOL_PATH) } returns path.path
-        every { fileSystemService.isAbsolute(path) } returns true
-        every { fileSystemService.isDirectory(path) } returns false
-        every { fileSystemService.isExists(path) } returns true
+        // act
+        val actualToolPath = pathsService.toolPath
+
+        // assert
+        assertEquals(actualToolPath, "bazel")
+    }
+
+    @Test
+    fun `should provide tool path when custom tool path is absolute executable`() {
+        // arrange
+        val pathsService = createInstance()
+        val path = "custom_bazel"
+
+        // act
+        every { parametersService.tryGetParameter(ParameterType.Runner, BazelConstants.TOOL_PATH) } returns path
+        fileSystemService.run {
+            every { isAbsolute(File(path)) } returns true
+            every { isDirectory(File(path)) } returns false
+            every { isExists(File(path)) } returns true
+        }
 
         val actualToolPath = pathsService.toolPath
 
-        // Then
-        Assert.assertEquals(actualToolPath, path)
+        // assert
+        assertEquals(actualToolPath, path)
     }
 
     @Test
-    fun shouldThrowExceptionWhenExecutableDoesNotExist() {
-        // Given
+    fun `should throw exception when executable does not exist`() {
+        // arrange
         val pathsService = createInstance()
-        val path = File("custom_bazel")
+        val path = "custom_bazel"
 
-        // When
-        every { parametersService.tryGetParameter(ParameterType.Runner, BazelConstants.TOOL_PATH) } returns path.path
-        every { fileSystemService.isAbsolute(path) } returns true
-        every { fileSystemService.isDirectory(path) } returns false
-        every { fileSystemService.isExists(path) } returns false
+        // act
+        every { parametersService.tryGetParameter(ParameterType.Runner, BazelConstants.TOOL_PATH) } returns path
+        fileSystemService.run {
+            every { isAbsolute(File(path)) } returns true
+            every { isDirectory(File(path)) } returns false
+            every { isExists(File(path)) } returns false
+        }
 
-        // Then
+        // assert
         try {
-            @Suppress("UNUSED_VARIABLE")
-            var actualToolPath = pathsService.toolPath
+            pathsService.toolPath
             Assert.fail("Exception was not thrown.")
-        } catch (ex: RunBuildException) {
+        } catch (_: RunBuildException) {
         }
     }
 
     @Test
-    fun shouldProvideToolPathWhenCustomToolPathIsNotAbsoluteExecutable() {
-        // Given
+    fun `should provide tool path when custom tool path is not absolute executable`() {
+        // arrange
         val pathsService = createInstance()
-        val path = File("custom_bazel")
+        val relativePath = File("custom_bazel")
         val checkoutPath = File("checkoutDir")
-        val absolutePath = File(checkoutPath, path.path)
+        val absolutePath = File(checkoutPath, relativePath.path)
 
-        // When
-        every { parametersService.tryGetParameter(ParameterType.Runner, BazelConstants.TOOL_PATH) } returns path.path
-        every { fileSystemService.isAbsolute(path) } returns false
+        every { parametersService.tryGetParameter(ParameterType.Runner, BazelConstants.TOOL_PATH) } returns relativePath.path
+
         every { buildStepContext.runnerContext } returns
             mockk<BuildRunnerContext> {
                 every { build } returns
@@ -117,27 +133,32 @@ class PathsServiceTest {
                         every { checkoutDirectory } returns checkoutPath
                     }
             }
-        every { fileSystemService.isDirectory(absolutePath) } returns false
-        every { fileSystemService.isExists(absolutePath) } returns true
 
+        fileSystemService.run {
+            every { isAbsolute(relativePath) } returns false
+            every { isDirectory(absolutePath) } returns false
+            every { isExists(absolutePath) } returns true
+        }
+
+        // act
         val actualToolPath = pathsService.toolPath
 
-        // Then
-        Assert.assertEquals(actualToolPath, absolutePath)
+        // assert
+        assertEquals(actualToolPath, absolutePath.path)
     }
 
     @Test
-    fun shouldProvideToolPathWhenCustomToolPathIsNotAbsoluteDirOnWindows() {
-        // Given
+    fun `should provide tool path when custom tool path is not absolute dir on windows`() {
+        // arrange
         val pathsService = createInstance()
         val path = File("custom_bazel")
         val checkoutPath = File("checkoutDir")
         val absolutePath = File(checkoutPath, path.path)
         val absoluteExecutablePath = File(absolutePath, "bazel.exe")
 
-        // When
+        // act
         every { parametersService.tryGetParameter(ParameterType.Runner, BazelConstants.TOOL_PATH) } returns path.path
-        every { fileSystemService.isAbsolute(path) } returns false
+        every { environment.osType } returns OSType.WINDOWS
         every { buildStepContext.runnerContext } returns
             mockk<BuildRunnerContext> {
                 every { build } returns
@@ -145,48 +166,51 @@ class PathsServiceTest {
                         every { checkoutDirectory } returns checkoutPath
                     }
             }
-        every { fileSystemService.isDirectory(absolutePath) } returns true
-        every { environment.osType } returns OSType.WINDOWS
-        every { fileSystemService.isExists(absoluteExecutablePath) } returns true
+        fileSystemService.run {
+            every { isDirectory(absolutePath) } returns true
+            every { isAbsolute(path) } returns false
+            every { isExists(absoluteExecutablePath) } returns true
+        }
 
         val actualToolPath = pathsService.toolPath
 
-        // Then
-        Assert.assertEquals(actualToolPath, absoluteExecutablePath)
+        // assert
+        assertEquals(actualToolPath, absoluteExecutablePath.path)
     }
 
     @Test
-    fun shouldProvideToolPathWhenCustomToolPathIsAbsoluteDirOnWindows() {
-        // Given
+    fun `should provide tool path when custom tool path is absolute dir on windows`() {
+        // arrange
         val pathsService = createInstance()
         val path = File("custom_bazel")
         val executablePath = File(path, "bazel.exe")
 
-        // When
-        every { parametersService.tryGetParameter(ParameterType.Runner, BazelConstants.TOOL_PATH) } returns path.path
-        every { fileSystemService.isAbsolute(path) } returns true
-        every { fileSystemService.isDirectory(path) } returns true
+        // act
         every { environment.osType } returns OSType.WINDOWS
-        every { fileSystemService.isExists(executablePath) } returns true
-
+        every { parametersService.tryGetParameter(ParameterType.Runner, BazelConstants.TOOL_PATH) } returns path.path
+        fileSystemService.run {
+            every { isAbsolute(path) } returns true
+            every { isDirectory(path) } returns true
+            every { isExists(executablePath) } returns true
+        }
         val actualToolPath = pathsService.toolPath
 
-        // Then
-        Assert.assertEquals(actualToolPath, executablePath)
+        // assert
+        assertEquals(actualToolPath, executablePath.path)
     }
 
     @Test
-    fun shouldProvideToolPathWhenCustomToolPathIsNotAbsoluteDirOnUnix() {
-        // Given
+    fun `should provide tool path when custom tool path is not absolute dir on unix`() {
+        // arrange
         val pathsService = createInstance()
         val path = File("custom_bazel")
         val checkoutPath = File("checkoutDir")
         val absolutePath = File(checkoutPath, path.path)
         val absoluteExecutablePath = File(absolutePath, "bazel")
 
-        // When
+        // act
+        every { environment.osType } returns OSType.UNIX
         every { parametersService.tryGetParameter(ParameterType.Runner, BazelConstants.TOOL_PATH) } returns path.path
-        every { fileSystemService.isAbsolute(path) } returns false
         every { buildStepContext.runnerContext } returns
             mockk<BuildRunnerContext> {
                 every { build } returns
@@ -194,38 +218,42 @@ class PathsServiceTest {
                         every { checkoutDirectory } returns checkoutPath
                     }
             }
-        every { fileSystemService.isDirectory(absolutePath) } returns true
-        every { environment.osType } returns OSType.UNIX
-        every { fileSystemService.isExists(absoluteExecutablePath) } returns true
+        fileSystemService.run {
+            every { isAbsolute(path) } returns false
+            every { isDirectory(absolutePath) } returns true
+            every { isExists(absoluteExecutablePath) } returns true
+        }
 
         val actualToolPath = pathsService.toolPath
 
-        // Then
-        Assert.assertEquals(actualToolPath, absoluteExecutablePath)
+        // assert
+        assertEquals(actualToolPath, absoluteExecutablePath.path)
     }
 
     @Test
-    fun shouldProvideToolPathWhenCustomToolPathIsAbsoluteDirOnMac() {
-        // Given
+    fun `should provide tool path when custom tool path is absolute dir on mac`() {
+        // arrange
         val pathsService = createInstance()
         val path = File("custom_bazel")
         val executablePath = File(path, "bazel")
 
-        // When
+        // act
         every { parametersService.tryGetParameter(ParameterType.Runner, BazelConstants.TOOL_PATH) } returns path.path
-        every { fileSystemService.isAbsolute(path) } returns true
-        every { fileSystemService.isDirectory(path) } returns true
+        fileSystemService.run {
+            every { isAbsolute(path) } returns true
+            every { isDirectory(path) } returns true
+            every { isExists(executablePath) } returns true
+        }
         every { environment.osType } returns OSType.MAC
-        every { fileSystemService.isExists(executablePath) } returns true
 
         val actualToolPath = pathsService.toolPath
 
-        // Then
-        Assert.assertEquals(actualToolPath, executablePath)
+        // assert
+        assertEquals(actualToolPath, executablePath.path)
     }
 
     @Test
-    fun shouldProvideDifferentUniqueNames() {
+    fun `should provide different unique names`() {
         val pathsService = createInstance()
 
         val uniqueName1 = pathsService.uniqueName

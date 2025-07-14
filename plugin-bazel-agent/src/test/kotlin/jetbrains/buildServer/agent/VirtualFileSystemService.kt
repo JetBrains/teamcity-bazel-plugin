@@ -116,18 +116,4 @@ class VirtualFileSystemService : FileSystemService {
         var isAbsolute: Boolean = false
         var errorOnRemove: Exception? = null
     }
-
-    companion object {
-        fun absolute(isAbsolute: Boolean = true): Attributes {
-            val attr = Attributes()
-            attr.isAbsolute = isAbsolute
-            return attr
-        }
-
-        fun errorOnRemove(errorOnRemove: Exception): Attributes {
-            val attr = Attributes()
-            attr.errorOnRemove = errorOnRemove
-            return attr
-        }
-    }
 }
