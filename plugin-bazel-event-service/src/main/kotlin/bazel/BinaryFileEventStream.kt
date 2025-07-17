@@ -2,6 +2,7 @@ package bazel
 
 import bazel.messages.MessageWriter
 import com.google.devtools.build.lib.buildeventstream.BuildEventStreamProtos
+import com.google.protobuf.InvalidProtocolBufferException
 import java.nio.channels.Channels
 import java.nio.channels.FileChannel
 import java.nio.file.FileSystems
@@ -89,17 +90,28 @@ class BinaryFileEventStream(
             onEvent: (Result) -> Unit,
             channel: FileChannel,
         ) {
-            val input = Channels.newInputStream(channel)
-
             while (true) {
                 val positionBeforeRead = channel.position()
-                val evt = BuildEventStreamProtos.BuildEvent.parseDelimitedFrom(input)
-                if (evt == null) {
+                val input = Channels.newInputStream(channel)
+
+                try {
+                    val evt = BuildEventStreamProtos.BuildEvent.parseDelimitedFrom(input)
+                    if (evt == null) {
+                        channel.position(positionBeforeRead)
+                        return
+                    }
+                    onEvent(Result.Event(sequenceNumber++, evt))
+                } catch (ex: Exception) {
+                    if (ex is InvalidProtocolBufferException) {
+                        messageWriter.trace("Attempt to read truncated bazel event message at position $positionBeforeRead")
+                    } else {
+                        messageWriter.warning("Could not read bazel event message at $positionBeforeRead")
+                        messageWriter.trace("${ex.message}\n${ex.stackTraceToString()}")
+                    }
+
                     channel.position(positionBeforeRead)
                     return
                 }
-
-                onEvent(Result.Event(sequenceNumber++, evt))
             }
         }
     }

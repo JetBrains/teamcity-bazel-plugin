@@ -44,13 +44,16 @@ class BazelRunnerBuildService(
 
     override fun getRunResult(exitCode: Int): BuildFinishedStatus {
         if (getCommandName() == COMMAND_TEST) {
-            if (exitCode == 3) {
-                return BuildFinishedStatus.FINISHED_SUCCESS
-            } else if (exitCode == 4) {
-                val successWhenNoTests =
-                    runnerParameters[BazelConstants.PARAM_SUCCESS_WHEN_NO_TESTS]?.trim()?.toBoolean()
-                if (successWhenNoTests == true) {
+            when (exitCode) {
+                TESTS_FAILED -> {
                     return BuildFinishedStatus.FINISHED_SUCCESS
+                }
+                NO_TESTS_FOUND -> {
+                    val successWhenNoTests =
+                        runnerParameters[BazelConstants.PARAM_SUCCESS_WHEN_NO_TESTS]?.trim()?.toBoolean()
+                    if (successWhenNoTests == true) {
+                        return BuildFinishedStatus.FINISHED_SUCCESS
+                    }
                 }
             }
         }
@@ -66,5 +69,7 @@ class BazelRunnerBuildService(
                 COMMAND_TEST,
                 COMMAND_RUN,
             )
+        private const val TESTS_FAILED = 3
+        private const val NO_TESTS_FOUND = 4
     }
 }
