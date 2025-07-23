@@ -9,6 +9,7 @@ import java.util.concurrent.atomic.AtomicInteger
 class GrpcServer(
     private val _messageWriter: MessageWriter,
     private val _port: Int,
+    private val _maxMessageSizeMb: Int = 8,
 ) : ServerTransportFilter() {
     private val connectionCounter = AtomicInteger()
     var port = 0
@@ -20,11 +21,12 @@ class GrpcServer(
                 .addTransportFilter(this)
                 .intercept(GrpcServerLoggingInterceptor(_messageWriter))
                 .addService(bindableService)
+                .maxInboundMessageSize(_maxMessageSizeMb * 1024 * 1024) // Convert MB to bytes
                 .build()
                 .start()
         port = server.port
 
-        _messageWriter.trace("Server started, listening on $port")
+        _messageWriter.trace("Server started, listening on $port with max message size ${_maxMessageSizeMb}MB")
         return AutoCloseable {
             _messageWriter.trace("Initiating server termination..")
             server.let {

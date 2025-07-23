@@ -53,3 +53,4 @@ plugin-bazel-integration-tests/samples/**/bazel-*
 plugin-bazel-integration-tests/samples/FlakyTests/.idea/
 plugin-bazel-integration-tests/samples/**/.idea
 
+.DS_Store

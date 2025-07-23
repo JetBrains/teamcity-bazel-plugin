@@ -54,7 +54,7 @@ private fun runBesGrpcServerMode(
     messageWriter: MessageWriter,
 ) {
     var finalExitCode = 0
-    val grpcServer = GrpcServer(messageWriter, options.port)
+    val grpcServer = GrpcServer(messageWriter, options.port, options.maxMessageSizeMb)
     val server =
         BesGrpcServer(
             messageWriter,

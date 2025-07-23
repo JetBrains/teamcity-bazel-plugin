@@ -1,5 +1,3 @@
-
-
 package bazel
 
 import org.apache.commons.cli.*
@@ -31,6 +29,8 @@ class BazelOptions(
 
     val bazelCommandlineFile: File? get() = line.getOptionValue("c")?.let { File(it) }
 
+    val maxMessageSizeMb: Int get() = line.getOptionValue("m")?.toInt() ?: 8
+
     companion object {
         private val options = createOptions()
 
@@ -57,6 +57,12 @@ class BazelOptions(
                 "command",
                 true,
                 "Specifies the new line separated file containing bazel executable and its command line arguments.",
+            )
+            options.addOption(
+                "m",
+                "max-message-size",
+                true,
+                "Maximum inbound message size in MB for gRPC server. Optional and 8MB by default.",
             )
             return options
         }
