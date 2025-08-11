@@ -20,6 +20,7 @@ class GrpcServer(
                 .addTransportFilter(this)
                 .intercept(GrpcServerLoggingInterceptor(_messageWriter))
                 .addService(bindableService)
+                .maxInboundMessageSize(MAX_MESSAGE_SIZE_BYTES)
                 .build()
                 .start()
         port = server.port
@@ -47,5 +48,10 @@ class GrpcServer(
 
     private fun connectionCounterChanged(connectionCounter: Int) {
         _messageWriter.trace("Server connections changed: $connectionCounter")
+    }
+
+    companion object {
+        // Support large BEP messages: https://github.com/bazelbuild/bazel/issues/12050
+        private const val MAX_MESSAGE_SIZE_BYTES = 50 * 1024 * 1024
     }
 }

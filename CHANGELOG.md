@@ -14,6 +14,7 @@
 - Improved handling of missing test reports when using `--remote_download_outputs=minimal`. [TW-94280](https://youtrack.jetbrains.com/issue/TW-94280)
 - Fixed a race condition caused by unsubscribing too early from the binary BEP stream. [TW-94016](https://youtrack.jetbrains.com/issue/TW-94016)
 - Bazel builds can now run in containers without a JDK installed. [TW-93139](https://youtrack.jetbrains.com/issue/TW-93139)
+- Max grpc message size increased to 50 mb to support large BEP messages. [#58](https://github.com/JetBrains/teamcity-bazel-plugin/issues/58)
 
 ## 0.1.0 - 2024-08-08
 
