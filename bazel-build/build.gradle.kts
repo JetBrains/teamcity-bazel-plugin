@@ -22,6 +22,10 @@ tasks.compileKotlin {
     dependsOn(tasks.generateGrammarSource)
 }
 
+tasks.compileTestKotlin {
+    dependsOn(tasks.generateTestGrammarSource)
+}
+
 idea.module {
     generatedSourceDirs.add(generatedSrc.get().asFile)
 }
