@@ -2,6 +2,7 @@ package bazel
 
 import bazel.messages.MessageWriter
 import com.google.devtools.build.lib.buildeventstream.BuildEventStreamProtos
+import com.google.protobuf.CodedInputStream
 import com.google.protobuf.InvalidProtocolBufferException
 import java.nio.channels.Channels
 import java.nio.channels.FileChannel
@@ -40,6 +41,8 @@ class BinaryFileEventStream(
     ) {
         private val disposed = AtomicBoolean()
         private var sequenceNumber: Long = 0
+        private var lastFailedPosition: Long = -1
+        private var failedAtSamePositionCount: Int = 0
 
         fun start(onEvent: (Result) -> Unit): AutoCloseable {
             val thread = thread(name = "BazelEventStream") { readBazelStreamLoop(onEvent) }
@@ -100,8 +103,28 @@ class BinaryFileEventStream(
                         channel.position(positionBeforeRead)
                         return
                     }
+                    lastFailedPosition = -1
+                    failedAtSamePositionCount = 0
                     onEvent(Result.Event(sequenceNumber++, evt))
                 } catch (ex: Exception) {
+                    if (positionBeforeRead == lastFailedPosition) {
+                        failedAtSamePositionCount++
+                    } else {
+                        lastFailedPosition = positionBeforeRead
+                        failedAtSamePositionCount = 1
+                    }
+
+                    if (failedAtSamePositionCount > MAX_RETRIES_AT_SAME_POSITION &&
+                        ex is InvalidProtocolBufferException
+                    ) {
+                        messageWriter.warning(
+                            "Skipping unreadable bazel event at position $positionBeforeRead " +
+                                "after $MAX_RETRIES_AT_SAME_POSITION retries"
+                        )
+                        skipMessage(channel, positionBeforeRead)
+                        continue
+                    }
+
                     if (ex is InvalidProtocolBufferException) {
                         messageWriter.trace("Attempt to read truncated bazel event message at position $positionBeforeRead")
                     } else {
@@ -113,6 +136,31 @@ class BinaryFileEventStream(
                     return
                 }
             }
+        }
+
+        private fun skipMessage(channel: FileChannel, position: Long) {
+            try {
+                channel.position(position)
+                val input = Channels.newInputStream(channel)
+                val codedInput = CodedInputStream.newInstance(input)
+                val messageSize = codedInput.readRawVarint32()
+                val newPosition = channel.position() + messageSize
+                if (newPosition <= channel.size()) {
+                    channel.position(newPosition)
+                    messageWriter.trace("Skipped $messageSize bytes, now at position ${channel.position()}")
+                } else {
+                    channel.position(position)
+                }
+            } catch (ex: Exception) {
+                messageWriter.trace("Could not skip message at $position: ${ex.message}")
+                channel.position(position + 1)
+            }
+            lastFailedPosition = -1
+            failedAtSamePositionCount = 0
+        }
+
+        companion object {
+            private const val MAX_RETRIES_AT_SAME_POSITION = 10
         }
     }
 }
