@@ -2,7 +2,10 @@ package bazel
 
 import bazel.messages.MessageWriter
 import com.google.devtools.build.lib.buildeventstream.BuildEventStreamProtos
+import com.google.protobuf.CodedInputStream
+import com.google.protobuf.CodedOutputStream
 import com.google.protobuf.InvalidProtocolBufferException
+import java.nio.ByteBuffer
 import java.nio.channels.Channels
 import java.nio.channels.FileChannel
 import java.nio.file.FileSystems
@@ -86,33 +89,75 @@ class BinaryFileEventStream(
             }
         }
 
+        /**
+         * parseDelimitedFrom on a FileChannel silently returns incomplete messages
+         * at EOF (proto3 treats missing fields as defaults), permanently misaligning
+         * subsequent reads. We peek at the size prefix first to verify the full
+         * message is on disk before parsing.
+         */
         private fun readBazelEvents(
             onEvent: (Result) -> Unit,
             channel: FileChannel,
         ) {
             while (true) {
                 val positionBeforeRead = channel.position()
-                val input = Channels.newInputStream(channel)
+                val messageSize = peekMessageSize(channel, positionBeforeRead) ?: return
+                val prefixSize = CodedOutputStream.computeUInt32SizeNoTag(messageSize)
+                val eventEnd = positionBeforeRead + prefixSize + messageSize
+
+                // Full message not yet on disk — wait for Bazel to flush more data
+                if (eventEnd > channel.size()) {
+                    channel.position(positionBeforeRead)
+                    return
+                }
 
                 try {
+                    val input = Channels.newInputStream(channel)
                     val evt = BuildEventStreamProtos.BuildEvent.parseDelimitedFrom(input)
-                    if (evt == null) {
-                        channel.position(positionBeforeRead)
-                        return
+                    channel.position(eventEnd)
+                    if (evt != null) {
+                        onEvent(Result.Event(sequenceNumber++, evt))
                     }
-                    onEvent(Result.Event(sequenceNumber++, evt))
+                } catch (ex: InvalidProtocolBufferException) {
+                    messageWriter.warning(
+                        "Skipped unreadable bazel event at position $positionBeforeRead: ${ex.message}",
+                    )
+                    channel.position(eventEnd)
+                    continue
                 } catch (ex: Exception) {
-                    if (ex is InvalidProtocolBufferException) {
-                        messageWriter.trace("Attempt to read truncated bazel event message at position $positionBeforeRead")
-                    } else {
-                        messageWriter.warning("Could not read bazel event message at $positionBeforeRead")
-                        messageWriter.trace("${ex.message}\n${ex.stackTraceToString()}")
-                    }
-
+                    messageWriter.warning("Could not read bazel event at position $positionBeforeRead")
+                    messageWriter.trace("${ex.message}\n${ex.stackTraceToString()}")
                     channel.position(positionBeforeRead)
                     return
                 }
             }
+        }
+
+        private fun peekMessageSize(
+            channel: FileChannel,
+            position: Long,
+        ): Int? {
+            val available = channel.size() - position
+            if (available == 0L) return null
+
+            val headerSize = minOf(available, MAX_VARINT_SIZE.toLong()).toInt()
+            val headerBuf = ByteBuffer.allocate(headerSize)
+            if (channel.read(headerBuf) <= 0) return null
+            headerBuf.flip()
+
+            return try {
+                val codedInput = CodedInputStream.newInstance(headerBuf.array(), 0, headerBuf.remaining())
+                val size = codedInput.readRawVarint32()
+                if (size < 0) null else size
+            } catch (_: Exception) {
+                null
+            } finally {
+                channel.position(position)
+            }
+        }
+
+        companion object {
+            private const val MAX_VARINT_SIZE = 5
         }
     }
 }
