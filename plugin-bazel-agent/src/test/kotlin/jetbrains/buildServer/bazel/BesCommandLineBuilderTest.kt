@@ -48,7 +48,7 @@ class BesCommandLineBuilderTest {
 
     @Test
     fun shouldGenerateEventServiceCall() {
-        every { pathsService.toolPath } returns File("/fake/bazel")
+        every { pathsService.toolPath } returns "/fake/bazel"
         every { workingDirectoryProvider.workingDirectory } returns File("/fake/workdir")
         every { pathsService.getPath(PathType.AgentTemp) } returns tempDir
         every { pathsService.getPath(PathType.Checkout) } returns File("/fake/checkoutdir")

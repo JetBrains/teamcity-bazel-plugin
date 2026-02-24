@@ -31,6 +31,6 @@ class BazelCommandLineBuilder(
     private fun getExecutablePath() =
         when {
             _buildStepContext.runnerContext.isVirtualContext -> BazelConstants.EXECUTABLE
-            else -> _pathsService.toolPath.absolutePath
+            else -> _pathsService.toolPath
         }
 }
