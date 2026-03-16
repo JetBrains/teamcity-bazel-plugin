@@ -1,9 +1,16 @@
 import com.google.protobuf.gradle.*
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
     java
     idea
     alias(libs.plugins.protobuf)
+}
+
+tasks.withType<KotlinCompile>().configureEach {
+    compilerOptions {
+        freeCompilerArgs.add("-Xjdk-release=1.8")
+    }
 }
 
 dependencies {
