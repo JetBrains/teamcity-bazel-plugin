@@ -8,6 +8,12 @@
 
 ### Fixed
 
+## 0.2.1 - 2026-03-16
+
+### Fixed
+
+- Fixed java.nio.ByteBuffer.flip Java 8 runtime compatibility
+
 ## 0.2.0 - 2026-02-24
 
 ### Added
