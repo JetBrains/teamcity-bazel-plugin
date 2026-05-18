@@ -13,7 +13,6 @@ import bazel.messages.apply
 import bazel.messages.toColor
 import java.io.FileNotFoundException
 import java.io.InputStreamReader
-import java.io.OutputStreamWriter
 import java.time.Duration
 
 class TestResultHandler(
@@ -88,10 +87,9 @@ class TestResultHandler(
         isRemoteCacheHit: Boolean,
     ) {
         try {
-            val content = readFileLines(ctx, test)
             when {
-                test.name.endsWith(".xml") -> importXmlTestResults(ctx, test.name, content)
-                test.name.endsWith(".log") -> printLogTestResults(ctx, content)
+                test.name.endsWith(".xml") -> importXmlTestResults(ctx, test)
+                test.name.endsWith(".log") -> printLogTestResults(ctx, readFileLines(ctx, test))
             }
         } catch (ex: Exception) {
             if (isRemoteCacheHit && ex is FileNotFoundException) {
@@ -109,14 +107,15 @@ class TestResultHandler(
 
     private fun importXmlTestResults(
         ctx: BuildEventHandlerContext,
-        fileName: String,
-        content: List<String>,
+        test: File,
     ) {
-        val testTempFile = _fileSystemService.generateTempFile("tmp", fileName)
-        _fileSystemService.write(testTempFile) { stream ->
-            OutputStreamWriter(stream).use { writer -> content.forEach { writer.write(it) } }
+        test.createStream().use { input ->
+            val testTempFile = _fileSystemService.generateTempFile("tmp", test.name)
+            _fileSystemService.write(testTempFile) { stream ->
+                input.copyTo(stream)
+            }
+            ctx.writer.importJUnitReport(testTempFile.absolutePath)
         }
-        ctx.writer.importJUnitReport(testTempFile.absolutePath)
     }
 
     private fun printLogTestResults(
