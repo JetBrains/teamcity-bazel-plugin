@@ -18,6 +18,7 @@ import org.testng.Assert
 import org.testng.annotations.BeforeMethod
 import org.testng.annotations.DataProvider
 import org.testng.annotations.Test
+import java.nio.file.Files
 import kotlin.io.path.Path
 
 class TestResultHandlerTest {
@@ -64,6 +65,51 @@ class TestResultHandlerTest {
             Assert.assertTrue(it.all { m -> m.tags.contains("tc:parseServiceMessagesInside") }, content)
             Assert.assertTrue(it.any { m -> m.attributes["text"] == "line 1" }, content)
             Assert.assertTrue(it.any { m -> m.attributes["text"] == "##teamcity[line 2]" }, content)
+        }
+    }
+
+    @Test
+    fun `should preserve test report bytes when importing xml`() {
+        // arrange
+        val handler = TestResultHandler(FileSystemService())
+        val reportContent =
+            (
+                "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n" +
+                    "<testsuite>\n" +
+                    "  <testcase name=\"should preserve line endings\">\r\n" +
+                    "    <system-out>line 1&#10;line 2</system-out>\n" +
+                    "  </testcase>\r\n" +
+                    "</testsuite>\n"
+            ).toByteArray(Charsets.UTF_8)
+        val bazelEvent =
+            buildEvent {
+                testResult =
+                    testResult {
+                        addTestActionOutput(
+                            file {
+                                name = "test.xml"
+                                contents = ByteString.copyFrom(reportContent)
+                            },
+                        )
+                    }
+            }
+
+        val serviceMessages = mutableListOf<ServiceMessage>()
+        val ctx = createContext(bazelEvent, Verbosity.Normal, serviceMessages)
+
+        // act
+        handler.handle(ctx)
+
+        // assert
+        val importedPath = serviceMessages.single().attributes["path"]!!
+        try {
+            val importedContent = Files.readAllBytes(Path(importedPath))
+            Assert.assertTrue(
+                importedContent.contentEquals(reportContent),
+                "Imported XML content must match the original bytes.",
+            )
+        } finally {
+            Files.deleteIfExists(Path(importedPath))
         }
     }
 

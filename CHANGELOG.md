@@ -8,6 +8,8 @@
 
 ### Fixed
 
+- TestResultHandler breaks stdout/stderr content of JUnit XML test reports
+
 ## 0.2.1 - 2026-03-16
 
 ### Fixed
