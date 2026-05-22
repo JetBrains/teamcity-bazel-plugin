@@ -12,6 +12,7 @@ data class BuildEventHandlerContext(
     val verbosity: Verbosity,
     val event: BuildEventStreamProtos.BuildEvent,
     val writer: MessageWriter,
+    val reportTargetLogToBuildLog: Boolean = true,
 ) {
     companion object {
         fun fromBesContext(
@@ -21,6 +22,7 @@ data class BuildEventHandlerContext(
             ctx.verbosity,
             event,
             ctx.writer,
+            ctx.reportTargetLogToBuildLog,
         )
     }
 }

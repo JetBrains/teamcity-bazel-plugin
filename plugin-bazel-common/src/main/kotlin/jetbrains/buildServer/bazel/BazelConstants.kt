@@ -32,6 +32,7 @@ object BazelConstants {
     const val PARAM_VERBOSITY = "verbosity"
     const val PARAM_INTEGRATION_MODE = "integration"
     const val PARAM_SUCCESS_WHEN_NO_TESTS = "successWhenNoTests"
+    const val PARAM_REPORT_TARGET_LOG_TO_BUILD_LOG = "reportTargetLogToBuildLog"
 
     // build feature
     const val PARAM_REMOTE_CACHE = "remoteHttpCache"

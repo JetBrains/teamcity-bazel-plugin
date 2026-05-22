@@ -36,6 +36,9 @@ class BazelParametersProvider {
     val successWhenNoTestsKey: String
         get() = BazelConstants.PARAM_SUCCESS_WHEN_NO_TESTS
 
+    val reportTargetLogToBuildLogKey: String
+        get() = BazelConstants.PARAM_REPORT_TARGET_LOG_TO_BUILD_LOG
+
     val integrationModes: List<IntegrationMode>
         get() = IntegrationMode.values().toList()
 

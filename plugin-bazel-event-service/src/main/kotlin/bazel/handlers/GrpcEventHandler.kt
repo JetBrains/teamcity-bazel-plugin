@@ -14,4 +14,5 @@ data class GrpcEventHandlerContext(
     val streamId: StreamId,
     val event: BuildEvent,
     val writer: MessageWriter,
+    val reportTargetLogToBuildLog: Boolean = true,
 )

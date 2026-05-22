@@ -31,6 +31,9 @@ class BazelOptions(
 
     val bazelCommandlineFile: File? get() = line.getOptionValue("c")?.let { File(it) }
 
+    val reportTargetLogToBuildLog: Boolean
+        get() = line.getOptionValue("r")?.toBoolean() ?: true
+
     companion object {
         private val options = createOptions()
 
@@ -57,6 +60,12 @@ class BazelOptions(
                 "command",
                 true,
                 "Specifies the new line separated file containing bazel executable and its command line arguments.",
+            )
+            options.addOption(
+                "r",
+                "report-target-log-to-build-log",
+                true,
+                "Specifies whether Bazel test.log files should be written to TeamCity build log. Optional and true by default.",
             )
             return options
         }
