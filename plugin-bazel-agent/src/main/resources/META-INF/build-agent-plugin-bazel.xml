@@ -47,6 +47,7 @@
     <!--bazel commands-->
     <bean class="jetbrains.buildServer.bazel.commands.BuildCommand"/>
     <bean class="jetbrains.buildServer.bazel.commands.CleanCommand"/>
+    <bean class="jetbrains.buildServer.bazel.commands.FetchCommand"/>
     <bean class="jetbrains.buildServer.bazel.commands.RunCommand"/>
     <bean class="jetbrains.buildServer.bazel.commands.TestCommand"/>
     <bean class="jetbrains.buildServer.bazel.commands.ShutdownCommand"/>

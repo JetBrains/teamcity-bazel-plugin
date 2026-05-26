@@ -19,6 +19,7 @@ object BazelConstants {
 
     const val COMMAND_BUILD = "build"
     const val COMMAND_CLEAN = "clean"
+    const val COMMAND_FETCH = "fetch"
     const val COMMAND_RUN = "run"
     const val COMMAND_TEST = "test"
     const val COMMAND_SHUTDOWN = "shutdown"
