@@ -4,6 +4,8 @@
 
 ### Added
 
+- Support for the `fetch` command — targets are now passed to `bazel fetch` instead of being dropped by the custom-command fallback
+
 ### Changed
 
 ### Fixed

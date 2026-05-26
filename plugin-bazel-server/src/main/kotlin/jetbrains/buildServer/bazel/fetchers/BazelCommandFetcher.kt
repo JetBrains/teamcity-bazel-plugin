@@ -23,6 +23,7 @@ class BazelCommandFetcher : ProjectDataFetcher {
             listOf(
                 BazelConstants.COMMAND_BUILD,
                 BazelConstants.COMMAND_CLEAN,
+                BazelConstants.COMMAND_FETCH,
                 BazelConstants.COMMAND_RUN,
                 BazelConstants.COMMAND_TEST,
             ).map {
