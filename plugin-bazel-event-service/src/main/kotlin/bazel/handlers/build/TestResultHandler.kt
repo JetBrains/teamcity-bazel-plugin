@@ -89,7 +89,7 @@ class TestResultHandler(
         try {
             when {
                 test.name.endsWith(".xml") -> importXmlTestResults(ctx, test)
-                test.name.endsWith(".log") -> printLogTestResults(ctx, readFileLines(ctx, test))
+                test.name.endsWith(".log") -> streamLogTestResults(ctx, test)
             }
         } catch (ex: Exception) {
             if (isRemoteCacheHit && ex is FileNotFoundException) {
@@ -118,24 +118,23 @@ class TestResultHandler(
         }
     }
 
-    private fun printLogTestResults(
-        ctx: BuildEventHandlerContext,
-        content: List<String>,
-    ) {
-        // print log file as a message
-        // tc:parseServiceMessagesInside will parse teamcity service messages if it has any
-        content.forEach { ctx.writer.message(it) }
-    }
-
-    private fun readFileLines(
+    // A test.log holds the combined stdout/stderr of the whole test action, so it can reach tens of GB
+    // (e.g. a hanging test with --test_output=streamed). Do not materialize it.
+    private fun streamLogTestResults(
         ctx: BuildEventHandlerContext,
         file: File,
-    ): List<String> {
-        val content = InputStreamReader(file.createStream()).use { it.readLines() }
-        if (ctx.verbosity.atLeast(Verbosity.Diagnostic)) {
+    ) {
+        val diagnostic = ctx.verbosity.atLeast(Verbosity.Diagnostic)
+        if (diagnostic) {
             ctx.writer.trace("File \"$file\":")
-            content.forEach { ctx.writer.trace("$\t$it") }
         }
-        return content
+
+        // tc:parseServiceMessagesInside will parse teamcity service messages if the line has any
+        InputStreamReader(file.createStream()).forEachLine { line ->
+            ctx.writer.message(line)
+            if (diagnostic) {
+                ctx.writer.trace("$\t$line")
+            }
+        }
     }
 }
