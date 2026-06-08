@@ -2,6 +2,8 @@
 
 package jetbrains.buildServer.bazel
 
+import jetbrains.buildServer.serverSide.TeamCityProperties
+
 /**
  * Provides parameters for bazel runner.
  */
@@ -38,6 +40,14 @@ class BazelParametersProvider {
 
     val reportTargetLogToBuildLogKey: String
         get() = BazelConstants.PARAM_REPORT_TARGET_LOG_TO_BUILD_LOG
+
+    val reportTargetLogToBuildLogSettingEnabledKey: String
+        get() = BazelConstants.PARAM_REPORT_TARGET_LOG_TO_BUILD_LOG_SETTING_ENABLED
+
+    val reportTargetLogToBuildLogSettingEnabled: Boolean
+        get() = TeamCityProperties.getBooleanOrTrue(
+            BazelConstants.TEAMCITY_PROPERTY_REPORT_TARGET_LOG_TO_BUILD_LOG_SETTING_ENABLED,
+        )
 
     val integrationModes: List<IntegrationMode>
         get() = IntegrationMode.values().toList()
