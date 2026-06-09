@@ -73,6 +73,7 @@
 </script>
 
 <props:workingDirectory/>
+<input type="hidden" name="prop:${params.reportTargetLogToBuildLogSettingEnabledKey}" value="${params.reportTargetLogToBuildLogSettingEnabled}"/>
 
 <tr>
     <th><label for="${params.commandKey}">
