@@ -7,16 +7,20 @@ import jetbrains.buildServer.serverSide.TeamCityProperties
 class BazelBuildStartContextProcessor : BuildStartContextProcessor {
     override fun updateParameters(context: BuildStartContext) {
         val settingEnabled =
-            TeamCityProperties
-                .getBooleanOrTrue(BazelConstants.TEAMCITY_PROPERTY_REPORT_TARGET_LOG_TO_BUILD_LOG_SETTING_ENABLED)
-                .toString()
+            TeamCityProperties.getBooleanOrTrue(
+                BazelConstants.TEAMCITY_PROPERTY_REPORT_TARGET_LOG_TO_BUILD_LOG_SETTING_ENABLED,
+            )
+
+        if (settingEnabled) {
+            return
+        }
 
         context.runnerContexts
             .filter { it.runType.type == BazelConstants.RUNNER_TYPE }
             .forEach {
                 it.addRunnerParameter(
-                    BazelConstants.PARAM_REPORT_TARGET_LOG_TO_BUILD_LOG_SETTING_ENABLED,
-                    settingEnabled,
+                    BazelConstants.PARAM_REPORT_TARGET_LOG_TO_BUILD_LOG_SETTING_DISABLED,
+                    "true",
                 )
             }
     }

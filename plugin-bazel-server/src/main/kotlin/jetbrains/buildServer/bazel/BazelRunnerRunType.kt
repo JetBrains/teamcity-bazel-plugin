@@ -40,13 +40,7 @@ class BazelRunnerRunType(
 
     override fun getViewRunnerParamsJspFilePath(): String? = myPluginDescriptor.getPluginResourcesPath("viewBazelParameters.jsp")
 
-    override fun getDefaultRunnerProperties(): Map<String, String>? =
-        mapOf(
-            BazelConstants.PARAM_REPORT_TARGET_LOG_TO_BUILD_LOG_SETTING_ENABLED to
-                TeamCityProperties
-                    .getBooleanOrTrue(BazelConstants.TEAMCITY_PROPERTY_REPORT_TARGET_LOG_TO_BUILD_LOG_SETTING_ENABLED)
-                    .toString(),
-        )
+    override fun getDefaultRunnerProperties(): Map<String, String>? = emptyMap()
 
     override fun describeParameters(parameters: Map<String, String>): String {
         val builder = StringBuilder("bazel")
