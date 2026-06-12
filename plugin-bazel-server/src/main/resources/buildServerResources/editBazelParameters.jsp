@@ -157,6 +157,17 @@
     </td>
 </tr>
 
+<c:if test="${params.reportTargetLogToBuildLogSettingEnabled}">
+    <tr class="advancedSetting bazel test">
+        <th><label for="${params.reportTargetLogToBuildLogKey}">Report Bazel test.log to TeamCity build log</label></th>
+        <td>
+            <props:checkboxProperty name="${params.reportTargetLogToBuildLogKey}" checked="true" className="mediumField">
+            </props:checkboxProperty>
+            <span class="error" id="error_${params.reportTargetLogToBuildLogKey}"></span>
+        </td>
+    </tr>
+</c:if>
+
 <tr class="advancedSetting">
     <th><label for="${params.verbosityKey}">Logging verbosity:</label></th>
     <td>

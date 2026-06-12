@@ -88,6 +88,7 @@ class BesCommandLineBuilderTest {
                 "-jar",
                 File("/fake/plugindir/tools/plugin-bazel-event-service.jar").absolutePath,
                 "-c=${File(tempDir, "bazelCommandlineFile").absolutePath}",
+                "-r=true",
                 "-f=${File(tempDir, "eventFile").absolutePath}",
             ),
         )

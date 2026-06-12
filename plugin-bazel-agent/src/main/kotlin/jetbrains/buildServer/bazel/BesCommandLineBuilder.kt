@@ -4,6 +4,8 @@ import jetbrains.buildServer.agent.java.AgentHostJavaExecutableProvider
 import jetbrains.buildServer.agent.java.DockerJavaExecutableProvider
 import jetbrains.buildServer.agent.runner.*
 import jetbrains.buildServer.bazel.BazelConstants.PARAM_INTEGRATION_MODE
+import jetbrains.buildServer.bazel.BazelConstants.PARAM_REPORT_TARGET_LOG_TO_BUILD_LOG_SETTING_ENABLED
+import jetbrains.buildServer.bazel.BazelConstants.PARAM_REPORT_TARGET_LOG_TO_BUILD_LOG
 import jetbrains.buildServer.bazel.BazelConstants.PARAM_VERBOSITY
 import jetbrains.buildServer.util.StringUtil
 import java.io.File
@@ -39,6 +41,7 @@ class BesCommandLineBuilder(
                 verbosity?.let {
                     add("-l=${it.id}")
                 }
+                add("-r=$reportTargetLogToBuildLog")
 
                 if (integrationMode == IntegrationMode.BinaryFile) {
                     val binaryFile =
@@ -129,4 +132,24 @@ class BesCommandLineBuilder(
                 ?.trim()
                 ?.let { IntegrationMode.tryParse(it) }
                 ?: IntegrationMode.default
+
+    private val reportTargetLogToBuildLog
+        get() =
+            if (reportTargetLogToBuildLogSettingEnabled) {
+                _parametersService
+                    .tryGetParameter(ParameterType.Runner, PARAM_REPORT_TARGET_LOG_TO_BUILD_LOG)
+                    ?.trim()
+                    ?.toBoolean()
+                    ?: true
+            } else {
+                true
+            }
+
+    private val reportTargetLogToBuildLogSettingEnabled
+        get() =
+            _parametersService
+                .tryGetParameter(ParameterType.Runner, PARAM_REPORT_TARGET_LOG_TO_BUILD_LOG_SETTING_ENABLED)
+                ?.trim()
+                ?.toBoolean()
+                ?: true
 }

@@ -33,6 +33,11 @@ object BazelConstants {
     const val PARAM_VERBOSITY = "verbosity"
     const val PARAM_INTEGRATION_MODE = "integration"
     const val PARAM_SUCCESS_WHEN_NO_TESTS = "successWhenNoTests"
+    const val PARAM_REPORT_TARGET_LOG_TO_BUILD_LOG = "reportTargetLogToBuildLog"
+    const val PARAM_REPORT_TARGET_LOG_TO_BUILD_LOG_SETTING_ENABLED = "reportTargetLogToBuildLogSettingEnabled"
+
+    const val TEAMCITY_PROPERTY_REPORT_TARGET_LOG_TO_BUILD_LOG_SETTING_ENABLED =
+        "teamcity.bazel.reportTargetLogToBuildLog.setting.enabled"
 
     // build feature
     const val PARAM_REMOTE_CACHE = "remoteHttpCache"

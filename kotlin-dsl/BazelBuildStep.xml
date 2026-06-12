@@ -47,6 +47,9 @@
         <param name="successWhenNoTests" type="boolean">
             <description>Report success if testing was requested but no tests were found</description>
         </param>
+        <param name="reportTargetLogToBuildLog" type="boolean">
+            <description>Report Bazel test.log file to TeamCity build log</description>
+        </param>
         <param name="verbosity" dslName="logging" type="Verbosity">
             <description>
                 Specify logging verbosity

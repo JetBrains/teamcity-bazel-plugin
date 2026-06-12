@@ -10,6 +10,7 @@ class BinaryFile(
     private val _eventFile: Path,
     private val _verbosity: Verbosity,
     private val _binaryStream: BinaryFileEventStream,
+    private val _reportTargetLogToBuildLog: Boolean,
     private val _buildEventHandlerChain: BuildEventHandlerChain,
 ) {
     fun read(): AutoCloseable =
@@ -31,6 +32,7 @@ class BinaryFile(
                 _verbosity,
                 event.event,
                 MessageWriter(messagePrefix) { _messageWriter.write(it) },
+                _reportTargetLogToBuildLog,
             )
         _buildEventHandlerChain.handle(ctx)
     }

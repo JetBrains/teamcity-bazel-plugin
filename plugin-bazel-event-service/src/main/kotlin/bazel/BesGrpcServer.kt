@@ -11,6 +11,7 @@ class BesGrpcServer(
     private val _messageWriter: MessageWriter,
     private val _grpcServer: GrpcServer,
     private val _verbosity: Verbosity,
+    private val _reportTargetLogToBuildLog: Boolean,
     private val _buildEventHandler: GrpcEventHandlerChain,
 ) {
     var hasStarted = false
@@ -38,6 +39,7 @@ class BesGrpcServer(
                 event.streamId,
                 event.event,
                 MessageWriter(messagePrefix) { _messageWriter.write(updateHeader(event, it)) },
+                _reportTargetLogToBuildLog,
             )
         _buildEventHandler.handle(ctx)
     }

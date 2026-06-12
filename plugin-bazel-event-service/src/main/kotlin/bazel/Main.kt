@@ -34,6 +34,7 @@ private fun runBinaryFileMode(
         options.eventFile!!,
         options.verbosity,
         BinaryFileEventStream(messageWriter),
+        options.reportTargetLogToBuildLog,
         BuildEventHandlerChain(),
     ).read().use {
         val result =
@@ -60,6 +61,7 @@ private fun runBesGrpcServerMode(
             messageWriter,
             grpcServer,
             options.verbosity,
+            options.reportTargetLogToBuildLog,
             GrpcEventHandlerChain(),
         )
 

@@ -68,7 +68,7 @@ class TestResultHandler(
         val isLastAttempt = ctx.event.childrenList.isEmpty()
         if (isLastAttempt) {
             tests
-                .filter { it.name.endsWith(".xml") || it.name.endsWith(".log") }
+                .filter { it.name.endsWith(".xml") || (ctx.reportTargetLogToBuildLog && it.name.endsWith(".log")) }
                 .forEach { testResults ->
                     readTestResults(
                         ctx,

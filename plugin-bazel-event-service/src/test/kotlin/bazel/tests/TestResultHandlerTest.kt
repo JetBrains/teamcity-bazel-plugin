@@ -157,13 +157,51 @@ class TestResultHandlerTest {
         }
     }
 
+    @Test
+    fun `should skip test log file and import xml report when target log reporting is disabled`() {
+        // arrange
+        val handler = TestResultHandler(FileSystemService())
+        val bazelEvent =
+            buildEvent {
+                testResult =
+                    testResult {
+                        addTestActionOutput(
+                            file {
+                                name = "test.log"
+                                contents = ByteString.copyFromUtf8("line 1\n##teamcity[line 2]")
+                            },
+                        )
+                        addTestActionOutput(
+                            file {
+                                name = "test.xml"
+                                contents = ByteString.copyFromUtf8("<testsuite />")
+                            },
+                        )
+                    }
+            }
+
+        val serviceMessages = mutableListOf<ServiceMessage>()
+        val ctx = createContext(bazelEvent, Verbosity.Normal, serviceMessages, reportTargetLogToBuildLog = false)
+
+        // act
+        handler.handle(ctx)
+
+        // assert
+        val content = serviceMessages.joinToString("\n") { it.toString() }
+        Assert.assertFalse(serviceMessages.any { it.attributes["text"] == "line 1" }, content)
+        Assert.assertFalse(serviceMessages.any { it.attributes["text"] == "##teamcity[line 2]" }, content)
+        Assert.assertTrue(serviceMessages.any { it.messageName == "importData" }, content)
+    }
+
     private fun createContext(
         event: BuildEventStreamProtos.BuildEvent,
         verbosity: Verbosity,
         serviceMessages: MutableList<ServiceMessage>,
+        reportTargetLogToBuildLog: Boolean = true,
     ) = BuildEventHandlerContext(
         verbosity,
         event = event,
         MessageWriter("") { serviceMessages.add(it) },
+        reportTargetLogToBuildLog,
     )
 }
