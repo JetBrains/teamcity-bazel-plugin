@@ -27,11 +27,27 @@ import org.testng.annotations.Test
 class BesGrpcServerTest {
     private val messages = mutableListOf<ServiceMessage>()
     private lateinit var service: BesGrpcServerEventStream
+    private lateinit var server: BesGrpcServer
 
     @BeforeMethod
     fun setUp() {
         unmockkAll()
         messages.clear()
+    }
+
+    @Test
+    fun isNotStartedBeforeAnyEventArrives() {
+        startServer().use {
+            assertFalse(server.hasStarted, "No event has been published yet, got: $messages")
+        }
+    }
+
+    @Test
+    fun isStartedOnceAnEventArrives() {
+        startServer().use {
+            lifecycle("A", 1) { buildEnqueued = BuildEvent.BuildEnqueued.getDefaultInstance() }
+            assertTrue(server.hasStarted, "An event was published, got: $messages")
+        }
     }
 
     @Test
@@ -104,7 +120,7 @@ class BesGrpcServerTest {
         val transport = mockk<GrpcServer>()
         val captured = slot<BindableService>()
         every { transport.start(capture(captured)) } returns AutoCloseable { }
-        val server =
+        server =
             BesGrpcServer(
                 writer,
                 transport,
@@ -112,9 +128,10 @@ class BesGrpcServerTest {
                 false,
                 GrpcEventHandlerChain(BuildEventHandlerChain(pending), pending),
                 pending,
-            ).start()
+            )
+        val closeable = server.start()
         service = captured.captured as BesGrpcServerEventStream
-        return server
+        return closeable
     }
 
     private fun startInvocation(id: String) {

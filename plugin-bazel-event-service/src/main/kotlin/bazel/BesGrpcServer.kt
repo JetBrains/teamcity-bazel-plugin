@@ -15,7 +15,13 @@ class BesGrpcServer(
     private val _buildEventHandler: GrpcEventHandlerChain,
     private val _pendingDiagnostics: PendingInvocationDiagnostics,
 ) {
+    /**
+     * Once an event has arrived, the stream itself has carried Bazel's stderr into the build log,
+     * so the caller must not replay the stderr [BazelRunner] collected on top of it.
+     */
+    @Volatile
     var hasStarted = false
+        private set
 
     fun start(): AutoCloseable {
         val server =
@@ -45,6 +51,8 @@ class BesGrpcServer(
     }
 
     private fun onEvent(event: BesGrpcServerEventStream.Result.Event) {
+        hasStarted = true
+
         val messagePrefix = MessagePrefix.build(_verbosity, event.sequenceNumber, event.streamId)
         val flowId = event.streamId.invocationId.ifEmpty { event.streamId.buildId }
         val time = event.event.eventTime
