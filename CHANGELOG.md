@@ -11,6 +11,7 @@
 ### Fixed
 
 - TestResultHandler breaks stdout/stderr content of JUnit XML test reports
+- A build that Bazel restarted itself after a transient remote cache error (`REMOTE_CACHE_EVICTED`) is no longer failed by the failures of the superseded attempt, and the event reader survives Bazel rewriting the binary event file for the retry [#66](https://github.com/JetBrains/teamcity-bazel-plugin/issues/66)
 
 ## 0.2.1 - 2026-03-16
 

@@ -8,12 +8,15 @@ import bazel.handlers.BuildEventHandler
 import bazel.handlers.BuildEventHandlerContext
 import bazel.messages.Color
 import bazel.messages.MessageWriter
+import bazel.messages.PendingInvocationDiagnostics
 import bazel.messages.apply
 import bazel.messages.joinToStringEscaped
 import com.google.devtools.build.lib.buildeventstream.BuildEventStreamProtos
 import java.io.InputStreamReader
 
-class ActionExecutedHandler : BuildEventHandler {
+class ActionExecutedHandler(
+    private val pendingDiagnostics: PendingInvocationDiagnostics,
+) : BuildEventHandler {
     private val fileConverter = FileConverter()
 
     override fun handle(ctx: BuildEventHandlerContext): Boolean {
@@ -25,11 +28,11 @@ class ActionExecutedHandler : BuildEventHandler {
         val actionName = "Action \"${event.type}\""
 
         if (!event.success) {
-            val error = "$actionName failed to execute."
-            ctx.writer.compilationStarted(error)
-            val details = getActionDetails(event, ctx.verbosity, ctx.writer)
-            ctx.writer.error(details, hasPrefix = false)
-            ctx.writer.compilationFinished(error)
+            pendingDiagnostics.addCompilationError(
+                writer = ctx.writer,
+                summary = "$actionName failed to execute.",
+                details = { getActionDetails(event, ctx.verbosity, ctx.writer) },
+            )
             return true
         }
 

@@ -5,12 +5,14 @@ import bazel.atLeast
 import bazel.handlers.BuildEventHandler
 import bazel.handlers.BuildEventHandlerContext
 import bazel.messages.Color
+import bazel.messages.PendingInvocationDiagnostics
 import bazel.messages.TargetRegistry
 import bazel.messages.apply
 import bazel.messages.joinToStringEscaped
 
 class TargetCompletedHandler(
     private val targetRegistry: TargetRegistry,
+    private val pendingDiagnostics: PendingInvocationDiagnostics,
 ) : BuildEventHandler {
     override fun handle(ctx: BuildEventHandlerContext): Boolean {
         if (!ctx.event.hasCompleted()) {
@@ -41,7 +43,7 @@ class TargetCompletedHandler(
             }
 
             if (!completed.success) {
-                ctx.writer.error(description, hasPrefix = false)
+                pendingDiagnostics.addErrorMessage(ctx.writer, description, hasPrefix = false)
             }
         }
 

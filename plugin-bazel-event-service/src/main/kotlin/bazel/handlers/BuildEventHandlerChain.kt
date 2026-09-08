@@ -30,9 +30,12 @@ import bazel.handlers.build.UnstructuredCommandLineHandler
 import bazel.handlers.build.WorkspaceConfigHandler
 import bazel.handlers.build.WorkspaceStatusHandler
 import bazel.messages.CommandNameContext
+import bazel.messages.PendingInvocationDiagnostics
 import bazel.messages.TargetRegistry
 
-class BuildEventHandlerChain : BuildEventHandler {
+class BuildEventHandlerChain(
+    pendingDiagnostics: PendingInvocationDiagnostics,
+) : BuildEventHandler {
     private val targetRegistry = TargetRegistry()
     private val commandNameContext = CommandNameContext()
     private val fileSystemService = FileSystemService()
@@ -44,7 +47,7 @@ class BuildEventHandlerChain : BuildEventHandler {
             // Aborted aborted = 4;
             AbortedHandler(targetRegistry),
             // BuildStarted started = 5;
-            BuildStartedHandler(commandNameContext),
+            BuildStartedHandler(commandNameContext, pendingDiagnostics),
             // UnstructuredCommandLine unstructured_command_line = 12;
             UnstructuredCommandLineHandler(),
             // command_line.CommandLine structured_command_line = 22;
@@ -62,17 +65,17 @@ class BuildEventHandlerChain : BuildEventHandler {
             // TargetConfigured configured = 18;
             TargetConfiguredHandler(targetRegistry),
             // ActionExecuted action = 7;
-            ActionExecutedHandler(),
+            ActionExecutedHandler(pendingDiagnostics),
             // NamedSetOfFiles named_set_of_files = 15;
             NamedSetOfFilesHandler(),
             // TargetComplete completed = 8;
-            TargetCompletedHandler(targetRegistry),
+            TargetCompletedHandler(targetRegistry, pendingDiagnostics),
             // TestResult test_result = 10;
             TestResultHandler(fileSystemService),
             // TestSummary test_summary = 9;
             TestSummaryHandler(),
             // BuildFinished finished = 14;
-            BuildCompletedHandler(commandNameContext),
+            BuildCompletedHandler(commandNameContext, pendingDiagnostics),
             // BuildToolLogs build_tool_logs = 23;
             BuildToolLogsHandler(),
             // BuildMetrics build_metrics = 24;

@@ -13,6 +13,7 @@ import java.nio.file.Path
 import java.nio.file.StandardOpenOption
 import java.nio.file.StandardWatchEventKinds.ENTRY_CREATE
 import java.nio.file.StandardWatchEventKinds.ENTRY_MODIFY
+import java.security.MessageDigest
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.concurrent.thread
@@ -35,6 +36,12 @@ class BinaryFileEventStream(
         data class Error(
             val throwable: Throwable,
         ) : Result
+
+        /**
+         * Bazel replaced the stream in the event file, which it only does when it restarts an
+         * invocation. Everything read so far belongs to the attempt that was superseded.
+         */
+        object StreamRestarted : Result
     }
 
     class Listener(
@@ -43,6 +50,71 @@ class BinaryFileEventStream(
     ) {
         private val disposed = AtomicBoolean()
         private var sequenceNumber: Long = 0
+        private var streamIdentity: ByteArray? = null
+
+        /**
+         * The first frame is stable within an invocation and contains its UUID and start time.
+         * Hash the whole frame: target-pattern children can put the UUID beyond any fixed prefix.
+         * A small buffer bounds memory use even for large target lists. File size alone cannot
+         * detect retries, since the replacement can grow past the old EOF between polls.
+         */
+        private fun currentStreamIdentity(): ByteArray? =
+            runCatching {
+                FileChannel.open(binaryFile, StandardOpenOption.READ).use { streamIdentityOf(it) }
+            }.getOrNull()
+
+        /**
+         * Returns null until the whole first frame is on disk. Record the identity through the
+         * active channel, so replacing the path cannot associate the new file's identity with an
+         * old, unlinked channel.
+         */
+        private fun streamIdentityOf(channel: FileChannel): ByteArray? {
+            val length = firstEventLength(channel) ?: return null
+            if (channel.size() < length) return null
+
+            val digest = MessageDigest.getInstance("SHA-256")
+            val buffer = ByteBuffer.allocate(STREAM_IDENTITY_BUFFER_BYTES)
+            var offset = 0L
+            while (offset < length) {
+                buffer.clear()
+                buffer.limit(minOf(buffer.capacity().toLong(), length - offset).toInt())
+                val read = channel.read(buffer, offset)
+                if (read <= 0) return null
+                offset += read
+                buffer.flip()
+                digest.update(buffer)
+            }
+            return digest.digest()
+        }
+
+        private fun firstEventLength(channel: FileChannel): Long? = peekMessageSize(channel, 0)?.let(::framedLength)
+
+        /**
+         * Reopening rather than rewinding is what covers a replaced file: the channel would
+         * otherwise stay on the inode that was unlinked and never see another byte.
+         */
+        private fun reopenIfRestarted(
+            channel: FileChannel,
+            onEvent: (Result) -> Unit,
+        ): FileChannel {
+            val beingRead = streamIdentity
+            if (beingRead == null) {
+                streamIdentity = streamIdentityOf(channel)
+                return channel
+            }
+
+            val atPath = currentStreamIdentity()
+            if (atPath == null || atPath.contentEquals(beingRead)) {
+                return channel
+            }
+
+            messageWriter.trace("Bazel wrote a new event stream, reading it from the beginning")
+            runCatching { channel.close() }
+            val reopened = FileChannel.open(binaryFile, StandardOpenOption.READ)
+            streamIdentity = streamIdentityOf(reopened)
+            onEvent(Result.StreamRestarted)
+            return reopened
+        }
 
         fun start(onEvent: (Result) -> Unit): AutoCloseable {
             val thread = thread(name = "BazelEventStream") { readBazelStreamLoop(onEvent) }
@@ -57,6 +129,8 @@ class BinaryFileEventStream(
             val watch = FileSystems.getDefault().newWatchService()
             var channel: FileChannel? = null
 
+            fun pump(current: FileChannel): FileChannel = reopenIfRestarted(current, onEvent).also { readBazelEvents(onEvent, it) }
+
             try {
                 binaryFile.parent.register(watch, ENTRY_CREATE, ENTRY_MODIFY)
 
@@ -65,7 +139,7 @@ class BinaryFileEventStream(
                         messageWriter.trace("Opening \"$binaryFile\" for reading...")
                         channel = FileChannel.open(binaryFile, StandardOpenOption.READ)
                     } else if (channel != null) {
-                        readBazelEvents(onEvent, channel)
+                        channel = pump(channel)
                     }
 
                     watch.poll(200, TimeUnit.MILLISECONDS)?.let {
@@ -74,7 +148,9 @@ class BinaryFileEventStream(
                     }
                 } while (!disposed.get())
 
-                channel?.let { readBazelEvents(onEvent, it) }
+                // Bazel may have replaced the file and exited within a single poll interval, so
+                // the last read has to check for that too or it would drain the superseded stream.
+                channel = channel?.let(::pump)
 
                 if (channel == null) {
                     messageWriter.error("Bazel event file was not found or is not readable.")
@@ -102,8 +178,7 @@ class BinaryFileEventStream(
             while (true) {
                 val positionBeforeRead = channel.position()
                 val messageSize = peekMessageSize(channel, positionBeforeRead) ?: return
-                val prefixSize = CodedOutputStream.computeUInt32SizeNoTag(messageSize)
-                val eventEnd = positionBeforeRead + prefixSize + messageSize
+                val eventEnd = positionBeforeRead + framedLength(messageSize)
 
                 // Full message not yet on disk — wait for Bazel to flush more data
                 if (eventEnd > channel.size()) {
@@ -133,31 +208,32 @@ class BinaryFileEventStream(
             }
         }
 
+        /** Reads at an absolute offset, leaving the channel position for the caller to own. */
         private fun peekMessageSize(
             channel: FileChannel,
             position: Long,
         ): Int? {
             val available = channel.size() - position
-            if (available == 0L) return null
+            if (available <= 0L) return null
 
-            val headerSize = minOf(available, MAX_VARINT_SIZE.toLong()).toInt()
-            val headerBuf = ByteBuffer.allocate(headerSize)
-            if (channel.read(headerBuf) <= 0) return null
+            val headerBuf = ByteBuffer.allocate(minOf(available, MAX_VARINT_SIZE.toLong()).toInt())
+            if (channel.read(headerBuf, position) <= 0) return null
             headerBuf.flip()
 
             return try {
                 val codedInput = CodedInputStream.newInstance(headerBuf.array(), 0, headerBuf.remaining())
-                val size = codedInput.readRawVarint32()
-                if (size < 0) null else size
+                codedInput.readRawVarint32().takeIf { it >= 0 }
             } catch (_: Exception) {
                 null
-            } finally {
-                channel.position(position)
             }
         }
 
+        /** What a message of this size occupies in the file, size prefix included. */
+        private fun framedLength(messageSize: Int): Long = CodedOutputStream.computeUInt32SizeNoTag(messageSize).toLong() + messageSize
+
         companion object {
             private const val MAX_VARINT_SIZE = 5
+            private const val STREAM_IDENTITY_BUFFER_BYTES = 8 * 1024
         }
     }
 }

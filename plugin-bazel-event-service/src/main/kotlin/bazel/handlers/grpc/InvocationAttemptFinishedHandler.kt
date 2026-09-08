@@ -6,16 +6,17 @@ import bazel.handlers.GrpcEventHandler
 import bazel.handlers.GrpcEventHandlerContext
 import bazel.messages.BuildStatusFormatter
 import bazel.messages.Color
+import bazel.messages.PendingInvocationDiagnostics
 import bazel.messages.apply
 import com.google.devtools.build.v1.BuildStatus
 
-class InvocationAttemptFinishedHandler : GrpcEventHandler {
+class InvocationAttemptFinishedHandler(
+    private val pendingDiagnostics: PendingInvocationDiagnostics,
+) : GrpcEventHandler {
     override fun handle(ctx: GrpcEventHandlerContext): Boolean {
         if (!ctx.event.hasInvocationAttemptFinished()) {
             return false
         }
-
-        ctx.writer.flowFinished(ctx.streamId.invocationId)
 
         val invocationAttemptFinished = ctx.event.invocationAttemptFinished
         val status =
@@ -42,6 +43,7 @@ class InvocationAttemptFinishedHandler : GrpcEventHandler {
             )
         }
 
+        pendingDiagnostics.deferFlowFinished(ctx.writer, ctx.streamId.invocationId)
         return true
     }
 }
